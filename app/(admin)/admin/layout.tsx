@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   LogOut,
   CheckCircle,
+  PlusCircle,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ export default async function AdminLayout({
     { label: "Dashboard & Health", href: "/admin", icon: Sliders },
     { label: "Moderation Queue", href: "/admin/moderation", icon: ShieldAlert },
     { label: "Listings Directory", href: "/admin/listings", icon: Store },
+    { label: "Add New Listing", href: "/admin/listings/new", icon: PlusCircle },
     { label: "CSV Import / Export", href: "/admin/imports", icon: Upload },
   ];
 

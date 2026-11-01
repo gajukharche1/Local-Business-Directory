@@ -252,7 +252,7 @@ async function main() {
   // 5. Create System Users
   console.log("👤 Seeding system users...");
   // Standard development hash for password 'PimpleSaudagar@2026'
-  const devPasswordHash = "$argon2id$v=19$m=65536,t=3,p=1$5YlY3wBw4yR9z$U9xYxL9j+wM8X8zW1sO8A==";
+  const devPasswordHash = "$argon2id$v=19$m=65536,t=3,p=1$AJr94bNvvPAg54zsnS9hNg$m9KzrSpruOGXN25Mdkhn0KmgwDED6A0j+3yq5X+p1hY";
 
   const adminUser = await prisma.user.create({
     data: {

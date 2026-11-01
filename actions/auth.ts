@@ -59,7 +59,7 @@ export async function loginAction(
   });
 
   // Protection against user enumeration / timing attacks: compute a dummy verify if user not found
-  const dummyHash = "$argon2id$v=19$m=65536,t=3,p=1$5YlY3wBw4yR9z$U9xYxL9j+wM8X8zW1sO8A==";
+  const dummyHash = "$argon2id$v=19$m=65536,t=3,p=1$AJr94bNvvPAg54zsnS9hNg$m9KzrSpruOGXN25Mdkhn0KmgwDED6A0j+3yq5X+p1hY";
 
   if (!user) {
     await verifyPassword(dummyHash, password);
