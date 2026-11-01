@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { TaxonomyService } from "@/lib/services/taxonomy.service";
 import { ListingCard } from "@/components/listing/listing-card";
+import { env } from "@/lib/config/env";
 import { ChevronRight, MapPin } from "lucide-react";
 
 interface LocationPageProps {
@@ -12,18 +13,58 @@ interface LocationPageProps {
 export async function generateMetadata({ params }: LocationPageProps): Promise<Metadata> {
   const { slug } = await params;
   const location = await TaxonomyService.getLocationBySlugPath(slug);
+  const baseUrl = env.NEXT_PUBLIC_APP_URL || "https://pimplesaudagar.org";
 
   if (!location) {
     return { title: "Location Not Found | Pimple Saudagar Directory" };
   }
 
+  const title = location.seoTitle?.trim()
+    ? location.seoTitle
+    : `Businesses & Services in ${location.name}, Pimple Saudagar | Directory`;
+
+  const description = location.seoDescription?.trim()
+    ? location.seoDescription
+    : location.description ||
+      `Explore top verified shops, doctors, dining, and professional services located at ${location.name}, Pimple Saudagar.`;
+
+  const keywords = location.seoKeywords?.trim()
+    ? location.seoKeywords.split(",").map((k) => k.trim()).filter(Boolean)
+    : undefined;
+
+  const url = `${baseUrl}/location/${slug.join("/")}`;
+  const ogImages = location.coverImage
+    ? [
+        {
+          url: location.coverImage,
+          width: 1200,
+          height: 630,
+          alt: `${location.name}, Pimple Saudagar`,
+        },
+      ]
+    : undefined;
+
   return {
-    title: `Businesses & Services in ${location.name}, Pimple Saudagar | Directory`,
-    description:
-      location.description ||
-      `Explore top verified shops, doctors, dining, and professional services located at ${location.name}, Pimple Saudagar.`,
+    title,
+    description,
+    keywords,
     alternates: {
-      canonical: `/location/${slug.join("/")}`,
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "Pimple Saudagar Directory",
+      locale: "en_IN",
+      type: "website",
+      images: ogImages,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: location.coverImage ? [location.coverImage] : undefined,
     },
   };
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Phone, MessageCircle, MapPin, Globe, ShieldCheck, Flag } from "lucide-react";
+import { Phone, MessageCircle, MapPin, Globe, ShieldCheck, Flag, Navigation } from "lucide-react";
 import { ClaimStatus } from "@prisma/client";
 import { EnquiryModal } from "@/components/forms/enquiry-modal";
 
@@ -14,6 +14,8 @@ interface ContactCardProps {
   address: string;
   locality: string;
   landmark: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   claimStatus: ClaimStatus;
   callAllowed: boolean;
   whatsappAllowed: boolean;
@@ -29,6 +31,8 @@ export function ContactCard({
   address,
   locality,
   landmark,
+  latitude,
+  longitude,
   claimStatus,
   callAllowed,
   whatsappAllowed,
@@ -103,6 +107,19 @@ export function ContactCard({
               <p className="text-[11px] text-muted-foreground/80 mt-0.5 font-medium">
                 Landmark: {landmark}
               </p>
+            )}
+            {latitude && longitude && (
+              <div className="mt-2 pt-1.5">
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1 text-[11px] font-semibold text-foreground hover:bg-muted/80 hover:text-primary transition-colors border"
+                >
+                  <Navigation className="h-3 w-3 text-primary" />
+                  <span>Get Directions ({Number(latitude).toFixed(4)}, {Number(longitude).toFixed(4)})</span>
+                </a>
+              </div>
             )}
           </div>
         </div>

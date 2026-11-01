@@ -17,6 +17,8 @@ const baseListingSchema = z.object({
   address: z.string().min(5, "Full street address is required."),
   locality: z.string().min(2, "Locality name is required."),
   landmark: z.string().optional(),
+  latitude: z.coerce.number().min(-90).max(90).optional(),
+  longitude: z.coerce.number().min(-180).max(180).optional(),
   phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number (e.g. +919876543210)").optional().or(z.literal("")),
   whatsapp: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid WhatsApp number (e.g. +919876543210)").optional().or(z.literal("")),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
@@ -25,6 +27,9 @@ const baseListingSchema = z.object({
   priceRange: z.coerce.number().min(1).max(4).default(1),
   planId: z.string().optional(),
   amenities: z.array(z.string()).optional().default([]),
+  seoTitle: z.string().max(120, "SEO title should be under 120 characters.").optional().or(z.literal("")),
+  seoDescription: z.string().max(320, "SEO description should be under 320 characters.").optional().or(z.literal("")),
+  seoKeywords: z.string().max(250, "SEO keywords should be under 250 characters.").optional().or(z.literal("")),
 });
 
 export type ActionState = {
@@ -76,6 +81,8 @@ export async function createListingAdminAction(
     address: formData.get("address") as string,
     locality: formData.get("locality") as string,
     landmark: formData.get("landmark") as string,
+    latitude: formData.get("latitude") as string,
+    longitude: formData.get("longitude") as string,
     phone: formData.get("phone") as string,
     whatsapp: formData.get("whatsapp") as string,
     email: formData.get("email") as string,
@@ -84,6 +91,9 @@ export async function createListingAdminAction(
     priceRange: formData.get("priceRange") as string,
     planId: formData.get("planId") as string,
     amenities: formData.getAll("amenities") as string[],
+    seoTitle: formData.get("seoTitle") as string,
+    seoDescription: formData.get("seoDescription") as string,
+    seoKeywords: formData.get("seoKeywords") as string,
   };
 
   const validation = baseListingSchema.safeParse(rawData);
@@ -136,6 +146,11 @@ export async function createListingAdminAction(
         address: stripHtml(data.address),
         locality: stripHtml(localityName),
         landmark: data.landmark ? stripHtml(data.landmark) : null,
+        latitude: data.latitude !== undefined && !isNaN(data.latitude) ? new Prisma.Decimal(data.latitude) : null,
+        longitude: data.longitude !== undefined && !isNaN(data.longitude) ? new Prisma.Decimal(data.longitude) : null,
+        seoTitle: data.seoTitle?.trim() || null,
+        seoDescription: data.seoDescription?.trim() || null,
+        seoKeywords: data.seoKeywords?.trim() || null,
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
         openingHours: defaultOpeningHours,
@@ -160,6 +175,23 @@ export async function createListingAdminAction(
         data: { listingCount: { increment: 1 } },
       }).catch(() => {}),
     ]);
+
+    // Handle uploaded/attached images
+    const imageUrls = (formData.getAll("imageUrls") as string[]).filter(Boolean);
+    if (imageUrls.length > 0) {
+      await db.media.createMany({
+        data: imageUrls.map((url, idx) => ({
+          listingId: listing.id,
+          ownerId: listing.ownerId || null,
+          key: `listings/${listing.id}/${idx}-${Date.now()}`,
+          url,
+          mimeType: "image/jpeg",
+          bytes: 1000,
+          scanStatus: "clean",
+          altText: `${listing.title} photo ${idx + 1}`,
+        })),
+      });
+    }
 
     revalidatePath("/admin/listings");
     revalidatePath("/admin");
@@ -195,6 +227,8 @@ export async function submitListingPublicAction(
     address: formData.get("address") as string,
     locality: formData.get("locality") as string,
     landmark: formData.get("landmark") as string,
+    latitude: formData.get("latitude") as string,
+    longitude: formData.get("longitude") as string,
     phone: formData.get("phone") as string,
     whatsapp: formData.get("whatsapp") as string,
     email: formData.get("email") as string,
@@ -203,6 +237,9 @@ export async function submitListingPublicAction(
     priceRange: formData.get("priceRange") as string,
     planId: formData.get("planId") as string,
     amenities: formData.getAll("amenities") as string[],
+    seoTitle: formData.get("seoTitle") as string,
+    seoDescription: formData.get("seoDescription") as string,
+    seoKeywords: formData.get("seoKeywords") as string,
   };
 
   const validation = baseListingSchema.safeParse(rawData);
@@ -293,6 +330,11 @@ export async function submitListingPublicAction(
         address: stripHtml(data.address),
         locality: stripHtml(localityName),
         landmark: data.landmark ? stripHtml(data.landmark) : null,
+        latitude: data.latitude !== undefined && !isNaN(data.latitude) ? new Prisma.Decimal(data.latitude) : null,
+        longitude: data.longitude !== undefined && !isNaN(data.longitude) ? new Prisma.Decimal(data.longitude) : null,
+        seoTitle: data.seoTitle?.trim() || null,
+        seoDescription: data.seoDescription?.trim() || null,
+        seoKeywords: data.seoKeywords?.trim() || null,
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
         openingHours: defaultOpeningHours,
@@ -317,6 +359,23 @@ export async function submitListingPublicAction(
       }).catch(() => {}),
     ]);
 
+    // Handle uploaded/attached images
+    const imageUrls = (formData.getAll("imageUrls") as string[]).filter(Boolean);
+    if (imageUrls.length > 0) {
+      await db.media.createMany({
+        data: imageUrls.map((url, idx) => ({
+          listingId: listing.id,
+          ownerId: listing.ownerId || null,
+          key: `listings/${listing.id}/${idx}-${Date.now()}`,
+          url,
+          mimeType: "image/jpeg",
+          bytes: 1000,
+          scanStatus: "clean",
+          altText: `${listing.title} photo ${idx + 1}`,
+        })),
+      });
+    }
+
     revalidatePath("/admin/listings");
     revalidatePath("/admin/moderation");
     revalidatePath("/admin");
@@ -332,6 +391,175 @@ export async function submitListingPublicAction(
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Failed to submit business listing.",
+    };
+  }
+}
+
+/**
+ * Admin action to update an existing business listing with full controls
+ */
+export async function updateListingAdminAction(
+  _prevState: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
+  const user = await getCurrentUser();
+  try {
+    assertAuthorized(user, UserRole.moderator);
+  } catch (err) {
+    return { error: "Unauthorized: Administrator privileges required." };
+  }
+
+  const listingId = formData.get("listingId") as string;
+  if (!listingId) {
+    return { error: "Listing ID is required." };
+  }
+
+  const existing = await db.listing.findUnique({
+    where: { id: listingId },
+    include: { categories: true, locations: true },
+  });
+
+  if (!existing) {
+    return { error: "Listing not found." };
+  }
+
+  const rawData = {
+    title: formData.get("title") as string,
+    description: formData.get("description") as string,
+    categoryId: formData.get("categoryId") as string,
+    locationId: formData.get("locationId") as string,
+    address: formData.get("address") as string,
+    locality: formData.get("locality") as string,
+    landmark: formData.get("landmark") as string,
+    latitude: formData.get("latitude") as string,
+    longitude: formData.get("longitude") as string,
+    phone: formData.get("phone") as string,
+    whatsapp: formData.get("whatsapp") as string,
+    email: formData.get("email") as string,
+    website: formData.get("website") as string,
+    yearEstablished: formData.get("yearEstablished") as string,
+    priceRange: formData.get("priceRange") as string,
+    planId: formData.get("planId") as string,
+    amenities: formData.getAll("amenities") as string[],
+    seoTitle: formData.get("seoTitle") as string,
+    seoDescription: formData.get("seoDescription") as string,
+    seoKeywords: formData.get("seoKeywords") as string,
+  };
+
+  const validation = baseListingSchema.safeParse(rawData);
+  if (!validation.success) {
+    return {
+      error: "Please check the form for invalid fields.",
+      fieldErrors: validation.error.flatten().fieldErrors,
+    };
+  }
+
+  const data = validation.data;
+  const status = (formData.get("status") as ListingStatus) || existing.status;
+  const claimStatus = (formData.get("claimStatus") as ClaimStatus) || existing.claimStatus;
+  const featured = formData.get("featured") === "true" || formData.get("featured") === "on";
+  const priority = Number(formData.get("priority") || 0);
+
+  // Check custom slug
+  let targetSlug = existing.slug;
+  const customSlug = (formData.get("slug") as string)?.trim();
+  if (customSlug && customSlug !== existing.slug) {
+    const sanitizedSlug = customSlug
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    const slugConflict = await db.listing.findFirst({
+      where: { slug: sanitizedSlug, id: { not: listingId } },
+    });
+    if (slugConflict) {
+      return { error: `The URL slug "${sanitizedSlug}" is already in use by another listing.` };
+    }
+    targetSlug = sanitizedSlug;
+  }
+
+  try {
+    const locationRecord = await db.location.findUnique({
+      where: { id: data.locationId },
+    });
+    const localityName = data.locality || locationRecord?.name || existing.locality;
+
+    // Update listing core fields
+    const updated = await db.listing.update({
+      where: { id: listingId },
+      data: {
+        title: stripHtml(data.title),
+        slug: targetSlug,
+        description: sanitizeRichText(data.description),
+        status,
+        claimStatus,
+        featured,
+        priority,
+        planId: data.planId || existing.planId,
+        publishedAt: status === ListingStatus.published && !existing.publishedAt ? new Date() : existing.publishedAt,
+        phone: data.phone?.trim() || null,
+        whatsapp: data.whatsapp?.trim() || null,
+        email: data.email?.trim() || null,
+        website: data.website?.trim() || null,
+        address: stripHtml(data.address),
+        locality: stripHtml(localityName),
+        landmark: data.landmark ? stripHtml(data.landmark) : null,
+        latitude: data.latitude !== undefined && !isNaN(data.latitude) ? new Prisma.Decimal(data.latitude) : null,
+        longitude: data.longitude !== undefined && !isNaN(data.longitude) ? new Prisma.Decimal(data.longitude) : null,
+        seoTitle: data.seoTitle?.trim() || null,
+        seoDescription: data.seoDescription?.trim() || null,
+        seoKeywords: data.seoKeywords?.trim() || null,
+        yearEstablished: data.yearEstablished || null,
+        priceRange: data.priceRange || 1,
+        amenities: data.amenities || [],
+      },
+    });
+
+    // Update category relation
+    await db.listingCategory.deleteMany({ where: { listingId } });
+    await db.listingCategory.create({
+      data: { listingId, categoryId: data.categoryId },
+    });
+
+    // Update location relation
+    await db.listingLocation.deleteMany({ where: { listingId } });
+    await db.listingLocation.create({
+      data: { listingId, locationId: data.locationId, isPrimary: true },
+    });
+
+    // Sync image media
+    const imageUrls = (formData.getAll("imageUrls") as string[]).filter(Boolean);
+    if (imageUrls.length > 0) {
+      await db.media.deleteMany({ where: { listingId } });
+      await db.media.createMany({
+        data: imageUrls.map((url, idx) => ({
+          listingId,
+          ownerId: updated.ownerId || null,
+          key: `listings/${listingId}/${idx}-${Date.now()}`,
+          url,
+          mimeType: "image/jpeg",
+          bytes: 1000,
+          scanStatus: "clean",
+          altText: `${updated.title} photo ${idx + 1}`,
+        })),
+      });
+    }
+
+    revalidatePath("/admin/listings");
+    revalidatePath(`/admin/listings/${listingId}/edit`);
+    revalidatePath(`/listing/${existing.slug}`);
+    revalidatePath(`/listing/${updated.slug}`);
+    revalidatePath("/search");
+    revalidatePath("/");
+
+    return {
+      success: true,
+      listingId: updated.id,
+      slug: updated.slug,
+    };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Failed to update business listing.",
     };
   }
 }

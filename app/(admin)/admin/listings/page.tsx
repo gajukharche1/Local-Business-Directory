@@ -221,13 +221,21 @@ export default async function AdminListingsPage({ searchParams }: SearchParamsPr
                       <ListingStatusSelect listingId={item.id} initialStatus={item.status} />
                     </td>
                     <td className="px-5 py-4">
-                      <Link
-                        href={`/listing/${item.slug}`}
-                        target="_blank"
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
-                      >
-                        View Publicly →
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/admin/listings/${item.id}/edit`}
+                          className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 transition"
+                        >
+                          Edit
+                        </Link>
+                        <Link
+                          href={`/listing/${item.slug}`}
+                          target="_blank"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                        >
+                          View →
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))

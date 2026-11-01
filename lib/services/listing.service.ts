@@ -14,6 +14,9 @@ export interface CreateListingInput {
   landmark?: string;
   latitude?: number;
   longitude?: number;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
   yearEstablished?: number;
   priceRange?: number;
   openingHours?: Prisma.InputJsonValue;
@@ -135,6 +138,9 @@ export class ListingService {
         landmark: input.landmark ? stripHtml(input.landmark) : null,
         latitude: input.latitude !== undefined ? new Prisma.Decimal(input.latitude) : null,
         longitude: input.longitude !== undefined ? new Prisma.Decimal(input.longitude) : null,
+        seoTitle: input.seoTitle ? stripHtml(input.seoTitle).trim() : null,
+        seoDescription: input.seoDescription ? stripHtml(input.seoDescription).trim() : null,
+        seoKeywords: input.seoKeywords ? stripHtml(input.seoKeywords).trim() : null,
         yearEstablished: input.yearEstablished ?? null,
         priceRange: input.priceRange ?? 1,
         openingHours: input.openingHours ?? Prisma.DbNull,

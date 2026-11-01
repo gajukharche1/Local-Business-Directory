@@ -4,6 +4,8 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createListingAdminAction, ActionState } from "@/actions/listing";
+import { ContentBlockEditor } from "@/components/forms/content-block-editor";
+import { ImageUpload } from "@/components/forms/image-upload";
 import {
   Store,
   MapPin,
@@ -17,6 +19,10 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
+  Compass,
+  Search,
+  Crosshair,
+  ExternalLink,
 } from "lucide-react";
 
 interface CategoryOption {
@@ -63,6 +69,14 @@ const AVAILABLE_AMENITIES = [
   "Restroom Available",
 ];
 
+const LOCALITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  "Pimple Saudagar": { lat: 18.5987, lng: 73.7978 },
+  "Kunal Icon Road": { lat: 18.5992, lng: 73.7955 },
+  "Kokane Chowk": { lat: 18.5954, lng: 73.7998 },
+  "Shivar Chowk": { lat: 18.5998, lng: 73.7925 },
+  "Govind Garden Area": { lat: 18.5971, lng: 73.8012 },
+};
+
 export function AdminListingForm({
   categories,
   locations,
@@ -72,6 +86,17 @@ export function AdminListingForm({
   const router = useRouter();
   const [selectedLocation, setSelectedLocation] = useState(locations[0]?.id || "");
   const [localityText, setLocalityText] = useState(locations[0]?.name || "Pimple Saudagar");
+
+  // Geolocation state
+  const [latitude, setLatitude] = useState<string>("18.5987");
+  const [longitude, setLongitude] = useState<string>("73.7978");
+  const [geoDetecting, setGeoDetecting] = useState(false);
+
+  // SEO state for live Google preview
+  const [listingTitle, setListingTitle] = useState("");
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDescription, setSeoDescription] = useState("");
+  const [seoKeywords, setSeoKeywords] = useState("");
 
   const [state, formAction, isPending] = useActionState<ActionState | null, FormData>(
     async (prev, formData) => {
@@ -91,8 +116,45 @@ export function AdminListingForm({
     const loc = locations.find((l) => l.id === locId);
     if (loc) {
       setLocalityText(loc.name);
+      const preset = LOCALITY_COORDINATES[loc.name];
+      if (preset) {
+        setLatitude(preset.lat.toString());
+        setLongitude(preset.lng.toString());
+      }
     }
   };
+
+  const handleApplyPresetCoords = (name: string, lat: number, lng: number) => {
+    setLatitude(lat.toString());
+    setLongitude(lng.toString());
+  };
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+    setGeoDetecting(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLatitude(pos.coords.latitude.toFixed(6));
+        setLongitude(pos.coords.longitude.toFixed(6));
+        setGeoDetecting(false);
+      },
+      (err) => {
+        alert("Failed to retrieve GPS location: " + err.message);
+        setGeoDetecting(false);
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  // Google preview computed values
+  const previewTitle =
+    seoTitle || (listingTitle ? `${listingTitle} in ${localityText}, Pimple Saudagar` : "Business Name | Pimple Saudagar Directory");
+  const previewDesc =
+    seoDescription ||
+    "Find contact phone, opening hours, WhatsApp, ratings, and customer reviews for verified businesses in Pimple Saudagar, PCMC.";
 
   return (
     <form action={formAction} className="space-y-8">
@@ -131,6 +193,8 @@ export function AdminListingForm({
               type="text"
               name="title"
               required
+              value={listingTitle}
+              onChange={(e) => setListingTitle(e.target.value)}
               placeholder="e.g. Govind Garden Restaurant & Banquets"
               className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
             />
@@ -221,30 +285,221 @@ export function AdminListingForm({
               className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
             />
           </div>
+        </div>
 
-          <div className="md:col-span-2">
-            <label className="block text-xs font-semibold text-foreground mb-1">
-              Detailed Description *
-            </label>
-            <textarea
-              name="description"
-              required
-              rows={4}
-              placeholder="Describe services, specialities, doctor qualifications, menu highlights, or store offerings..."
-              className="w-full rounded-lg border bg-background p-3 text-sm text-foreground focus:border-primary focus:outline-none"
-            ></textarea>
-            {state?.fieldErrors?.description && (
-              <p className="text-xs text-destructive mt-1">{state.fieldErrors.description[0]}</p>
+        {/* Content Area with Visual & HTML Code Editor */}
+        <div className="pt-2 border-t">
+          <label className="block text-xs font-bold text-foreground mb-1.5 flex items-center gap-1.5">
+            <span>Listing Description & HTML Content Blocks *</span>
+            <span className="text-[10px] font-normal text-muted-foreground">
+              (Visual WYSIWYG preview & raw HTML code blocks supported)
+            </span>
+          </label>
+          <ContentBlockEditor
+            name="description"
+            error={state?.fieldErrors?.description?.[0]}
+          />
+        </div>
+
+        {/* Business Showcase Photos */}
+        <div className="pt-4 border-t">
+          <ImageUpload
+            name="imageUrls"
+            maxPhotos={15}
+            label="Listing Showcase Photos & Media"
+            description="Upload storefront, menu, and facility photos. The first image will be set as the main directory cover image."
+          />
+        </div>
+      </div>
+
+      {/* 2. Geolocation & Map Coordinates */}
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-5">
+        <div className="flex items-center justify-between border-b pb-3">
+          <div className="flex items-center gap-2">
+            <Compass className="h-5 w-5 text-primary" />
+            <div>
+              <h2 className="text-base font-bold text-foreground">2. Geolocation Coordinates (GPS)</h2>
+              <p className="text-[11px] text-muted-foreground">
+                Powers pinpoint map markers on OpenStreetMap and distance filtering
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleDetectLocation}
+            disabled={geoDetecting}
+            className="inline-flex items-center gap-1.5 rounded-lg border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition"
+          >
+            {geoDetecting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Crosshair className="h-3.5 w-3.5 text-primary" />
             )}
+            <span>Detect Current GPS</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Latitude (e.g. 18.598700) *
+            </label>
+            <input
+              type="number"
+              step="any"
+              name="latitude"
+              value={latitude}
+              onChange={(e) => setLatitude(e.target.value)}
+              placeholder="18.598700"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm font-mono text-foreground focus:border-primary focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Longitude (e.g. 73.797800) *
+            </label>
+            <input
+              type="number"
+              step="any"
+              name="longitude"
+              value={longitude}
+              onChange={(e) => setLongitude(e.target.value)}
+              placeholder="73.797800"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm font-mono text-foreground focus:border-primary focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Quick Locality Coordinate Presets */}
+        <div className="rounded-xl bg-muted/40 p-3 text-xs space-y-2">
+          <span className="font-semibold text-muted-foreground block text-[11px]">
+            Quick Presets for Pimple Saudagar Neighborhoods:
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {Object.entries(LOCALITY_COORDINATES).map(([name, coords]) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => handleApplyPresetCoords(name, coords.lat, coords.lng)}
+                className="rounded-md border bg-card px-2.5 py-1 text-[11px] font-medium text-foreground hover:border-primary hover:text-primary transition"
+              >
+                📍 {name} ({coords.lat}, {coords.lng})
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* 2. Contact & Online Presence */}
+      {/* 3. SEO Meta Settings & Google SERP Preview */}
+      <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-6 shadow-sm space-y-5">
+        <div className="flex items-center gap-2 border-b border-indigo-500/20 pb-3">
+          <Search className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          <div>
+            <h2 className="text-base font-bold text-foreground">3. Search Engine Optimization (SEO)</h2>
+            <p className="text-[11px] text-muted-foreground">
+              Configure meta tags and keyword indexation for Google, Bing, and social shares
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-foreground">
+                SEO Meta Title
+              </label>
+              <span className={`text-[10px] font-mono ${seoTitle.length > 60 ? "text-amber-600 font-bold" : "text-muted-foreground"}`}>
+                {seoTitle.length} / 60 characters
+              </span>
+            </div>
+            <input
+              type="text"
+              name="seoTitle"
+              value={seoTitle}
+              onChange={(e) => setSeoTitle(e.target.value)}
+              placeholder="e.g. Govind Garden Restaurant | Best North Indian in Pimple Saudagar"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+            />
+            <span className="text-[10px] text-muted-foreground mt-0.5 block">
+              Leave blank to automatically use business title + neighborhood format.
+            </span>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-foreground">
+                SEO Meta Description
+              </label>
+              <span className={`text-[10px] font-mono ${seoDescription.length > 160 ? "text-amber-600 font-bold" : "text-muted-foreground"}`}>
+                {seoDescription.length} / 160 characters
+              </span>
+            </div>
+            <textarea
+              name="seoDescription"
+              rows={2}
+              value={seoDescription}
+              onChange={(e) => setSeoDescription(e.target.value)}
+              placeholder="e.g. Visit Govind Garden Restaurant on Kunal Icon Road, Pimple Saudagar. Authentic North Indian & coastal seafood with outdoor lawn seating. View menu & hours."
+              className="w-full rounded-lg border bg-background p-3 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+            ></textarea>
+            <span className="text-[10px] text-muted-foreground mt-0.5 block">
+              Optimal length: 140–160 characters. Appears under the link in search results.
+            </span>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              SEO Keywords Tag (Comma-Separated)
+            </label>
+            <input
+              type="text"
+              name="seoKeywords"
+              value={seoKeywords}
+              onChange={(e) => setSeoKeywords(e.target.value)}
+              placeholder="e.g. restaurants in pimple saudagar, family dining, punjabi food, kokane chowk dining, ac banquet hall"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+            />
+            <span className="text-[10px] text-muted-foreground mt-0.5 block">
+              Separate keywords with commas. Used for meta keywords tags and internal search matching.
+            </span>
+          </div>
+
+          {/* Live Google Search Result Preview */}
+          <div className="rounded-xl border border-border bg-card p-4 space-y-2 mt-4">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+              <Globe className="h-3 w-3 text-indigo-500" />
+              Live Google Search Snippet Preview
+            </span>
+            <div className="bg-background rounded-lg border p-3.5 space-y-1 font-sans">
+              <div className="text-[11px] text-slate-500 truncate flex items-center gap-1">
+                <span>https://pimplesaudagar.org</span>
+                <span>›</span>
+                <span>listing</span>
+                <span>›</span>
+                <span className="text-slate-600 font-medium">
+                  {listingTitle
+                    ? listingTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+                    : "business-slug"}
+                </span>
+              </div>
+              <h4 className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline truncate cursor-pointer leading-tight">
+                {previewTitle}
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                {previewDesc}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Contact & Online Presence */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-5">
         <div className="flex items-center gap-2 border-b pb-3">
           <Phone className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">2. Contact & Digital Channels</h2>
+          <h2 className="text-base font-bold text-foreground">4. Contact & Digital Channels</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -337,11 +592,11 @@ export function AdminListingForm({
         </div>
       </div>
 
-      {/* 3. Administration & Status Controls */}
+      {/* 5. Administration & Status Controls */}
       <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-6 shadow-sm space-y-5">
         <div className="flex items-center gap-2 border-b border-red-500/20 pb-3">
           <ShieldCheck className="h-5 w-5 text-red-600" />
-          <h2 className="text-base font-bold text-foreground">3. Admin Management Controls</h2>
+          <h2 className="text-base font-bold text-foreground">5. Admin Management Controls</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -469,4 +724,3 @@ export function AdminListingForm({
     </form>
   );
 }
-

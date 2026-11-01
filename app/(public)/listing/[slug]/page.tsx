@@ -24,13 +24,28 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
     };
   }
 
-  const title = `${listing.title} in ${listing.locality}, Pimple Saudagar | Reviews & Contact`;
-  const description = `Contact details, opening hours, photos, ratings, and customer reviews for ${listing.title} located at ${listing.locality}, Pimple Saudagar.`;
+  const title = listing.seoTitle?.trim()
+    ? listing.seoTitle
+    : `${listing.title} in ${listing.locality}, Pimple Saudagar | Reviews & Contact`;
+  const description = listing.seoDescription?.trim()
+    ? listing.seoDescription
+    : `Contact details, opening hours, photos, ratings, and customer reviews for ${listing.title} located at ${listing.locality}, Pimple Saudagar.`;
+  const keywords = listing.seoKeywords?.trim()
+    ? listing.seoKeywords.split(",").map((k) => k.trim()).filter(Boolean)
+    : undefined;
   const url = `${baseUrl}/listing/${listing.slug}`;
+  const ogImages =
+    listing.media && listing.media.length > 0
+      ? listing.media.slice(0, 4).map((m) => ({
+          url: m.url,
+          alt: m.altText || `${listing.title} photo`,
+        }))
+      : undefined;
 
   return {
     title,
     description,
+    keywords,
     alternates: {
       canonical: url,
     },
@@ -41,11 +56,13 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
       siteName: "Pimple Saudagar Directory",
       locale: "en_IN",
       type: "article",
+      images: ogImages,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: ogImages && ogImages[0]?.url ? [ogImages[0].url] : undefined,
     },
   };
 }
@@ -273,6 +290,8 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
               address={listing.address}
               locality={listing.locality}
               landmark={listing.landmark}
+              latitude={listing.latitude ? Number(listing.latitude) : null}
+              longitude={listing.longitude ? Number(listing.longitude) : null}
               claimStatus={listing.claimStatus}
               callAllowed={listing.plan?.callButtonAllowed ?? true}
               whatsappAllowed={listing.plan?.whatsappAllowed ?? true}

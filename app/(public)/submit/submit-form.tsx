@@ -4,6 +4,8 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { submitListingPublicAction, ActionState } from "@/actions/listing";
+import { ContentBlockEditor } from "@/components/forms/content-block-editor";
+import { ImageUpload } from "@/components/forms/image-upload";
 import {
   Store,
   MapPin,
@@ -19,6 +21,9 @@ import {
   Building,
   User,
   Lock,
+  Compass,
+  Search,
+  Crosshair,
 } from "lucide-react";
 
 interface CategoryOption {
@@ -70,6 +75,14 @@ const AVAILABLE_AMENITIES = [
   "Appointment / Booking Required",
 ];
 
+const LOCALITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  "Pimple Saudagar": { lat: 18.5987, lng: 73.7978 },
+  "Kunal Icon Road": { lat: 18.5992, lng: 73.7955 },
+  "Kokane Chowk": { lat: 18.5954, lng: 73.7998 },
+  "Shivar Chowk": { lat: 18.5998, lng: 73.7925 },
+  "Govind Garden Area": { lat: 18.5971, lng: 73.8012 },
+};
+
 export function SubmitListingForm({
   categories,
   locations,
@@ -82,6 +95,17 @@ export function SubmitListingForm({
   );
   const [selectedLocation, setSelectedLocation] = useState<string>(locations[0]?.id || "");
   const [localityText, setLocalityText] = useState<string>(locations[0]?.name || "Pimple Saudagar");
+
+  // Coordinates
+  const [latitude, setLatitude] = useState<string>("18.5987");
+  const [longitude, setLongitude] = useState<string>("73.7978");
+  const [geoDetecting, setGeoDetecting] = useState(false);
+
+  // SEO fields & live Google preview
+  const [listingTitle, setListingTitle] = useState("");
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDescription, setSeoDescription] = useState("");
+  const [seoKeywords, setSeoKeywords] = useState("");
 
   const [state, formAction, isPending] = useActionState<ActionState | null, FormData>(
     async (prev, formData) => {
@@ -96,8 +120,47 @@ export function SubmitListingForm({
     const loc = locations.find((l) => l.id === locId);
     if (loc) {
       setLocalityText(loc.name);
+      const preset = LOCALITY_COORDINATES[loc.name];
+      if (preset) {
+        setLatitude(preset.lat.toString());
+        setLongitude(preset.lng.toString());
+      }
     }
   };
+
+  const handleApplyPresetCoords = (name: string, lat: number, lng: number) => {
+    setLatitude(lat.toString());
+    setLongitude(lng.toString());
+  };
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+    setGeoDetecting(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLatitude(pos.coords.latitude.toFixed(6));
+        setLongitude(pos.coords.longitude.toFixed(6));
+        setGeoDetecting(false);
+      },
+      (err) => {
+        alert("Failed to retrieve GPS location: " + err.message);
+        setGeoDetecting(false);
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  const previewTitle =
+    seoTitle ||
+    (listingTitle
+      ? `${listingTitle} in ${localityText}, Pimple Saudagar`
+      : "Business Name | Pimple Saudagar Directory");
+  const previewDesc =
+    seoDescription ||
+    "Find contact phone, opening hours, WhatsApp, ratings, and customer reviews for verified businesses in Pimple Saudagar, PCMC.";
 
   if (state?.success) {
     return (
@@ -265,6 +328,8 @@ export function SubmitListingForm({
               type="text"
               name="title"
               required
+              value={listingTitle}
+              onChange={(e) => setListingTitle(e.target.value)}
               placeholder="e.g. Kokane Chowk Multi-Speciality Dental Clinic"
               className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
             />
@@ -355,30 +420,209 @@ export function SubmitListingForm({
               className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
             />
           </div>
+        </div>
 
-          <div className="md:col-span-2">
-            <label className="block text-xs font-semibold text-foreground mb-1">
-              About the Business & Services *
-            </label>
-            <textarea
-              name="description"
-              required
-              rows={4}
-              placeholder="Provide a comprehensive description of your offerings, products, doctor/technician qualifications, menu highlights, and why customers in Pimple Saudagar should choose you."
-              className="w-full rounded-lg border bg-background p-3 text-sm text-foreground focus:border-primary focus:outline-none"
-            ></textarea>
-            {state?.fieldErrors?.description && (
-              <p className="text-xs text-destructive mt-1">{state.fieldErrors.description[0]}</p>
+        {/* Content Area with Visual & HTML Code Editor */}
+        <div className="pt-2 border-t">
+          <label className="block text-xs font-bold text-foreground mb-1.5 flex items-center gap-1.5">
+            <span>About the Business & Services (HTML Content Blocks Supported) *</span>
+          </label>
+          <ContentBlockEditor
+            name="description"
+            error={state?.fieldErrors?.description?.[0]}
+          />
+        </div>
+
+        {/* Business Photos & Showcase */}
+        <div className="pt-4 border-t">
+          <ImageUpload
+            name="imageUrls"
+            maxPhotos={10}
+            label="Business Photos & Gallery"
+            description="Upload storefront photos, interior views, menu/products, and team photos. The first image will be featured as the primary cover photo."
+          />
+        </div>
+      </div>
+
+      {/* 3. Geolocation & Map Coordinates */}
+      <div className="rounded-2xl border bg-card p-6 md:p-8 shadow-card space-y-5">
+        <div className="flex items-center justify-between border-b pb-3">
+          <div className="flex items-center gap-2">
+            <Compass className="h-5 w-5 text-primary" />
+            <div>
+              <h2 className="text-base font-bold text-foreground">3. Map Location Coordinates (GPS)</h2>
+              <p className="text-[11px] text-muted-foreground">
+                Allows neighborhood customers to find your store on the interactive map
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleDetectLocation}
+            disabled={geoDetecting}
+            className="inline-flex items-center gap-1.5 rounded-lg border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition"
+          >
+            {geoDetecting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Crosshair className="h-3.5 w-3.5 text-primary" />
             )}
+            <span>Detect My GPS</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Latitude (e.g. 18.598700)
+            </label>
+            <input
+              type="number"
+              step="any"
+              name="latitude"
+              value={latitude}
+              onChange={(e) => setLatitude(e.target.value)}
+              placeholder="18.598700"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm font-mono text-foreground focus:border-primary focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Longitude (e.g. 73.797800)
+            </label>
+            <input
+              type="number"
+              step="any"
+              name="longitude"
+              value={longitude}
+              onChange={(e) => setLongitude(e.target.value)}
+              placeholder="73.797800"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm font-mono text-foreground focus:border-primary focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Quick presets */}
+        <div className="rounded-xl bg-muted/40 p-3 text-xs space-y-2">
+          <span className="font-semibold text-muted-foreground block text-[11px]">
+            Locality Coordinate Quick Presets:
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {Object.entries(LOCALITY_COORDINATES).map(([name, coords]) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => handleApplyPresetCoords(name, coords.lat, coords.lng)}
+                className="rounded-md border bg-card px-2.5 py-1 text-[11px] font-medium text-foreground hover:border-primary hover:text-primary transition"
+              >
+                📍 {name}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* 3. Direct Contact Channels */}
+      {/* 4. SEO & Search Meta Configuration */}
+      <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-6 md:p-8 shadow-card space-y-5">
+        <div className="flex items-center gap-2 border-b border-indigo-500/20 pb-3">
+          <Search className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          <div>
+            <h2 className="text-base font-bold text-foreground">4. Search Engine Optimization (SEO)</h2>
+            <p className="text-[11px] text-muted-foreground">
+              Optimize your profile for Google Search discovery and social sharing
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-foreground">
+                SEO Meta Title
+              </label>
+              <span className={`text-[10px] font-mono ${seoTitle.length > 60 ? "text-amber-600 font-bold" : "text-muted-foreground"}`}>
+                {seoTitle.length} / 60 characters
+              </span>
+            </div>
+            <input
+              type="text"
+              name="seoTitle"
+              value={seoTitle}
+              onChange={(e) => setSeoTitle(e.target.value)}
+              placeholder="e.g. Kokane Chowk Multi-Speciality Dental Clinic | Pimple Saudagar"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-foreground">
+                SEO Meta Description
+              </label>
+              <span className={`text-[10px] font-mono ${seoDescription.length > 160 ? "text-amber-600 font-bold" : "text-muted-foreground"}`}>
+                {seoDescription.length} / 160 characters
+              </span>
+            </div>
+            <textarea
+              name="seoDescription"
+              rows={2}
+              value={seoDescription}
+              onChange={(e) => setSeoDescription(e.target.value)}
+              placeholder="e.g. Certified dental clinic in Pimple Saudagar offering painless root canals, teeth whitening, and pediatric dentistry. Book consultation."
+              className="w-full rounded-lg border bg-background p-3 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+            ></textarea>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              SEO Keywords Tag (Comma-Separated)
+            </label>
+            <input
+              type="text"
+              name="seoKeywords"
+              value={seoKeywords}
+              onChange={(e) => setSeoKeywords(e.target.value)}
+              placeholder="e.g. dentist in pimple saudagar, dental clinic kokane chowk, teeth whitening, braces"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+            />
+          </div>
+
+          {/* Live Google Search Preview */}
+          <div className="rounded-xl border border-border bg-card p-4 space-y-2 mt-4">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+              <Globe className="h-3 w-3 text-indigo-500" />
+              Live Google Search Snippet Preview
+            </span>
+            <div className="bg-background rounded-lg border p-3.5 space-y-1 font-sans">
+              <div className="text-[11px] text-slate-500 truncate flex items-center gap-1">
+                <span>https://pimplesaudagar.org</span>
+                <span>›</span>
+                <span>listing</span>
+                <span>›</span>
+                <span className="text-slate-600 font-medium">
+                  {listingTitle
+                    ? listingTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+                    : "business-slug"}
+                </span>
+              </div>
+              <h4 className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline truncate cursor-pointer leading-tight">
+                {previewTitle}
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                {previewDesc}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Direct Contact Channels */}
       <div className="rounded-2xl border bg-card p-6 md:p-8 shadow-card space-y-5">
         <div className="flex items-center gap-2 border-b pb-3">
           <Phone className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">3. Customer Contact Channels</h2>
+          <h2 className="text-base font-bold text-foreground">5. Customer Contact Channels</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -477,11 +721,11 @@ export function SubmitListingForm({
         </div>
       </div>
 
-      {/* 4. Plan Selection */}
+      {/* 6. Plan Selection */}
       <div className="rounded-2xl border bg-card p-6 md:p-8 shadow-card space-y-5">
         <div className="flex items-center gap-2 border-b pb-3">
           <Sparkles className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">4. Choose Directory Plan</h2>
+          <h2 className="text-base font-bold text-foreground">6. Choose Directory Plan</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -566,4 +810,3 @@ export function SubmitListingForm({
     </form>
   );
 }
-

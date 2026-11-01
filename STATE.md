@@ -37,3 +37,67 @@
 - **Architecture**: Next.js 15 App Router + TypeScript Strict + PostgreSQL 16 (Prisma) + Upstash Redis + Cloudflare R2 + Leaflet / OpenStreetMap.
 - **Cost Target**: 100% Free Tier ($0/month hosting expenses).
 - **Security Compliance**: OWASP ASVS Level 2 verified + India DPDP Act 2023 certified.
+
+# Implementation Plan 2: Category/Location Management, Listing Image Uploads & Admin Listing Editor
+
+## 1. Database & Schema
+- [ ] Add `seoKeywords String?` to `model Category` in `prisma/schema.prisma`.
+- [ ] Add `seoKeywords String?` to `model Location` in `prisma/schema.prisma`.
+- [ ] Run `npx --package=prisma@6.4.1 prisma db push` to synchronize Postgres schema.
+- [ ] Run Prisma Client generation.
+
+## 2. Category & Location Admin Management
+- [ ] **Taxonomy Server Actions** (`actions/taxonomy.ts`):
+  - `createCategoryAdminAction`, `updateCategoryAdminAction`, `deleteCategoryAdminAction`
+  - `createLocationAdminAction`, `updateLocationAdminAction`, `deleteLocationAdminAction`
+  - Validates RBAC (`moderator`/`admin`), strips HTML, enforces valid slug / permanent URLs, and saves `seoTitle`, `seoDescription`, `seoKeywords`.
+- [ ] **Category Admin Pages**:
+  - `app/(admin)/admin/categories/page.tsx`: Table listing all categories, hierarchy, listing count, quick actions.
+  - `app/(admin)/admin/categories/category-manager.tsx`: Full interactive create & edit drawer/modal with permanent slug, parent category selector, icon, and live Google SERP SEO preview.
+- [ ] **Location Admin Pages**:
+  - `app/(admin)/admin/locations/page.tsx`: Table listing all Pimple Saudagar neighborhoods/locations, coordinates, listing count.
+  - `app/(admin)/admin/locations/location-manager.tsx`: Interactive create & edit drawer/modal with coordinates (lat/lng), permanent slug, and SEO metadata.
+- [ ] **Sidebar Integration**:
+  - Add "Categories" and "Locations" items into `app/(admin)/admin/layout.tsx`.
+- [ ] **Public Archive SEO & Open Graph Enhancement**:
+  - Update `app/(public)/category/[...slug]/page.tsx` and `app/(public)/location/[...slug]/page.tsx` to utilize `seoTitle`, `seoDescription`, and `seoKeywords` in `generateMetadata`.
+  - Add full **Open Graph** (`openGraph`: `title`, `description`, `url`, `siteName`, `locale`, `type`, `images`) and **Twitter Card** (`twitter`: `card`, `title`, `description`, `images`) for:
+    * Category pages (`/category/[...slug]`)
+    * Location pages (`/location/[...slug]`)
+    * Listing detail pages (`/listing/[slug]`), dynamically featuring the business primary photo in OG image tags.
+
+## 3. Image Upload in Listing Submission
+- [ ] **Upload API Route** (`app/api/upload/route.ts`):
+  - Handles multipart image file uploads with MIME validation (`image/jpeg`, `image/png`, `image/webp`, `image/avif`) and 5MB size limit.
+  - Stores uploaded images in `public/uploads/listings/` (and connects with `Media` database records).
+- [ ] **Image Upload Component** (`components/forms/image-upload.tsx`):
+  - Multi-image selector with drag-and-drop file upload and/or image URL input.
+  - Live thumbnail previews, primary photo badge, and 1-click removal.
+- [ ] **Form Integration**:
+  - Embed into `app/(public)/submit/submit-form.tsx` (Public Business Submission).
+  - Embed into `app/(admin)/admin/listings/new/admin-listing-form.tsx` (Admin Add Listing).
+  - Embed into Admin Edit Listing Form.
+  - Update `actions/listing.ts` to attach uploaded media IDs or URLs to created/updated listings.
+
+## 4. Admin Edit Existing Listing
+- [ ] **Server Action** (`updateListingAdminAction` in `actions/listing.ts`):
+  - Allows moderators/admins to update any listing.
+  - Supports editing title, permanent slug, description, HTML content blocks, categories, locations, phone, WhatsApp, email, website, address, landmark, latitude, longitude, amenities, images, SEO tags, status, and featured/priority flags.
+- [ ] **Edit Page Route** (`app/(admin)/admin/listings/[id]/edit/page.tsx`):
+  - Fetches existing listing data with categories, locations, media, and plan details.
+- [ ] **Edit Form Component** (`app/(admin)/admin/listings/[id]/edit/admin-edit-listing-form.tsx`):
+  - Pre-populates all existing data.
+  - Embedded ContentBlockEditor, GPS coordinates, SEO inputs with SERP preview, Image manager, and Status/Priority controls.
+- [ ] **Admin Listings Table Update** (`app/(admin)/admin/listings/page.tsx`):
+  - Add an **Edit** action button linking directly to `/admin/listings/[id]/edit`.
+
+## 5. Verification & Testing
+- [ ] Run `npm run typecheck` to confirm 0 TypeScript errors.
+- [ ] Test creating & editing Categories with custom SEO tags and permanent URLs.
+- [ ] Test creating & editing Locations with GPS coordinates and SEO tags.
+- [ ] Test uploading images during listing submission and editing.
+- [ ] Test editing existing listings from the admin listings table.
+- [ ] Rebuild and deploy container (`docker compose build web && docker compose up -d web`).
+
+
+
