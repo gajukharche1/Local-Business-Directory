@@ -49,7 +49,13 @@ export default async function AdminLocationsPage() {
       </div>
 
       {/* Interactive Location Manager */}
-      <LocationManager initialLocations={locations as LocationItem[]} />
+      <LocationManager
+        initialLocations={locations.map((loc) => ({
+          ...loc,
+          latitude: loc.latitude !== null && loc.latitude !== undefined ? Number(loc.latitude) : null,
+          longitude: loc.longitude !== null && loc.longitude !== undefined ? Number(loc.longitude) : null,
+        }))}
+      />
     </div>
   );
 }

@@ -12,7 +12,8 @@ interface LocationPageProps {
 
 export async function generateMetadata({ params }: LocationPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const location = await TaxonomyService.getLocationBySlugPath(slug);
+  const slugList = Array.isArray(slug) ? slug : typeof slug === "string" ? [slug] : [];
+  const location = await TaxonomyService.getLocationBySlugPath(slugList);
   const baseUrl = env.NEXT_PUBLIC_APP_URL || "https://pimplesaudagar.org";
 
   if (!location) {
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: LocationPageProps): Promise<M
     ? location.seoKeywords.split(",").map((k) => k.trim()).filter(Boolean)
     : undefined;
 
-  const url = `${baseUrl}/location/${slug.join("/")}`;
+  const url = `${baseUrl}/location/${slugList.join("/")}`;
   const ogImages = location.coverImage
     ? [
         {
@@ -71,7 +72,8 @@ export async function generateMetadata({ params }: LocationPageProps): Promise<M
 
 export default async function LocationArchivePage({ params }: LocationPageProps) {
   const { slug } = await params;
-  const location = await TaxonomyService.getLocationBySlugPath(slug);
+  const slugList = Array.isArray(slug) ? slug : typeof slug === "string" ? [slug] : [];
+  const location = await TaxonomyService.getLocationBySlugPath(slugList);
 
   if (!location) {
     notFound();

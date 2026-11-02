@@ -12,7 +12,8 @@ interface CategoryPageProps {
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const category = await TaxonomyService.getCategoryBySlugPath(slug);
+  const slugList = Array.isArray(slug) ? slug : typeof slug === "string" ? [slug] : [];
+  const category = await TaxonomyService.getCategoryBySlugPath(slugList);
   const baseUrl = env.NEXT_PUBLIC_APP_URL || "https://pimplesaudagar.org";
 
   if (!category) {
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     ? category.seoKeywords.split(",").map((k) => k.trim()).filter(Boolean)
     : undefined;
 
-  const url = `${baseUrl}/category/${slug.join("/")}`;
+  const url = `${baseUrl}/category/${slugList.join("/")}`;
   const ogImages = category.coverImage
     ? [
         {
@@ -71,7 +72,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
 export default async function CategoryArchivePage({ params }: CategoryPageProps) {
   const { slug } = await params;
-  const category = await TaxonomyService.getCategoryBySlugPath(slug);
+  const slugList = Array.isArray(slug) ? slug : typeof slug === "string" ? [slug] : [];
+  const category = await TaxonomyService.getCategoryBySlugPath(slugList);
 
   if (!category) {
     notFound();

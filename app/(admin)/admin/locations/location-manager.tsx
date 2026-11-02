@@ -344,7 +344,7 @@ export function LocationManager({ initialLocations }: LocationManagerProps) {
                         {loc.latitude && loc.longitude ? (
                           <div className="font-mono text-[11px] text-muted-foreground flex items-center gap-1">
                             <Compass className="h-3 w-3 text-emerald-600" />
-                            <span>{loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}</span>
+                            <span>{Number(loc.latitude).toFixed(4)}, {Number(loc.longitude).toFixed(4)}</span>
                           </div>
                         ) : (
                           <span className="text-muted-foreground text-[11px] italic">Not set</span>
