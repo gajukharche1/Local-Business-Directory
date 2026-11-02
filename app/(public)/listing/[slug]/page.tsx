@@ -34,13 +34,15 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
     ? listing.seoKeywords.split(",").map((k) => k.trim()).filter(Boolean)
     : undefined;
   const url = `${baseUrl}/listing/${listing.slug}`;
-  const ogImages =
-    listing.media && listing.media.length > 0
-      ? listing.media.slice(0, 4).map((m) => ({
-          url: m.url,
-          alt: m.altText || `${listing.title} photo`,
-        }))
-      : undefined;
+  const targetOg = listing.ogImage?.trim() || (listing.media && listing.media[0]?.url);
+  const ogImages = targetOg
+    ? [{ url: targetOg, alt: listing.title, width: 1200, height: 630 }]
+    : listing.media && listing.media.length > 0
+    ? listing.media.slice(0, 4).map((m) => ({
+        url: m.url,
+        alt: m.altText || `${listing.title} photo`,
+      }))
+    : undefined;
 
   return {
     title,

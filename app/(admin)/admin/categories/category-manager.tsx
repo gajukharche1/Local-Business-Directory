@@ -36,6 +36,7 @@ export interface CategoryItem {
   seoTitle: string | null;
   seoDescription: string | null;
   seoKeywords: string | null;
+  ogImage: string | null;
   parent?: {
     id: string;
     name: string;
@@ -70,6 +71,7 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
     seoTitle: "",
     seoDescription: "",
     seoKeywords: "",
+    ogImage: "",
   });
 
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
@@ -107,6 +109,7 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
       seoTitle: "",
       seoDescription: "",
       seoKeywords: "",
+      ogImage: "",
     });
     setSlugManuallyEdited(false);
     setFormError(null);
@@ -128,6 +131,7 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
       seoTitle: cat.seoTitle || "",
       seoDescription: cat.seoDescription || "",
       seoKeywords: cat.seoKeywords || "",
+      ogImage: cat.ogImage || "",
     });
     setSlugManuallyEdited(true);
     setFormError(null);
@@ -152,6 +156,7 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
     body.append("seoTitle", formData.seoTitle);
     body.append("seoDescription", formData.seoDescription);
     body.append("seoKeywords", formData.seoKeywords);
+    body.append("ogImage", formData.ogImage);
 
     if (editingCategory) {
       body.append("categoryId", editingCategory.id);
@@ -192,6 +197,7 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
                     seoTitle: formData.seoTitle || null,
                     seoDescription: formData.seoDescription || null,
                     seoKeywords: formData.seoKeywords || null,
+                    ogImage: formData.ogImage || null,
                     parent: parentObj
                       ? { id: parentObj.id, name: parentObj.name, slug: parentObj.slug }
                       : null,
@@ -213,6 +219,7 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
             seoTitle: formData.seoTitle || null,
             seoDescription: formData.seoDescription || null,
             seoKeywords: formData.seoKeywords || null,
+            ogImage: formData.ogImage || null,
             parent: parentObj
               ? { id: parentObj.id, name: parentObj.name, slug: parentObj.slug }
               : null,
@@ -642,10 +649,10 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
                     Social Share (Open Graph / WhatsApp / Twitter) Preview
                   </div>
                   <div className="border rounded-lg overflow-hidden bg-card text-left max-w-sm">
-                    {formData.coverImage ? (
+                    {(formData.ogImage || formData.coverImage) ? (
                       <div
                         className="h-28 bg-cover bg-center border-b"
-                        style={{ backgroundImage: `url(${formData.coverImage})` }}
+                        style={{ backgroundImage: `url(${formData.ogImage || formData.coverImage})` }}
                       />
                     ) : (
                       <div className="h-20 bg-muted/50 border-b flex items-center justify-center text-xs text-muted-foreground">

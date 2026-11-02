@@ -34,10 +34,11 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     : undefined;
 
   const url = `${baseUrl}/category/${slugList.join("/")}`;
-  const ogImages = category.coverImage
+  const targetOg = category.ogImage?.trim() || category.coverImage;
+  const ogImages = targetOg
     ? [
         {
-          url: category.coverImage,
+          url: targetOg,
           width: 1200,
           height: 630,
           alt: `${category.name} in Pimple Saudagar`,
@@ -65,7 +66,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
       card: "summary_large_image",
       title,
       description,
-      images: category.coverImage ? [category.coverImage] : undefined,
+      images: (category.ogImage || category.coverImage) ? [category.ogImage || category.coverImage!] : undefined,
     },
   };
 }

@@ -30,6 +30,7 @@ const baseListingSchema = z.object({
   seoTitle: z.string().max(120, "SEO title should be under 120 characters.").optional().or(z.literal("")),
   seoDescription: z.string().max(320, "SEO description should be under 320 characters.").optional().or(z.literal("")),
   seoKeywords: z.string().max(250, "SEO keywords should be under 250 characters.").optional().or(z.literal("")),
+  ogImage: z.string().optional().or(z.literal("")),
 });
 
 export type ActionState = {
@@ -94,6 +95,7 @@ export async function createListingAdminAction(
     seoTitle: formData.get("seoTitle") as string,
     seoDescription: formData.get("seoDescription") as string,
     seoKeywords: formData.get("seoKeywords") as string,
+    ogImage: formData.get("ogImage") as string,
   };
 
   const validation = baseListingSchema.safeParse(rawData);
@@ -151,6 +153,7 @@ export async function createListingAdminAction(
         seoTitle: data.seoTitle?.trim() || null,
         seoDescription: data.seoDescription?.trim() || null,
         seoKeywords: data.seoKeywords?.trim() || null,
+        ogImage: data.ogImage?.trim() || null,
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
         openingHours: defaultOpeningHours,
@@ -240,6 +243,7 @@ export async function submitListingPublicAction(
     seoTitle: formData.get("seoTitle") as string,
     seoDescription: formData.get("seoDescription") as string,
     seoKeywords: formData.get("seoKeywords") as string,
+    ogImage: formData.get("ogImage") as string,
   };
 
   const validation = baseListingSchema.safeParse(rawData);
@@ -335,6 +339,7 @@ export async function submitListingPublicAction(
         seoTitle: data.seoTitle?.trim() || null,
         seoDescription: data.seoDescription?.trim() || null,
         seoKeywords: data.seoKeywords?.trim() || null,
+        ogImage: data.ogImage?.trim() || null,
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
         openingHours: defaultOpeningHours,
@@ -444,6 +449,7 @@ export async function updateListingAdminAction(
     seoTitle: formData.get("seoTitle") as string,
     seoDescription: formData.get("seoDescription") as string,
     seoKeywords: formData.get("seoKeywords") as string,
+    ogImage: formData.get("ogImage") as string,
   };
 
   const validation = baseListingSchema.safeParse(rawData);
@@ -509,6 +515,7 @@ export async function updateListingAdminAction(
         seoTitle: data.seoTitle?.trim() || null,
         seoDescription: data.seoDescription?.trim() || null,
         seoKeywords: data.seoKeywords?.trim() || null,
+        ogImage: data.ogImage?.trim() || null,
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
         amenities: data.amenities || [],

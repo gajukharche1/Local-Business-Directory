@@ -5,6 +5,8 @@ import crypto from "node:crypto";
 import db from "@/lib/db/client";
 import { getCurrentUser } from "@/lib/auth/session";
 
+export const dynamic = "force-dynamic";
+
 const ALLOWED_MIME_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -46,14 +48,20 @@ export async function POST(req: NextRequest) {
       .replace(/\.[^/.]+$/, "");
     const fileName = `${Date.now()}-${uniqueId}-${sanitizedName}.${ext}`;
 
-    const uploadsDir = path.join(process.cwd(), "public", "uploads", "listings");
-    await mkdir(uploadsDir, { recursive: true });
-
     const buffer = Buffer.from(await file.arrayBuffer());
-    const filePath = path.join(uploadsDir, fileName);
-    await writeFile(filePath, buffer);
+    let publicUrl = "";
 
-    const publicUrl = `/uploads/listings/${fileName}`;
+    try {
+      const uploadsDir = path.join(process.cwd(), "public", "uploads", "listings");
+      await mkdir(uploadsDir, { recursive: true });
+      const filePath = path.join(uploadsDir, fileName);
+      await writeFile(filePath, buffer);
+      publicUrl = `/uploads/listings/${fileName}`;
+    } catch {
+      // Fallback for serverless environments (e.g. Vercel read-only filesystem)
+      publicUrl = `data:${file.type};base64,${buffer.toString("base64")}`;
+    }
+
     const objectKey = `listings/${fileName}`;
 
     let mediaId: string | null = null;
@@ -92,4 +100,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

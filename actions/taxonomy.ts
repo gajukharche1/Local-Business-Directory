@@ -40,6 +40,7 @@ const categorySchema = z.object({
   seoTitle: z.string().max(120, "SEO title should be under 120 characters.").optional().or(z.literal("")),
   seoDescription: z.string().max(320, "SEO description should be under 320 characters.").optional().or(z.literal("")),
   seoKeywords: z.string().max(250, "SEO keywords should be under 250 characters.").optional().or(z.literal("")),
+  ogImage: z.string().optional().or(z.literal("")),
 });
 
 export async function createCategoryAdminAction(
@@ -65,6 +66,7 @@ export async function createCategoryAdminAction(
     seoTitle: formData.get("seoTitle") as string,
     seoDescription: formData.get("seoDescription") as string,
     seoKeywords: formData.get("seoKeywords") as string,
+    ogImage: formData.get("ogImage") as string,
   };
 
   const validation = categorySchema.safeParse(raw);
@@ -97,6 +99,7 @@ export async function createCategoryAdminAction(
         seoTitle: data.seoTitle?.trim() || null,
         seoDescription: data.seoDescription?.trim() || null,
         seoKeywords: data.seoKeywords?.trim() || null,
+        ogImage: data.ogImage?.trim() || null,
       },
     });
 
@@ -143,6 +146,7 @@ export async function updateCategoryAdminAction(
     seoTitle: formData.get("seoTitle") as string,
     seoDescription: formData.get("seoDescription") as string,
     seoKeywords: formData.get("seoKeywords") as string,
+    ogImage: formData.get("ogImage") as string,
   };
 
   const validation = categorySchema.safeParse(raw);
@@ -180,6 +184,7 @@ export async function updateCategoryAdminAction(
         seoTitle: data.seoTitle?.trim() || null,
         seoDescription: data.seoDescription?.trim() || null,
         seoKeywords: data.seoKeywords?.trim() || null,
+        ogImage: data.ogImage?.trim() || null,
       },
     });
 
@@ -229,6 +234,7 @@ const locationSchema = z.object({
   seoTitle: z.string().max(120, "SEO title should be under 120 characters.").optional().or(z.literal("")),
   seoDescription: z.string().max(320, "SEO description should be under 320 characters.").optional().or(z.literal("")),
   seoKeywords: z.string().max(250, "SEO keywords should be under 250 characters.").optional().or(z.literal("")),
+  ogImage: z.string().optional().or(z.literal("")),
 });
 
 export async function createLocationAdminAction(
@@ -255,6 +261,7 @@ export async function createLocationAdminAction(
     seoTitle: formData.get("seoTitle") as string,
     seoDescription: formData.get("seoDescription") as string,
     seoKeywords: formData.get("seoKeywords") as string,
+    ogImage: formData.get("ogImage") as string,
   };
 
   const validation = locationSchema.safeParse(raw);
@@ -288,6 +295,7 @@ export async function createLocationAdminAction(
         seoTitle: data.seoTitle?.trim() || null,
         seoDescription: data.seoDescription?.trim() || null,
         seoKeywords: data.seoKeywords?.trim() || null,
+        ogImage: data.ogImage?.trim() || null,
       },
     });
 
@@ -335,6 +343,7 @@ export async function updateLocationAdminAction(
     seoTitle: formData.get("seoTitle") as string,
     seoDescription: formData.get("seoDescription") as string,
     seoKeywords: formData.get("seoKeywords") as string,
+    ogImage: formData.get("ogImage") as string,
   };
 
   const validation = locationSchema.safeParse(raw);
@@ -373,6 +382,7 @@ export async function updateLocationAdminAction(
         seoTitle: data.seoTitle?.trim() || null,
         seoDescription: data.seoDescription?.trim() || null,
         seoKeywords: data.seoKeywords?.trim() || null,
+        ogImage: data.ogImage?.trim() || null,
       },
     });
 

@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { Upload, X, Image as ImageIcon, Link as LinkIcon, Loader2, Star, Check } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Link as LinkIcon, Loader2, Star } from "lucide-react";
 
 export interface UploadedImage {
   url: string;
@@ -17,6 +17,7 @@ interface ImageUploadProps {
   label?: string;
   description?: string;
   onChange?: (images: UploadedImage[]) => void;
+  onSetOgImage?: (url: string) => void;
 }
 
 export function ImageUpload({
@@ -26,6 +27,7 @@ export function ImageUpload({
   label = "Business Photos & Showcase",
   description = "Upload storefront, interior, product, or team photos. The first image will be your main cover photo.",
   onChange,
+  onSetOgImage,
 }: ImageUploadProps) {
   const [images, setImages] = useState<UploadedImage[]>(initialImages);
   const [uploading, setUploading] = useState(false);
@@ -69,26 +71,47 @@ export function ImageUpload({
         const formData = new FormData();
         formData.append("file", file);
 
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
+        let uploadedUrl = "";
+        let uploadedMediaId: string | undefined = undefined;
 
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || `Failed to upload ${file.name}`);
+        try {
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            uploadedUrl = data.url;
+            uploadedMediaId = data.mediaId;
+          }
+        } catch (fetchErr) {
+          console.warn("Server upload attempt failed, falling back to local file reader:", fetchErr);
         }
 
-        const data = await res.json();
+        // Guaranteed fallback: If server upload returned error or failed, read directly as Data URI
+        if (!uploadedUrl) {
+          uploadedUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
+
         uploaded.push({
-          url: data.url,
-          name: data.name,
-          mediaId: data.mediaId,
+          url: uploadedUrl,
+          name: file.name,
+          mediaId: uploadedMediaId,
         });
       }
 
       if (uploaded.length > 0) {
-        updateImages([...images, ...uploaded]);
+        const nextImages = [...images, ...uploaded];
+        updateImages(nextImages);
+        if (onSetOgImage && !images[0] && nextImages[0]) {
+          onSetOgImage(nextImages[0].url);
+        }
       }
     } catch (err: any) {
       setError(err.message || "Upload failed. Please try again.");
@@ -104,7 +127,7 @@ export function ImageUpload({
     const trimmed = urlInput.trim();
     if (!trimmed) return;
 
-    if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://") && !trimmed.startsWith("/")) {
+    if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://") && !trimmed.startsWith("/") && !trimmed.startsWith("data:")) {
       setError("Please enter a valid HTTP/HTTPS image URL.");
       return;
     }
@@ -114,7 +137,11 @@ export function ImageUpload({
       return;
     }
 
-    updateImages([...images, { url: trimmed, name: "Remote Photo" }]);
+    const nextImages = [...images, { url: trimmed, name: "Remote Photo" }];
+    updateImages(nextImages);
+    if (onSetOgImage && !images[0] && nextImages[0]) {
+      onSetOgImage(nextImages[0].url);
+    }
     setUrlInput("");
     setShowUrlField(false);
   };
@@ -129,7 +156,11 @@ export function ImageUpload({
     const target = images[index];
     if (!target) return;
     const remaining = images.filter((_, i) => i !== index);
-    updateImages([target, ...remaining]);
+    const reordered = [target, ...remaining];
+    updateImages(reordered);
+    if (onSetOgImage && target.url) {
+      onSetOgImage(target.url);
+    }
   };
 
   return (
@@ -168,7 +199,7 @@ export function ImageUpload({
             type="url"
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
-            placeholder="https://images.unsplash.com/photo-..."
+            placeholder="https://images.unsplash.com/photo-... or /uploads/..."
             className="flex-1 rounded-lg border bg-background px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <button
@@ -204,8 +235,8 @@ export function ImageUpload({
           {uploading ? (
             <>
               <Loader2 className="h-8 w-8 text-primary animate-spin" />
-              <p className="text-xs font-semibold text-foreground">Uploading images...</p>
-              <p className="text-[11px] text-muted-foreground">Optimizing and storing securely</p>
+              <p className="text-xs font-semibold text-foreground">Processing images...</p>
+              <p className="text-[11px] text-muted-foreground">Uploading and optimizing</p>
             </>
           ) : (
             <>
@@ -214,7 +245,7 @@ export function ImageUpload({
               </div>
               <div>
                 <p className="text-xs font-bold text-foreground">
-                  Click to select photos or drag & drop files here
+                  Click to select photos or drag &amp; drop files here
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
                   Supports JPG, PNG, WebP up to 5MB each (up to {maxPhotos} photos)
@@ -241,28 +272,40 @@ export function ImageUpload({
                 src={img.url}
                 alt={img.name || `Photo ${idx + 1}`}
                 fill
+                unoptimized
                 className="object-cover"
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
               />
 
               {/* Cover badge for primary photo */}
               {idx === 0 && (
-                <div className="absolute top-1.5 left-1.5 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow flex items-center gap-1">
+                <div className="absolute top-1.5 left-1.5 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow flex items-center gap-1 z-10">
                   <Star className="h-2.5 w-2.5 fill-current" />
                   <span>Main Cover</span>
                 </div>
               )}
 
               {/* Action Buttons overlay */}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-2 z-20">
                 {idx !== 0 && (
                   <button
                     type="button"
                     onClick={() => handleMakeCover(idx)}
                     title="Set as Main Cover Photo"
-                    className="p-1.5 rounded-lg bg-background/90 text-foreground hover:bg-primary hover:text-primary-foreground text-xs font-semibold shadow transition"
+                    className="px-2 py-1 rounded bg-white text-slate-900 hover:bg-primary hover:text-white text-[11px] font-semibold shadow transition"
                   >
-                    Set Cover
+                    Set as Cover
+                  </button>
+                )}
+
+                {onSetOgImage && (
+                  <button
+                    type="button"
+                    onClick={() => onSetOgImage(img.url)}
+                    title="Use this photo for Social / OpenGraph preview"
+                    className="px-2 py-1 rounded bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] font-semibold shadow transition"
+                  >
+                    Use as OG Banner
                   </button>
                 )}
 
@@ -270,7 +313,7 @@ export function ImageUpload({
                   type="button"
                   onClick={() => handleRemove(idx)}
                   title="Remove Photo"
-                  className="p-1.5 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow transition"
+                  className="p-1 rounded bg-red-600 text-white hover:bg-red-700 shadow transition"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -282,4 +325,3 @@ export function ImageUpload({
     </div>
   );
 }
-

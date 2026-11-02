@@ -193,6 +193,7 @@ model Category {
   seoTitle       String?
   seoDescription String?
   seoKeywords    String?
+  ogImage        String?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
@@ -220,6 +221,7 @@ model Location {
   seoTitle       String?
   seoDescription String?
   seoKeywords    String?
+  ogImage        String?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
@@ -271,6 +273,7 @@ model Listing {
   seoTitle       String?
   seoDescription String?
   seoKeywords    String?
+  ogImage        String?
 
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt

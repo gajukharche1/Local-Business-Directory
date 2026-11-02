@@ -7,6 +7,7 @@ import { updateListingAdminAction, ActionState } from "@/actions/listing";
 import { ContentBlockEditor } from "@/components/forms/content-block-editor";
 import { ImageUpload } from "@/components/forms/image-upload";
 import {
+  Share2,
   Store,
   MapPin,
   Phone,
@@ -85,6 +86,7 @@ export function AdminEditListingForm({
   const [seoTitle, setSeoTitle] = useState(listing.seoTitle || "");
   const [seoDescription, setSeoDescription] = useState(listing.seoDescription || "");
   const [seoKeywords, setSeoKeywords] = useState(listing.seoKeywords || "");
+  const [ogImage, setOgImage] = useState(listing.ogImage || "");
 
   // Amenities
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>(
@@ -96,6 +98,7 @@ export function AdminEditListingForm({
     name: m.altText || "Photo",
     mediaId: m.id,
   }));
+  const [uploadedPhotos, setUploadedPhotos] = useState<Array<{ url: string }>>(initialImages);
 
   const handleLocationChange = (locId: string) => {
     setSelectedLocation(locId);
@@ -356,6 +359,8 @@ export function AdminEditListingForm({
             maxPhotos={15}
             label="Listing Showcase Photos & Media"
             description="Upload storefront, menu, and facility photos. The first image will be set as the main directory cover image."
+            onChange={setUploadedPhotos}
+            onSetOgImage={setOgImage}
           />
         </div>
       </div>
@@ -516,6 +521,76 @@ export function AdminEditListingForm({
               maxLength={250}
               className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
             />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Share2 className="h-3.5 w-3.5 text-red-500" />
+                <span>Open Graph Social Share Banner (WhatsApp, Twitter, LinkedIn)</span>
+              </label>
+              <span className="text-[10px] text-muted-foreground">
+                Optimal: 1200x630px
+              </span>
+            </div>
+            <input
+              type="url"
+              name="ogImage"
+              value={ogImage}
+              onChange={(e) => setOgImage(e.target.value)}
+              placeholder="https://... or click a photo below"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+            />
+            {uploadedPhotos.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2 items-center">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                  Quick Select from Gallery Photos:
+                </span>
+                {uploadedPhotos.map((p, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setOgImage(p.url)}
+                    className={`relative h-11 w-16 rounded-md overflow-hidden border transition ${
+                      ogImage === p.url ? "ring-2 ring-indigo-500 border-indigo-500" : "hover:border-primary opacity-80 hover:opacity-100"
+                    }`}
+                  >
+                    <img src={p.url} alt="Thumbnail" className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Social Open Graph Preview Card */}
+          <div className="rounded-xl border border-indigo-500/20 bg-background/80 p-4 space-y-2 mt-4">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+              <Share2 className="h-3 w-3 text-red-500" />
+              Social Media (Open Graph / WhatsApp / Twitter) Preview
+            </span>
+            <div className="rounded-xl border overflow-hidden bg-background max-w-sm">
+              {(ogImage || uploadedPhotos[0]?.url) ? (
+                <div
+                  className="h-32 bg-cover bg-center border-b"
+                  style={{ backgroundImage: `url(${ogImage || uploadedPhotos[0]?.url})` }}
+                />
+              ) : (
+                <div className="h-20 bg-muted/60 border-b flex items-center justify-center text-xs text-muted-foreground">
+                  No OpenGraph Banner Selected
+                </div>
+              )}
+              <div className="p-3">
+                <p className="font-bold text-xs truncate">
+                  {previewTitle}
+                </p>
+                <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                  {previewDesc}
+                </p>
+                <span className="text-[9px] font-mono text-slate-400 uppercase mt-1 block">
+                  PIMPLESUDAGAR.ORG • VERIFIED LISTING
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Google SERP Search Snippet Preview */}

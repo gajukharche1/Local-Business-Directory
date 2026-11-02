@@ -34,10 +34,11 @@ export async function generateMetadata({ params }: LocationPageProps): Promise<M
     : undefined;
 
   const url = `${baseUrl}/location/${slugList.join("/")}`;
-  const ogImages = location.coverImage
+  const targetOg = location.ogImage?.trim() || location.coverImage;
+  const ogImages = targetOg
     ? [
         {
-          url: location.coverImage,
+          url: targetOg,
           width: 1200,
           height: 630,
           alt: `${location.name}, Pimple Saudagar`,
@@ -65,7 +66,7 @@ export async function generateMetadata({ params }: LocationPageProps): Promise<M
       card: "summary_large_image",
       title,
       description,
-      images: location.coverImage ? [location.coverImage] : undefined,
+      images: (location.ogImage || location.coverImage) ? [location.ogImage || location.coverImage!] : undefined,
     },
   };
 }
