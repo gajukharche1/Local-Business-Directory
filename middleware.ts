@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { generateCspHeader } from "@/lib/security/headers";
 
 export function middleware(request: NextRequest) {
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const nonce = btoa(crypto.randomUUID());
   const cspHeader = generateCspHeader(nonce);
 
   const requestHeaders = new Headers(request.headers);
