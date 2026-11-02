@@ -1,97 +1,116 @@
 # Pimple Saudagar Local Business Directory
 
-> A production-ready, enterprise-grade local business directory platform specifically tailored for **Pimple Saudagar (PCMC, Pune, Maharashtra, India)**, capable of supporting up to 5,000 businesses on a **100% Free-Tier cloud stack** ($0 monthly hosting fees).
+> A production-ready, enterprise-grade local business directory platform tailored for **Pimple Saudagar (PCMC, Pune, Maharashtra, India)**. Designed for scale, speed, accessibility, and high SEO performance on a modern serverless stack.
 
-[![CI Pipeline](https://github.com/pimplesaudagar/directory/actions/workflows/ci.yml/badge.svg)](https://github.com/pimplesaudagar/directory/actions)
+[![Live Demo](https://img.shields.io/badge/Demo-ps--lyart.vercel.app-2ea44f?style=flat&logo=vercel)](https://ps-lyart.vercel.app)
 [![Next.js 15](https://img.shields.io/badge/Next.js-15.5.28-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0_Strict-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)](https://www.postgresql.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6.4.1-2D3748?logo=prisma)](https://www.prisma.io/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
 [![WCAG](https://img.shields.io/badge/WCAG-2.2_AA_Compliant-success)](#)
-[![OWASP](https://img.shields.io/badge/OWASP-ASVS_Level_2-brightgreen)](#)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
 ## 🌟 Key Platform Features
 
 ### 1. Public Directory Experience
-- **Interactive Multi-Criteria Search**: Full-text keyword search across 5,000+ businesses, filtered by category, neighborhood locality, rating, and open status.
-- **Dual View Mode**: Seamless toggle between responsive listing grid view and interactive Leaflet / OpenStreetMap map view with custom business pins.
-- **Rich Business Profiles**: Operating hours with real-time `Asia/Kolkata` open/closed detection, high-resolution photo gallery, direct WhatsApp click-to-chat, verified badges, and interactive enquiry modal.
-- **SEO & Structured Data**: Dynamic Schema.org `LocalBusiness`, `BreadcrumbList`, and `AggregateRating` JSON-LD tags, dynamic `sitemap.xml`, `robots.txt`, and automated OpenGraph image generation via `next/og`.
+- **Smart Multi-Criteria Search**: Real-time keyword search across businesses with instant filtering by category, locality, open status, and minimum rating.
+- **Dual View Layout**: Instant toggle between responsive listing card grid and interactive OpenStreetMap / Leaflet map view with custom business pins.
+- **Rich Business Profiles**: Real-time `Asia/Kolkata` operating status (Open/Closed), high-resolution photo galleries, direct 1-click WhatsApp chat, phone dialer, verified merchant badges, and customer enquiry modal.
+- **Automated OpenGraph & SEO**:
+  - Dynamic `Schema.org` structured data (`LocalBusiness`, `BreadcrumbList`, and `AggregateRating` JSON-LD).
+  - OpenGraph banner selection across Listings, Categories, and Locations.
+  - Interactive live social media card previews (WhatsApp, Facebook, Twitter/X, and LinkedIn).
+  - Search engine snippet previews (Google SERP).
+  - Auto-generated `sitemap.xml` and `robots.txt`.
 
-### 2. Business Monetization & Payments
-- **3-Tier Subscription Plans**: Free Directory, Standard Growth (₹4,999/yr), and Premium Spotlight (₹9,999/yr) with feature gating (photo quotas, search priority, verified badges, WhatsApp click-to-chat).
-- **Payment Gateway Webhooks**: Atomic activation supporting Razorpay and Stripe with HMAC SHA-256 signature verification.
+### 2. Business Submission & Merchant Dashboard
+- **Public Business Submission**: Streamlined multi-step form for local business owners with photo upload, GPS coordinates, operating hours, and amenities.
+- **Locality GPS Presets**: One-click coordinate presets for Pimple Saudagar hubs (Kokane Chowk, Shivar Chowk, Kunal Icon Road, Govind Garden, etc.) with browser GPS auto-detection.
+- **Lead & Review Management**: Merchant dashboard for managing customer inquiries and replying to verified customer reviews.
+- **Ownership Verification**: Business claim flow with document upload and admin audit workflow.
 
-### 3. Business Owner & Merchant Dashboard
-- **Analytics KPIs**: Real-time listing view counters, enquiry lead inbox, and customer review metrics.
-- **Lead Management**: Real-time notification inbox with one-click direct telephone and email callback buttons.
-- **Review Response**: Business owners can publicly reply to verified customer feedback.
-- **Claim Workflow**: Verified ownership verification flow with business registration document upload and review.
+### 3. Admin Back-Office & Moderation
+- **Moderation Queue**: Review incoming business submissions, approve/reject edits, and verify ownership claims.
+- **Listings Management**: Full CRUD controls with status filters (Published, Pending Review, Draft, Rejected, Archived).
+- **Taxonomy Management**: Hierarchical category and location management with drag/sort ordering, cover photos, and dedicated OpenGraph social share settings.
+- **Bulk Import**: Client-side CSV batch importer with schema validation and dry-run preview.
 
-### 4. Admin Back-Office & Moderation
-- **Moderation Queue**: Review approvals/rejections and claim request verification with audit logging.
-- **Listings Directory Manager**: Full status control (Published, Pending Review, Draft, Rejected, Archived).
-- **Bulk CSV Batch Importer**: Client-side CSV parser with schema validation, dry-run preview, and batch database seeding.
+### 4. Resilient Media Architecture
+- **Serverless & Edge Ready**: Automatic Base64 Data URI fallback on serverless environments (e.g., Vercel read-only filesystem) with client-side FileReader fallbacks.
+- **Cloud Storage Support**: Fully compatible with Cloudflare R2, AWS S3, or MinIO for scalable media hosting.
 
 ### 5. Enterprise Security & DPDP Compliance
-- **OWASP ASVS Level 2**: Argon2id password hashing, edge middleware with dynamic per-request cryptographic CSP nonces, sliding-window rate limiting, and HTML sanitization.
-- **India DPDP Act 2023 Compliant**: Peppered HMAC SHA-256 reviewer email hashing, consent notices, and automated personal data erasure workflows.
-- **Multi-Language Support**: Complete localization in English (`en`), Marathi (`mr`), and Hindi (`hi`).
+- **OWASP ASVS Compliance**: Edge middleware with dynamic per-request cryptographic CSP nonces, Argon2id password hashing, sliding-window rate limiting, and strict HTML sanitization.
+- **India DPDP Act 2023 Compliant**: Peppered HMAC SHA-256 reviewer email hashing, consent management, and automated personal data erasure workflows.
+- **Connection Pooling**: Prisma configuration supporting serverless connection pooling with direct URL fallbacks for migrations.
 
 ---
 
-## 🏗️ 100% Free-Tier Architecture ($0/Month)
+## 🏗️ Architecture Overview
 
 ```
                        [ Cloudflare DNS & CDN ]
                                   │
                                   ▼
-                      [ Vercel Edge Middleware ]
-                 (Dynamic CSP Nonce & Edge Protection)
+                       [ Vercel Edge Runtime ]
+                  (Dynamic CSP Nonces & Protection)
                                   │
                   ┌───────────────┴───────────────┐
                   ▼                               ▼
-       [ Next.js 15 App Router ]        [ Cloudflare R2 ]
-         (React Server Components)      (10GB Media Bucket, $0 Egress)
+       [ Next.js App Router ]           [ Cloud Storage / R2 ]
+     (React Server Components)      (Media Assets & Photo Gallery)
                   │
         ┌─────────┴─────────┐
         ▼                   ▼
-[ Neon PostgreSQL ]   [ Upstash Redis ]
- (0.5GB Free DB)       (Rate Limiting & Cache)
+[ PostgreSQL Database ] [ Upstash / Redis ]
+(Prisma ORM with Pool)   (Rate Limiting & Cache)
 ```
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 20+ installed
-- PostgreSQL 16 database running (or Docker)
-- Redis (optional, local in-memory fallback included)
+- Node.js 20+ (LTS recommended)
+- PostgreSQL 16+ database (local, Docker, Neon, or Supabase)
+- npm or pnpm
 
-### 1. Clone & Install
+### 1. Clone the Repository
 ```bash
-git clone https://github.com/pimplesaudagar/directory.git
-cd directory
+git clone https://github.com/gajukharche1/PS.git
+cd PS
 npm install
 ```
 
-### 2. Configure Environment
-Copy `.env.example` or populate `.env.local`:
-```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/directory?schema=public"
-AUTH_SECRET="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-ENCRYPTION_KEY="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-CRON_SECRET="dev_cron_secret_key_12345"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
+### 2. Configure Environment Variables
+Create your local environment configuration file from the provided template:
+
+```bash
+cp .env.example .env.local
 ```
 
-### 3. Generate Prisma & Seed Database
+Open `.env.local` and configure your credentials. Refer to `.env.example` for detailed descriptions of each required setting:
+- **Application URL**: Base URL for canonical links and callback redirects.
+- **Security Secrets**: Application secret and cron job authorization keys.
+- **Database Connection**: Connection URLs for your PostgreSQL database (supports pooled and direct URLs).
+- **Storage & Optional Services**: Optional settings for S3/R2 storage, transactional email, and analytics.
+
+> **Security Note:** Never commit `.env` or `.env.local` files to version control. The repository's `.gitignore` automatically excludes them.
+
+### 3. Database Setup & Migrations
+Synchronize the Prisma schema with your database and seed initial taxonomy and plans:
+
 ```bash
+# Push schema to PostgreSQL database
+npx prisma db push
+
+# Generate Prisma client
 npm run prisma:generate
+
+# (Optional) Seed initial categories, locations, and plans
 npm run prisma:seed
 ```
 
@@ -99,35 +118,37 @@ npm run prisma:seed
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) to view the directory.
+
+Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🧪 Automated Testing & Quality Gates
+## 🧪 Quality Assurance & Scripts
 
-Run the test suite:
-```bash
-# Execute Vitest unit tests
-npm test
-
-# Run TypeScript static type checking in strict mode
-npm run typecheck
-
-# Build standalone production Next.js bundle
-npm run build
-```
+| Script | Command | Purpose |
+| :--- | :--- | :--- |
+| **Development** | `npm run dev` | Starts Next.js development server with Turbopack |
+| **Type Check** | `npm run typecheck` | Validates TypeScript types across the entire project |
+| **Unit Tests** | `npm test` | Executes the Vitest test suite |
+| **Production Build** | `npm run build` | Generates optimized production build with Prisma generation |
+| **Start Server** | `npm start` | Runs the compiled production application |
+| **Prisma Studio** | `npx prisma studio` | Interactive web GUI to inspect database records |
 
 ---
 
 ## 🐳 Docker Deployment
 
-Build and run the production container:
+To build and run the application locally using Docker:
+
 ```bash
+# Build production Docker container
 docker build -t pimplesaudagar-directory:latest .
+
+# Run container with environment configuration
 docker run -p 3000:3000 --env-file .env.local pimplesaudagar-directory:latest
 ```
 
 ---
 
 ## 📄 License & Credits
-Engineered for the Pimple Saudagar (PCMC, Pune) community. Released under the MIT License.
+Developed for the Pimple Saudagar (PCMC, Pune) community. Released under the [MIT License](LICENSE).
