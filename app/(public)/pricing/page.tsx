@@ -3,6 +3,8 @@ import Link from "next/link";
 import { PlanService } from "@/lib/services/plan.service";
 import { Check, Sparkles, ArrowLeft, HelpCircle } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Business Pricing Plans | Pimple Saudagar Directory",
   description:
