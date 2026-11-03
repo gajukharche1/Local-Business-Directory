@@ -35,3 +35,8 @@ next-env.d.ts
 
 #env example
 .env.example
+
+# graphify local machine cache & paths
+graphify-out/.graphify_python
+graphify-out/.graphify_root
+graphify-out/cache/
