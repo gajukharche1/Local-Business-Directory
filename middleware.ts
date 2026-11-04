@@ -52,6 +52,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico, sitemap.xml, robots.txt
      */
-    "/((?!_next/static|_next/image|favicon.ico|api/health|manifest.webmanifest).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|api/health|manifest.webmanifest).*)",
   ],
 };
