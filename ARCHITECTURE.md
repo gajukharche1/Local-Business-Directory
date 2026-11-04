@@ -82,7 +82,7 @@
 
 ---
 
-## 3. Data Flow Pipeline: The 5-Stage Pattern
+## 3. Data Flow Pipeline: The 5-Stage Pattern.git 
 
 In accordance with the Context Engineering & Project Development methodology, non-deterministic or complex mutations follow the canonical pipeline:
 
