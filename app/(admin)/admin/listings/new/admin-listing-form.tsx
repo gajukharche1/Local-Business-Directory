@@ -57,6 +57,32 @@ interface AdminListingFormProps {
   users: UserOption[];
 }
 
+const FIELD_SECTION_MAP: Record<string, { label: string; section: string }> = {
+  title: { label: "Business Name / Title", section: "1. Business Profile" },
+  categoryId: { label: "Primary Category", section: "1. Business Profile" },
+  locationId: { label: "Locality / Location", section: "1. Business Profile" },
+  address: { label: "Street Address", section: "1. Business Profile" },
+  landmark: { label: "Nearby Landmark", section: "1. Business Profile" },
+  yearEstablished: { label: "Year Established", section: "1. Business Profile" },
+  description: { label: "Listing Description & Content", section: "1. Business Profile" },
+  latitude: { label: "Latitude GPS Coordinate", section: "2. Geolocation Coordinates" },
+  longitude: { label: "Longitude GPS Coordinate", section: "2. Geolocation Coordinates" },
+  phone: { label: "Primary Phone Number", section: "3. Contact & Digital Channels" },
+  whatsapp: { label: "WhatsApp Contact Number", section: "3. Contact & Digital Channels" },
+  email: { label: "Official Email Address", section: "3. Contact & Digital Channels" },
+  website: { label: "Official Website URL", section: "3. Contact & Digital Channels" },
+  amenities: { label: "Amenities & Facilities", section: "3. Contact & Digital Channels" },
+  status: { label: "Publication Status", section: "4. Admin Management Controls" },
+  claimStatus: { label: "Claim / Verification Status", section: "4. Admin Management Controls" },
+  planId: { label: "Subscription Plan", section: "4. Admin Management Controls" },
+  ownerId: { label: "Assigned Owner", section: "4. Admin Management Controls" },
+  priority: { label: "Search Priority", section: "4. Admin Management Controls" },
+  seoTitle: { label: "SEO Meta Title", section: "5. Search Engine Optimization" },
+  seoDescription: { label: "SEO Meta Description", section: "5. Search Engine Optimization" },
+  seoKeywords: { label: "SEO Keywords Tag", section: "5. Search Engine Optimization" },
+  ogImage: { label: "OpenGraph Banner Image", section: "5. Search Engine Optimization" },
+};
+
 const AVAILABLE_AMENITIES = [
   "Air Conditioning",
   "Free Wi-Fi",
@@ -214,12 +240,42 @@ export function AdminListingForm({
 
   return (
     <form action={formAction} className="space-y-8">
+      {/* Error Notification with detailed invalid fields breakdown */}
       {state?.error && (
-        <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
-          <div>
-            <p className="font-semibold">{state.error}</p>
+        <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-destructive space-y-3">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-bold text-sm">Action Failed — Please correct the invalid fields below:</h4>
+              <p className="text-xs mt-0.5 opacity-90">{state.error}</p>
+            </div>
           </div>
+
+          {state.fieldErrors && Object.keys(state.fieldErrors).length > 0 && (
+            <div className="rounded-lg bg-card/80 border border-destructive/20 p-3 space-y-2 mt-2">
+              <span className="text-[11px] font-bold text-foreground uppercase tracking-wider block">
+                Fields needing attention:
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {Object.entries(state.fieldErrors).map(([field, errs]) => {
+                  const info = FIELD_SECTION_MAP[field] || { label: field, section: "General" };
+                  return (
+                    <div key={field} className="rounded-md border border-destructive/20 bg-background/80 p-2 text-xs">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="font-semibold text-foreground">{info.label}</span>
+                        <span className="text-[10px] text-muted-foreground font-medium bg-muted px-1.5 py-0.5 rounded">
+                          {info.section}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-destructive font-medium mt-1">
+                        → {errs.join(", ")}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -243,16 +299,15 @@ export function AdminListingForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Business Title / Shop Name *
+              Business Title / Shop Name
             </label>
             <input
               type="text"
               name="title"
-              required
               value={listingTitle}
               onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="e.g. Govind Garden Restaurant & Banquets"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.title ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
             {state?.fieldErrors?.title && (
               <p className="text-xs text-destructive mt-1">{state.fieldErrors.title[0]}</p>
@@ -261,12 +316,11 @@ export function AdminListingForm({
 
           <div>
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Primary Category *
+              Primary Category
             </label>
             <select
               name="categoryId"
-              required
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.categoryId ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             >
               <option value="">-- Select Category --</option>
               {categories.map((c) => (
@@ -282,11 +336,10 @@ export function AdminListingForm({
 
           <div>
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Locality in Pimple Saudagar *
+              Locality in Pimple Saudagar
             </label>
             <select
               name="locationId"
-              required
               value={selectedLocation}
               onChange={(e) => handleLocationChange(e.target.value)}
               className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
@@ -297,19 +350,19 @@ export function AdminListingForm({
                 </option>
               ))}
             </select>
+            {state?.fieldErrors?.locationId && <p className="text-xs text-destructive mt-1 font-medium">✕ {state.fieldErrors.locationId[0]}</p>}
             <input type="hidden" name="locality" value={localityText} />
           </div>
 
           <div className="md:col-span-2">
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Full Physical Address *
+              Full Physical Address
             </label>
             <input
               type="text"
               name="address"
-              required
               placeholder="Shop No. 12, Ground Floor, Kunal Icon Commercial Complex, Pimple Saudagar, Pune - 411027"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.address ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
             {state?.fieldErrors?.address && (
               <p className="text-xs text-destructive mt-1">{state.fieldErrors.address[0]}</p>
@@ -346,7 +399,7 @@ export function AdminListingForm({
         {/* Content Area with Visual & HTML Code Editor */}
         <div className="pt-2 border-t">
           <label className="block text-xs font-bold text-foreground mb-1.5 flex items-center gap-1.5">
-            <span>Listing Description & HTML Content Blocks *</span>
+            <span>Listing Description & HTML Content Blocks</span>
             <span className="text-[10px] font-normal text-muted-foreground">
               (Visual WYSIWYG preview & raw HTML code blocks supported)
             </span>
@@ -399,7 +452,7 @@ export function AdminListingForm({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Latitude (e.g. 18.598700) *
+              Latitude (e.g. 18.598700)
             </label>
             <input
               type="number"
@@ -414,7 +467,7 @@ export function AdminListingForm({
 
           <div>
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Longitude (e.g. 73.797800) *
+              Longitude (e.g. 73.797800)
             </label>
             <input
               type="number"
@@ -555,7 +608,7 @@ export function AdminListingForm({
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Directory Status *
+              Directory Status
             </label>
             <select
               name="status"
@@ -572,7 +625,7 @@ export function AdminListingForm({
 
           <div>
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Ownership / Verification *
+              Ownership / Verification
             </label>
             <select
               name="claimStatus"
@@ -679,7 +732,7 @@ export function AdminListingForm({
               value={seoTitle}
               onChange={(e) => { setSeoTitle(e.target.value); setIsSeoTitleCustom(true); }}
               placeholder="e.g. Govind Garden Restaurant | Best North Indian in Pimple Saudagar"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.seoTitle ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-indigo-500"}`}
             />
             <span className="text-[10px] text-muted-foreground mt-0.5 block">
               Leave blank to automatically use business title + neighborhood format.
@@ -701,7 +754,7 @@ export function AdminListingForm({
               value={seoDescription}
               onChange={(e) => { setSeoDescription(e.target.value); setIsSeoDescCustom(true); }}
               placeholder="e.g. Visit Govind Garden Restaurant on Kunal Icon Road, Pimple Saudagar. Authentic North Indian & coastal seafood with outdoor lawn seating. View menu & hours."
-              className="w-full rounded-lg border bg-background p-3 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+              className={`w-full rounded-lg border bg-background p-3 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.seoDescription ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-indigo-500"}`}
             ></textarea>
             <span className="text-[10px] text-muted-foreground mt-0.5 block">
               Optimal length: 140–160 characters. Appears under the link in search results.
@@ -718,7 +771,7 @@ export function AdminListingForm({
               value={seoKeywords}
               onChange={(e) => setSeoKeywords(e.target.value)}
               placeholder="e.g. restaurants in pimple saudagar, family dining, punjabi food, kokane chowk dining, ac banquet hall"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.seoKeywords ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-indigo-500"}`}
             />
             <span className="text-[10px] text-muted-foreground mt-0.5 block">
               Separate keywords with commas. Used for meta keywords tags and internal search matching.
@@ -743,7 +796,7 @@ export function AdminListingForm({
               value={ogImage}
               onChange={(e) => { setOgImage(e.target.value); setIsOgImageCustom(true); }}
               placeholder="https://... or click a photo below"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.ogImage ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-indigo-500"}`}
             />
             {uploadedPhotos.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2 items-center">

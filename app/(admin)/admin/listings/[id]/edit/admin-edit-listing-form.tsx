@@ -35,6 +35,33 @@ interface AdminEditListingFormProps {
   users: Array<{ id: string; name: string; email: string; role: string }>;
 }
 
+const FIELD_SECTION_MAP: Record<string, { label: string; section: string }> = {
+  title: { label: "Business Name / Title", section: "1. Core Profile" },
+  slug: { label: "Permanent URL Slug", section: "1. Core Profile" },
+  categoryId: { label: "Primary Category", section: "1. Core Profile" },
+  locationId: { label: "Locality in Pimple Saudagar", section: "1. Core Profile" },
+  address: { label: "Full Street Address", section: "1. Core Profile" },
+  landmark: { label: "Nearby Landmark", section: "1. Core Profile" },
+  yearEstablished: { label: "Year Established", section: "1. Core Profile" },
+  description: { label: "Listing Description & HTML Blocks", section: "1. Core Profile" },
+  latitude: { label: "Latitude GPS Coordinate", section: "2. Geolocation Coordinates" },
+  longitude: { label: "Longitude GPS Coordinate", section: "2. Geolocation Coordinates" },
+  phone: { label: "Primary Phone Number", section: "3. Contact & Direct Channels" },
+  whatsapp: { label: "WhatsApp Contact Number", section: "3. Contact & Direct Channels" },
+  email: { label: "Official Email Address", section: "3. Contact & Direct Channels" },
+  website: { label: "Official Website URL", section: "3. Contact & Direct Channels" },
+  amenities: { label: "Amenities & Facilities", section: "4. Amenities & Facilities" },
+  status: { label: "Publication Status", section: "5. Administrative Controls" },
+  claimStatus: { label: "Claim / Verification Status", section: "5. Administrative Controls" },
+  planId: { label: "Subscription Plan", section: "5. Administrative Controls" },
+  ownerId: { label: "Assigned Account Owner", section: "5. Administrative Controls" },
+  priority: { label: "Search Priority", section: "5. Administrative Controls" },
+  seoTitle: { label: "SEO Meta Title", section: "6. Search Engine Optimization (SEO)" },
+  seoDescription: { label: "SEO Meta Description", section: "6. Search Engine Optimization (SEO)" },
+  seoKeywords: { label: "SEO Keywords Tag", section: "6. Search Engine Optimization (SEO)" },
+  ogImage: { label: "OpenGraph Social Share Banner", section: "6. Search Engine Optimization (SEO)" },
+};
+
 const POPULAR_AMENITIES = [
   "Air Conditioned",
   "Free Wi-Fi",
@@ -248,14 +275,42 @@ export function AdminEditListingForm({
         </div>
       )}
 
-      {/* Error Banner */}
+      {/* Error Banner with detailed invalid fields breakdown */}
       {state?.error && (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
-          <div>
-            <h4 className="font-bold text-sm">Update Failed</h4>
-            <p className="text-xs mt-0.5">{state.error}</p>
+        <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-destructive space-y-3">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-bold text-sm">Update Failed — Please correct the invalid fields below:</h4>
+              <p className="text-xs mt-0.5 opacity-90">{state.error}</p>
+            </div>
           </div>
+
+          {state.fieldErrors && Object.keys(state.fieldErrors).length > 0 && (
+            <div className="rounded-lg bg-card/80 border border-destructive/20 p-3 space-y-2 mt-2">
+              <span className="text-[11px] font-bold text-foreground uppercase tracking-wider block">
+                Fields needing attention:
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {Object.entries(state.fieldErrors).map(([field, errs]) => {
+                  const info = FIELD_SECTION_MAP[field] || { label: field, section: "General" };
+                  return (
+                    <div key={field} className="rounded-md border border-destructive/20 bg-background/80 p-2 text-xs">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="font-semibold text-foreground">{info.label}</span>
+                        <span className="text-[10px] text-muted-foreground font-medium bg-muted px-1.5 py-0.5 rounded">
+                          {info.section}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-destructive font-medium mt-1">
+                        → {errs.join(", ")}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -269,16 +324,15 @@ export function AdminEditListingForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Business Name / Title *
+              Business Name / Title
             </label>
             <input
               type="text"
               name="title"
-              required
               value={title}
               onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="e.g. Kokane Chowk Multi-Speciality Clinic"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.title ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
             {state?.fieldErrors?.title && (
               <p className="text-xs text-destructive mt-1">{state.fieldErrors.title[0]}</p>
@@ -289,20 +343,19 @@ export function AdminEditListingForm({
             <label className="block text-xs font-semibold text-foreground mb-1 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <Link2 className="h-3.5 w-3.5 text-primary" />
-                <span>Permanent URL Slug *</span>
+                <span>Permanent URL Slug</span>
               </span>
               <span className="text-[11px] text-muted-foreground font-normal">
                 https://pimplesaudagar.org/listing/{slug}
               </span>
             </label>
-            <div className="flex items-center rounded-lg border bg-background overflow-hidden focus-within:border-primary">
+            <div className={`flex items-center rounded-lg border bg-background overflow-hidden ${state?.fieldErrors?.slug ? "border-destructive ring-1 ring-destructive" : "focus-within:border-primary"}`}>
               <span className="px-3 py-2 bg-muted text-xs text-muted-foreground border-r font-mono">
                 /listing/
               </span>
               <input
                 type="text"
                 name="slug"
-                required
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="kokane-chowk-clinic"
@@ -316,13 +369,12 @@ export function AdminEditListingForm({
 
           <div>
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Primary Category *
+              Primary Category
             </label>
             <select
               name="categoryId"
-              required
               defaultValue={primaryCategory}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.categoryId ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             >
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -334,14 +386,13 @@ export function AdminEditListingForm({
 
           <div>
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Locality in Pimple Saudagar *
+              Locality in Pimple Saudagar
             </label>
             <select
               name="locationId"
-              required
               value={selectedLocation}
               onChange={(e) => handleLocationChange(e.target.value)}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.locationId ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             >
               {locations.map((loc) => (
                 <option key={loc.id} value={loc.id}>
@@ -354,15 +405,14 @@ export function AdminEditListingForm({
 
           <div className="md:col-span-2">
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Full Street Address *
+              Full Street Address
             </label>
             <input
               type="text"
               name="address"
-              required
               defaultValue={listing.address}
               placeholder="Shop/Office No., Wing, Building Name, Street Name, Pimple Saudagar, Pune - 411027"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.address ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
           </div>
 
@@ -375,7 +425,7 @@ export function AdminEditListingForm({
               name="landmark"
               defaultValue={listing.landmark || ""}
               placeholder="Opposite Govind Garden / Near Kunal Icon"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.landmark ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
           </div>
 
@@ -388,9 +438,9 @@ export function AdminEditListingForm({
               name="yearEstablished"
               defaultValue={listing.yearEstablished || ""}
               placeholder="e.g. 2018"
-              min="1950"
+              min="1900"
               max={new Date().getFullYear()}
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.yearEstablished ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
           </div>
         </div>
@@ -398,7 +448,7 @@ export function AdminEditListingForm({
         {/* Content Area with Visual & HTML Code Editor */}
         <div className="pt-2 border-t">
           <label className="block text-xs font-bold text-foreground mb-1.5 flex items-center gap-1.5">
-            <span>Listing Description & HTML Content Blocks *</span>
+            <span>Listing Description & HTML Content Blocks</span>
             <span className="text-[10px] font-normal text-muted-foreground">
               (Visual WYSIWYG preview & raw HTML code blocks supported)
             </span>
@@ -456,7 +506,7 @@ export function AdminEditListingForm({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Latitude (e.g. 18.598700) *
+              Latitude (e.g. 18.598700)
             </label>
             <input
               type="number"
@@ -465,13 +515,13 @@ export function AdminEditListingForm({
               value={latitude}
               onChange={(e) => setLatitude(e.target.value)}
               placeholder="18.598700"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm font-mono text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm font-mono text-foreground focus:outline-none ${state?.fieldErrors?.latitude ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Longitude (e.g. 73.797800) *
+              Longitude (e.g. 73.797800)
             </label>
             <input
               type="number"
@@ -480,7 +530,7 @@ export function AdminEditListingForm({
               value={longitude}
               onChange={(e) => setLongitude(e.target.value)}
               placeholder="73.797800"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm font-mono text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm font-mono text-foreground focus:outline-none ${state?.fieldErrors?.longitude ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
           </div>
         </div>
@@ -524,7 +574,7 @@ export function AdminEditListingForm({
               name="phone"
               defaultValue={listing.phone || ""}
               placeholder="+91 98765 43210"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.phone ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
           </div>
 
@@ -537,7 +587,7 @@ export function AdminEditListingForm({
               name="whatsapp"
               defaultValue={listing.whatsapp || ""}
               placeholder="+91 98765 43210"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.whatsapp ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
           </div>
 
@@ -550,7 +600,7 @@ export function AdminEditListingForm({
               name="email"
               defaultValue={listing.email || ""}
               placeholder="contact@business.com"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.email ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
           </div>
 
@@ -563,7 +613,7 @@ export function AdminEditListingForm({
               name="website"
               defaultValue={listing.website || ""}
               placeholder="https://www.business.com"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.website ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
           </div>
         </div>
@@ -689,7 +739,7 @@ export function AdminEditListingForm({
               defaultValue={listing.priority || 0}
               min="0"
               max="100"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.seoTitle ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
           </div>
 
@@ -779,8 +829,9 @@ export function AdminEditListingForm({
               onChange={(e) => { setSeoDescription(e.target.value); setIsSeoDescCustom(true); }}
               placeholder="e.g. Looking for reliable dental care in Pimple Saudagar? Dr. Sharma's Clinic at Kokane Chowk provides painless root canals, implants, and teeth cleaning."
               maxLength={320}
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.seoDescription ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
+            {state?.fieldErrors?.seoDescription && <p className="text-xs text-destructive mt-1 font-medium">✕ {state.fieldErrors.seoDescription[0]}</p>}
           </div>
 
           <div>
@@ -794,8 +845,9 @@ export function AdminEditListingForm({
               onChange={(e) => setSeoKeywords(e.target.value)}
               placeholder="e.g. dentist in pimple saudagar, dental clinic kokane chowk, teeth whitening pune"
               maxLength={250}
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.seoKeywords ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-primary"}`}
             />
+            {state?.fieldErrors?.seoKeywords && <p className="text-xs text-destructive mt-1 font-medium">✕ {state.fieldErrors.seoKeywords[0]}</p>}
           </div>
 
           <div>
@@ -814,7 +866,7 @@ export function AdminEditListingForm({
               value={ogImage}
               onChange={(e) => { setOgImage(e.target.value); setIsOgImageCustom(true); }}
               placeholder="https://... or click a photo below"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+              className={`w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:outline-none ${state?.fieldErrors?.ogImage ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "focus:border-indigo-500"}`}
             />
             {uploadedPhotos.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2 items-center">

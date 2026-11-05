@@ -99,7 +99,7 @@ const HTML_TEMPLATES = [
 export function ContentBlockEditor({
   initialValue = "",
   name = "description",
-  required = true,
+  required = false,
   error,
   onChange,
 }: ContentBlockEditorProps) {

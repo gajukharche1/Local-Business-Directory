@@ -10,28 +10,79 @@ import { hashPassword } from "@/lib/auth/password";
 import { ListingStatus, ClaimStatus, UserRole, Prisma } from "@prisma/client";
 
 const baseListingSchema = z.object({
-  title: z.string().min(2, "Business title must be at least 2 characters."),
-  description: z.string().min(10, "Description must be at least 10 characters."),
-  categoryId: z.string().min(1, "Please select a category."),
-  locationId: z.string().min(1, "Please select a locality/neighborhood."),
-  address: z.string().min(5, "Full street address is required."),
-  locality: z.string().min(2, "Locality name is required."),
-  landmark: z.string().optional(),
-  latitude: z.coerce.number().min(-90).max(90).optional(),
-  longitude: z.coerce.number().min(-180).max(180).optional(),
-  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number (e.g. +919876543210)").optional().or(z.literal("")),
-  whatsapp: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid WhatsApp number (e.g. +919876543210)").optional().or(z.literal("")),
-  email: z.string().email("Invalid email address").optional().or(z.literal("")),
-  website: z.string().url("Invalid website URL (e.g. https://example.com)").optional().or(z.literal("")),
-  yearEstablished: z.coerce.number().min(1900).max(new Date().getFullYear()).optional(),
+  title: z.string().min(1, "Business title cannot be blank.").default("Untitled Business"),
+  description: z.string().default("<p>Local business in Pimple Saudagar.</p>"),
+  categoryId: z.string().optional().default(""),
+  locationId: z.string().optional().default(""),
+  address: z.string().optional().default("Pimple Saudagar, Pune"),
+  locality: z.string().optional().default("Pimple Saudagar"),
+  landmark: z.string().optional().or(z.literal("")),
+  latitude: z.coerce.number().min(-90, "Latitude must be between -90 and 90.").max(90, "Latitude must be between -90 and 90.").optional(),
+  longitude: z.coerce.number().min(-180, "Longitude must be between -180 and 180.").max(180, "Longitude must be between -180 and 180.").optional(),
+  phone: z.string().regex(/^(\+?[0-9\s\-()]{7,20})?$/, "Please enter a valid phone number (e.g. +91 98765 43210)").optional().or(z.literal("")),
+  whatsapp: z.string().regex(/^(\+?[0-9\s\-()]{7,20})?$/, "Please enter a valid WhatsApp number (e.g. +91 98765 43210)").optional().or(z.literal("")),
+  email: z.string().email("Please enter a valid email address (e.g. contact@business.com)").optional().or(z.literal("")),
+  website: z.string().url("Please enter a valid website URL (e.g. https://example.com)").optional().or(z.literal("")),
+  yearEstablished: z.coerce.number().min(1900, "Year established must be 1900 or later.").max(new Date().getFullYear(), "Year cannot be in the future.").optional(),
   priceRange: z.coerce.number().min(1).max(4).default(1),
-  planId: z.string().optional(),
+  planId: z.string().optional().or(z.literal("")),
   amenities: z.array(z.string()).optional().default([]),
-  seoTitle: z.string().max(120, "SEO title should be under 120 characters.").optional().or(z.literal("")),
-  seoDescription: z.string().max(320, "SEO description should be under 320 characters.").optional().or(z.literal("")),
-  seoKeywords: z.string().max(250, "SEO keywords should be under 250 characters.").optional().or(z.literal("")),
+  seoTitle: z.string().max(120, "SEO title must be 120 characters or less.").optional().or(z.literal("")),
+  seoDescription: z.string().max(320, "SEO description must be 320 characters or less.").optional().or(z.literal("")),
+  seoKeywords: z.string().max(250, "SEO keywords must be 250 characters or less.").optional().or(z.literal("")),
   ogImage: z.string().optional().or(z.literal("")),
 });
+
+function parseListingFormData(formData: FormData) {
+  const rawTitle = (formData.get("title") as string)?.trim();
+  const rawDesc = (formData.get("description") as string)?.trim();
+  const rawCat = (formData.get("categoryId") as string)?.trim();
+  const rawLoc = (formData.get("locationId") as string)?.trim();
+  const rawAddr = (formData.get("address") as string)?.trim();
+  const rawLocality = (formData.get("locality") as string)?.trim();
+  const rawLandmark = (formData.get("landmark") as string)?.trim();
+  const rawLat = (formData.get("latitude") as string)?.trim();
+  const rawLng = (formData.get("longitude") as string)?.trim();
+  const rawPhone = (formData.get("phone") as string)?.trim();
+  const rawWhatsapp = (formData.get("whatsapp") as string)?.trim();
+  const rawEmail = (formData.get("email") as string)?.trim();
+  let rawWebsite = (formData.get("website") as string)?.trim() || "";
+  if (rawWebsite && !rawWebsite.startsWith("http://") && !rawWebsite.startsWith("https://")) {
+    rawWebsite = "https://" + rawWebsite;
+  }
+  const rawYear = (formData.get("yearEstablished") as string)?.trim();
+  const rawPriceRange = (formData.get("priceRange") as string)?.trim();
+  const rawPlanId = (formData.get("planId") as string)?.trim();
+  const rawSeoTitle = (formData.get("seoTitle") as string)?.trim();
+  const rawSeoDesc = (formData.get("seoDescription") as string)?.trim();
+  const rawSeoKeywords = (formData.get("seoKeywords") as string)?.trim();
+  const rawOgImage = (formData.get("ogImage") as string)?.trim();
+  const rawAmenities = formData.getAll("amenities") as string[];
+
+  return {
+    title: rawTitle || undefined,
+    description: rawDesc || undefined,
+    categoryId: rawCat || undefined,
+    locationId: rawLoc || undefined,
+    address: rawAddr || undefined,
+    locality: rawLocality || undefined,
+    landmark: rawLandmark || undefined,
+    latitude: rawLat ? Number(rawLat) : undefined,
+    longitude: rawLng ? Number(rawLng) : undefined,
+    phone: rawPhone || undefined,
+    whatsapp: rawWhatsapp || undefined,
+    email: rawEmail || undefined,
+    website: rawWebsite || undefined,
+    yearEstablished: rawYear ? Number(rawYear) : undefined,
+    priceRange: rawPriceRange ? Number(rawPriceRange) : undefined,
+    planId: rawPlanId || undefined,
+    amenities: rawAmenities,
+    seoTitle: rawSeoTitle || undefined,
+    seoDescription: rawSeoDesc || undefined,
+    seoKeywords: rawSeoKeywords || undefined,
+    ogImage: rawOgImage || undefined,
+  };
+}
 
 export type ActionState = {
   success?: boolean;
@@ -74,35 +125,14 @@ export async function createListingAdminAction(
     return { error: "Unauthorized: Administrator privileges required." };
   }
 
-  const rawData = {
-    title: formData.get("title") as string,
-    description: formData.get("description") as string,
-    categoryId: formData.get("categoryId") as string,
-    locationId: formData.get("locationId") as string,
-    address: formData.get("address") as string,
-    locality: formData.get("locality") as string,
-    landmark: formData.get("landmark") as string,
-    latitude: formData.get("latitude") as string,
-    longitude: formData.get("longitude") as string,
-    phone: formData.get("phone") as string,
-    whatsapp: formData.get("whatsapp") as string,
-    email: formData.get("email") as string,
-    website: formData.get("website") as string,
-    yearEstablished: formData.get("yearEstablished") as string,
-    priceRange: formData.get("priceRange") as string,
-    planId: formData.get("planId") as string,
-    amenities: formData.getAll("amenities") as string[],
-    seoTitle: formData.get("seoTitle") as string,
-    seoDescription: formData.get("seoDescription") as string,
-    seoKeywords: formData.get("seoKeywords") as string,
-    ogImage: formData.get("ogImage") as string,
-  };
-
+  const rawData = parseListingFormData(formData);
   const validation = baseListingSchema.safeParse(rawData);
   if (!validation.success) {
+    const fieldErrors = validation.error.flatten().fieldErrors;
+    const invalidList = Object.keys(fieldErrors);
     return {
-      error: "Please check the form for invalid fields.",
-      fieldErrors: validation.error.flatten().fieldErrors,
+      error: `Please check the form for invalid fields (${invalidList.join(", ")}).`,
+      fieldErrors,
     };
   }
 
@@ -222,35 +252,14 @@ export async function submitListingPublicAction(
 ): Promise<ActionState> {
   const currentUser = await getCurrentUser();
 
-  const rawData = {
-    title: formData.get("title") as string,
-    description: formData.get("description") as string,
-    categoryId: formData.get("categoryId") as string,
-    locationId: formData.get("locationId") as string,
-    address: formData.get("address") as string,
-    locality: formData.get("locality") as string,
-    landmark: formData.get("landmark") as string,
-    latitude: formData.get("latitude") as string,
-    longitude: formData.get("longitude") as string,
-    phone: formData.get("phone") as string,
-    whatsapp: formData.get("whatsapp") as string,
-    email: formData.get("email") as string,
-    website: formData.get("website") as string,
-    yearEstablished: formData.get("yearEstablished") as string,
-    priceRange: formData.get("priceRange") as string,
-    planId: formData.get("planId") as string,
-    amenities: formData.getAll("amenities") as string[],
-    seoTitle: formData.get("seoTitle") as string,
-    seoDescription: formData.get("seoDescription") as string,
-    seoKeywords: formData.get("seoKeywords") as string,
-    ogImage: formData.get("ogImage") as string,
-  };
-
+  const rawData = parseListingFormData(formData);
   const validation = baseListingSchema.safeParse(rawData);
   if (!validation.success) {
+    const fieldErrors = validation.error.flatten().fieldErrors;
+    const invalidList = Object.keys(fieldErrors);
     return {
-      error: "Please check the form for invalid entries.",
-      fieldErrors: validation.error.flatten().fieldErrors,
+      error: `Please check the form for invalid fields (${invalidList.join(", ")}).`,
+      fieldErrors,
     };
   }
 
@@ -428,35 +437,14 @@ export async function updateListingAdminAction(
     return { error: "Listing not found." };
   }
 
-  const rawData = {
-    title: formData.get("title") as string,
-    description: formData.get("description") as string,
-    categoryId: formData.get("categoryId") as string,
-    locationId: formData.get("locationId") as string,
-    address: formData.get("address") as string,
-    locality: formData.get("locality") as string,
-    landmark: formData.get("landmark") as string,
-    latitude: formData.get("latitude") as string,
-    longitude: formData.get("longitude") as string,
-    phone: formData.get("phone") as string,
-    whatsapp: formData.get("whatsapp") as string,
-    email: formData.get("email") as string,
-    website: formData.get("website") as string,
-    yearEstablished: formData.get("yearEstablished") as string,
-    priceRange: formData.get("priceRange") as string,
-    planId: formData.get("planId") as string,
-    amenities: formData.getAll("amenities") as string[],
-    seoTitle: formData.get("seoTitle") as string,
-    seoDescription: formData.get("seoDescription") as string,
-    seoKeywords: formData.get("seoKeywords") as string,
-    ogImage: formData.get("ogImage") as string,
-  };
-
+  const rawData = parseListingFormData(formData);
   const validation = baseListingSchema.safeParse(rawData);
   if (!validation.success) {
+    const fieldErrors = validation.error.flatten().fieldErrors;
+    const invalidList = Object.keys(fieldErrors);
     return {
-      error: "Please check the form for invalid fields.",
-      fieldErrors: validation.error.flatten().fieldErrors,
+      error: `Please check the form for invalid fields (${invalidList.join(", ")}).`,
+      fieldErrors,
     };
   }
 
