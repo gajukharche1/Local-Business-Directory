@@ -111,7 +111,7 @@ export class PaymentService {
       amount: plan.priceMinor,
       currency: plan.currency,
       key: process.env.RAZORPAY_KEY_ID || "rzp_test_mock_key",
-      name: `Pimple Saudagar Directory - ${plan.name}`,
+      name: `Local Business Directory - ${plan.name}`,
       description: plan.description,
       prefill: {
         email: req.customerEmail,

@@ -1,6 +1,6 @@
 # Database & Media Backup & Recovery Runbook
 
-This operational runbook documents the disaster recovery, point-in-time restoration, and continuous backup procedures for the Pimple Saudagar Directory platform.
+This operational runbook documents the disaster recovery, point-in-time restoration, and continuous backup procedures for the Local Business Directory platform.
 
 ---
 

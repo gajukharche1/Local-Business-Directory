@@ -16,11 +16,11 @@ export async function generateMetadata({ params }: ClaimPageProps): Promise<Meta
   const listing = await ListingService.getBySlug(slug);
 
   if (!listing) {
-    return { title: "Claim Listing | Pimple Saudagar Directory" };
+    return { title: "Claim Listing | Local Business Directory" };
   }
 
   return {
-    title: `Claim & Verify ${listing.title} | Pimple Saudagar Directory`,
+    title: `Claim & Verify ${listing.title} | Local Business Directory`,
     description: `Claim ownership of ${listing.title} in ${listing.locality}, Pimple Saudagar. Manage reviews, update business hours, and connect with local customers.`,
   };
 }
@@ -49,7 +49,7 @@ export default async function ClaimListingPage({ params }: ClaimPageProps) {
               PS
             </div>
             <span className="font-bold tracking-tight text-sm text-foreground">
-              Pimple Saudagar Directory
+              Local Business Directory
             </span>
           </Link>
           <Link

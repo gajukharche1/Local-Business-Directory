@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: LocationPageProps): Promise<M
   const baseUrl = env.NEXT_PUBLIC_APP_URL || "https://pimplesaudagar.org";
 
   if (!location) {
-    return { title: "Location Not Found | Pimple Saudagar Directory" };
+    return { title: "Location Not Found | Local Business Directory" };
   }
 
   const title = location.seoTitle?.trim()
@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: LocationPageProps): Promise<M
       title,
       description,
       url,
-      siteName: "Pimple Saudagar Directory",
+      siteName: "Local Business Directory",
       locale: "en_IN",
       type: "website",
       images: ogImages,
@@ -92,7 +92,7 @@ export default async function LocationArchivePage({ params }: LocationPageProps)
               PS
             </div>
             <span className="font-bold tracking-tight text-sm text-foreground">
-              Pimple Saudagar Directory
+              Local Business Directory
             </span>
           </Link>
           <div className="flex items-center gap-3">

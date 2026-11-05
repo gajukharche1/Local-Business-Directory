@@ -12,7 +12,7 @@ export async function GET() {
       {
         status: "healthy",
         timestamp: new Date().toISOString(),
-        service: "pimplesaudagar-directory",
+        service: "local-business-directory",
         version: "1.0.0",
       },
       { status: 200 }

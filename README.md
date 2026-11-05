@@ -1,6 +1,6 @@
-# Pimple Saudagar Local Business Directory
+# Local Business Directory
 
-> A production-ready, enterprise-grade local business directory platform tailored for **Pimple Saudagar (PCMC, Pune, Maharashtra, India)**. Designed for scale, speed, accessibility, and high SEO performance on a modern serverless stack.
+> A production-ready, enterprise-grade local business directory platform for discovering, reviewing, and contacting verified local businesses. Designed for scale, speed, accessibility, and high SEO performance on a modern serverless stack.
 
 [![Live Demo](https://img.shields.io/badge/Demo-ps--lyart.vercel.app-2ea44f?style=flat&logo=vercel)](https://ps-lyart.vercel.app)
 [![Next.js 15](https://img.shields.io/badge/Next.js-15.5.28-black?logo=next.js)](https://nextjs.org/)

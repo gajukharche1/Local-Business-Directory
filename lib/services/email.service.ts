@@ -12,7 +12,7 @@ export class EmailService {
    * Universal sender. Uses Resend API if configured, otherwise logs to development console.
    */
   static async send(options: EmailOptions): Promise<{ success: boolean; id?: string }> {
-    const from = process.env.EMAIL_FROM || "Pimple Saudagar Directory <no-reply@pimplesaudagar.org>";
+    const from = process.env.EMAIL_FROM || "Local Business Directory <noreply@localbusiness.org>";
 
     if (process.env.RESEND_API_KEY) {
       try {
@@ -57,13 +57,13 @@ export class EmailService {
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1e293b; background-color: #ffffff;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <h1 style="color: #2563eb; margin: 0; font-size: 24px; font-weight: 800;">Pimple Saudagar Directory</h1>
+          <h1 style="color: #2563eb; margin: 0; font-size: 24px; font-weight: 800;">Local Business Directory</h1>
           <p style="color: #64748b; font-size: 14px; margin-top: 4px;">PCMC Pune's Premier Local Business Guide</p>
         </div>
         <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; background-color: #f8fafc;">
           <h2 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-top: 0;">Welcome, ${name}!</h2>
           <p style="font-size: 14px; line-height: 1.6; color: #334155;">
-            Thank you for joining the Pimple Saudagar Directory. Whether you are discovering local services or managing a verified business profile, our platform gives you trusted access to PCMC's thriving neighborhood.
+            Thank you for joining the Local Business Directory. Whether you are discovering local services or managing a verified business profile, our platform gives you trusted access to PCMC's thriving neighborhood.
           </p>
           <div style="text-align: center; margin: 28px 0;">
             <a href="${env.NEXT_PUBLIC_APP_URL}/dashboard" style="background-color: #2563eb; color: #ffffff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; display: inline-block;">
@@ -79,7 +79,7 @@ export class EmailService {
 
     return this.send({
       to,
-      subject: "Welcome to Pimple Saudagar Directory!",
+      subject: "Welcome to Local Business Directory!",
       html,
     });
   }

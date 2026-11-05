@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
 
   if (!listing) {
     return {
-      title: "Business Not Found | Pimple Saudagar Directory",
+      title: "Business Not Found | Local Business Directory",
     };
   }
 
@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
       title,
       description,
       url,
-      siteName: "Pimple Saudagar Directory",
+      siteName: "Local Business Directory",
       locale: "en_IN",
       type: "article",
       images: ogImages,
@@ -116,7 +116,7 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
               PS
             </div>
             <span className="font-bold tracking-tight text-sm text-foreground">
-              Pimple Saudagar Directory
+              Local Business Directory
             </span>
           </Link>
           <div className="flex items-center gap-3">

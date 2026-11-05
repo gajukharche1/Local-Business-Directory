@@ -8,9 +8,9 @@ import { SubmitListingForm } from "./submit-form";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "List Your Business | Pimple Saudagar Directory",
+  title: "List Your Business | Local Business Directory",
   description:
-    "Register your local store, clinic, salon, or service in the official Pimple Saudagar local business directory. Reach thousands of PCMC residents.",
+    "Register your local store, clinic, salon, or service in the official local business directory. Reach thousands of local residents.",
 };
 
 export default async function SubmitListingPage() {
@@ -109,7 +109,7 @@ export default async function SubmitListingPage() {
 
       {/* Footer */}
       <footer className="border-t py-6 text-center text-xs text-muted-foreground bg-muted/20">
-        <p>© 2026 Pimple Saudagar Local Business Directory. Built for the PCMC community.</p>
+        <p>© 2026 Local Business Directory. Built for the community.</p>
       </footer>
     </div>
   );

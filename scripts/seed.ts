@@ -3,7 +3,7 @@ import { PrismaClient, UserRole, ListingStatus, ClaimStatus, ReviewStatus } from
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Starting Pimple Saudagar Directory Database Seed...");
+  console.log("🌱 Starting Local Business Directory Database Seed...");
 
   // 1. Clean existing records in sequence
   console.log("🧹 Clearing old data...");

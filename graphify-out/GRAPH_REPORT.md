@@ -216,14 +216,14 @@ Nodes (3): STRIDE Threat Model & Mitigations, STRIDE Security Countermeasures, U
 
 ### Community 34 - "Hyperlocal Directory Specification"
 Cohesion: 0.67
-Nodes (3): Pimple Saudagar Local Business Directory, Project Specification: Hyperlocal Business Directory, WordPress ListingPro Spec Re-implementation Prompt
+Nodes (3): Local Business Directory, Project Specification: Hyperlocal Business Directory, WordPress ListingPro Spec Re-implementation Prompt
 
 ### Community 35 - "OWASP ASVS & Security Specs"
 Cohesion: 0.67
 Nodes (3): Phase 4: Security Middleware & Security Headers, OWASP ASVS Level 2 Verification, ASVS Level 2 & DPDP Act 2023 Technical Specifications
 
 ## Knowledge Gaps
-- **25 isolated node(s):** `STRIDE Threat Model & Mitigations`, `Five-Stage Mutation Pipeline (Acquire, Prepare, Process, Parse, Render)`, `Pimple Saudagar Local Business Directory`, `Multi-Criteria Search and Leaflet Map View`, `DPDP Compliance & OWASP Security Architecture` (+20 more)
+- **25 isolated node(s):** `STRIDE Threat Model & Mitigations`, `Five-Stage Mutation Pipeline (Acquire, Prepare, Process, Parse, Render)`, `Local Business Directory`, `Multi-Criteria Search and Leaflet Map View`, `DPDP Compliance & OWASP Security Architecture` (+20 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 266 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -232,7 +232,7 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `next` connect `Cron & Health API Routes` to `Listing Management & Validation`, `Admin Category & Location Routes`, `Admin Listing Forms & UI`, `Ownership Claims & Customer Enquiries`, `Reviews & Ratings System`, `Admin Moderation & Import Workflow`, `Frontend Tooling & DevDependencies`, `User Authentication & Sessions`, `Core Runtime Dependencies`, `Pricing Plans & Subscription UI`, `Payment Webhooks & Gateways`, `Root Layout & Accessibility`, `Security Headers & CSP Middleware`?**
   _High betweenness centrality (0.215) - this node is a cross-community bridge._
-- **What connects `STRIDE Threat Model & Mitigations`, `Five-Stage Mutation Pipeline (Acquire, Prepare, Process, Parse, Render)`, `Pimple Saudagar Local Business Directory` to the rest of the system?**
+- **What connects `STRIDE Threat Model & Mitigations`, `Five-Stage Mutation Pipeline (Acquire, Prepare, Process, Parse, Render)`, `Local Business Directory` to the rest of the system?**
   _25 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Cron & Health API Routes` be split into smaller, more focused modules?**
   _Cohesion score 0.0553116769095698 - nodes in this community are weakly interconnected._

@@ -154,7 +154,7 @@ export function AdminListingForm({
 
   // Google preview computed values
   const previewTitle =
-    seoTitle || (listingTitle ? `${listingTitle} in ${localityText}, Pimple Saudagar` : "Business Name | Pimple Saudagar Directory");
+    seoTitle || (listingTitle ? `${listingTitle} in ${localityText}, Pimple Saudagar` : "Business Name | Local Business Directory");
   const previewDesc =
     seoDescription ||
     "Find contact phone, opening hours, WhatsApp, ratings, and customer reviews for verified businesses in Pimple Saudagar, PCMC.";

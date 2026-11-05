@@ -75,7 +75,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               PS
             </div>
             <span className="font-bold tracking-tight text-sm text-foreground">
-              Pimple Saudagar Directory
+              Local Business Directory
             </span>
           </Link>
           <div className="flex items-center gap-3">

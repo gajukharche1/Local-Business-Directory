@@ -6,7 +6,7 @@ import { Check, Sparkles, ArrowLeft, HelpCircle } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Business Pricing Plans | Pimple Saudagar Directory",
+  title: "Business Pricing Plans | Local Business Directory",
   description:
     "Explore transparent pricing plans for local businesses in Pimple Saudagar. Boost your neighborhood reach, leads, and customer reviews.",
 };
@@ -24,7 +24,7 @@ export default async function PricingPage() {
               PS
             </div>
             <span className="font-bold tracking-tight text-sm text-foreground">
-              Pimple Saudagar Directory
+              Local Business Directory
             </span>
           </Link>
           <Link

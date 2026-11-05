@@ -1,4 +1,4 @@
-# Project Specification: Pimple Saudagar Directory (PS)
+# Project Specification: Local Business Directory
 
 **Document Version**: 1.0.0  
 **Status**: APPROVED & LOCKED  
@@ -9,7 +9,7 @@
 
 ## 1. System Vision & Objectives
 
-The Pimple Saudagar Directory provides a lightning-fast, production-grade local discovery engine for residents and businesses of Pimple Saudagar. It replaces traditional WordPress/PHP directory themes with a modern, high-performance Next.js App Router application backed by PostgreSQL, adhering to strict OWASP ASVS Level 2 standards and India's Digital Personal Data Protection (DPDP) Act 2023.
+The Local Business Directory provides a lightning-fast, production-grade local discovery engine for residents and businesses of Pimple Saudagar. It replaces traditional WordPress/PHP directory themes with a modern, high-performance Next.js App Router application backed by PostgreSQL, adhering to strict OWASP ASVS Level 2 standards and India's Digital Personal Data Protection (DPDP) Act 2023.
 
 ### Core User Personas
 1. **Public Visitor**: Searches services, browses categorized directories, checks live "Open Now" status, views Leaflet maps, reads verified reviews, and submits enquiries.

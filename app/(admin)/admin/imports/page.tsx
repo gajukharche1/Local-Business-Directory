@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Bulk CSV Import | Admin Back-Office",
-  description: "Batch import local businesses and listings into the Pimple Saudagar directory.",
+  description: "Batch import local businesses and listings into the local business directory.",
 };
 
 export default function AdminImportsPage() {

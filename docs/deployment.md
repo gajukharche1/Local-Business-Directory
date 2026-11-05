@@ -1,6 +1,6 @@
 # 100% Free-Tier Production Deployment Guide
 
-This guide details step-by-step instructions to deploy the Pimple Saudagar Local Business Directory to production at **$0 monthly cloud infrastructure cost** while supporting up to 5,000 businesses and 100,000 monthly visits.
+This guide details step-by-step instructions to deploy the Local Business Directory to production at **$0 monthly cloud infrastructure cost** while supporting up to 5,000 businesses and 100,000 monthly visits.
 
 ---
 

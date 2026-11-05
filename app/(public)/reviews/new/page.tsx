@@ -80,7 +80,7 @@ export default async function NewReviewPage(props: PageProps) {
               PS
             </div>
             <span className="font-bold tracking-tight text-sm text-foreground">
-              Pimple Saudagar Directory
+              Local Business Directory
             </span>
           </Link>
           <Link

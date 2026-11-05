@@ -1,4 +1,4 @@
-# System Architecture: Pimple Saudagar Directory (PS)
+# System Architecture: Local Business Directory
 
 ```
 +---------------------------------------------------------------------------------------+

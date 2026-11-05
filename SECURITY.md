@@ -1,6 +1,6 @@
 # Security Policy & OWASP ASVS Level 2 Verification
 
-The Pimple Saudagar Directory platform is engineered to comply with **OWASP Application Security Verification Standard (ASVS) Level 2** and industry best practices.
+The Local Business Directory platform is engineered to comply with **OWASP Application Security Verification Standard (ASVS) Level 2** and industry best practices.
 
 ---
 

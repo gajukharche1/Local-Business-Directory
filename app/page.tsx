@@ -282,7 +282,7 @@ export default async function HomePage() {
       {/* Footer */}
       <footer className="border-t bg-muted/40 py-8 text-sm text-muted-foreground">
         <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
-          <p>© {new Date().getFullYear()} Pimple Saudagar Directory. Built for PCMC community.</p>
+          <p>© {new Date().getFullYear()} Local Business Directory. Built for the community.</p>
           <div className="flex gap-6">
             <Link href="/privacy" className="hover:text-foreground">
               Privacy (DPDP Act)

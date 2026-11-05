@@ -726,7 +726,7 @@ export function LocationManager({ initialLocations }: LocationManagerProps) {
                     )}
                     <div className="p-2.5">
                       <p className="font-bold text-xs truncate">
-                        {formData.seoTitle || `${formData.name || "Locality"} — Pimple Saudagar Directory`}
+                        {formData.seoTitle || `${formData.name || "Locality"} — Local Business Directory`}
                       </p>
                       <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
                         {formData.seoDescription ||

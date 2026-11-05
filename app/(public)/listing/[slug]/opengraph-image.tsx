@@ -85,7 +85,7 @@ export default async function OpengraphImage({ params }: Props) {
               PS
             </div>
             <span style={{ color: "#94a3b8", fontSize: "20px", fontWeight: "600", letterSpacing: "-0.5px" }}>
-              Pimple Saudagar Directory
+              Local Business Directory
             </span>
           </div>
 

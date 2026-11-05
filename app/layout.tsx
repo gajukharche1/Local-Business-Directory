@@ -8,7 +8,7 @@ const safeAppUrl = rawAppUrl.startsWith("http://") || rawAppUrl.startsWith("http
   : `https://${rawAppUrl}`;
 
 export const metadata: Metadata = {
-  title: "Pimple Saudagar Local Business Directory | Find Top Services Nearby",
+  title: "Local Business Directory | Find Top Services Nearby",
   description:
     "Discover verified local businesses, restaurants, healthcare, clinics, and professional services across Pimple Saudagar, PCMC, Pune.",
   metadataBase: new URL(safeAppUrl),

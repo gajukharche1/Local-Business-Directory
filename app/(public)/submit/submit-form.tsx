@@ -160,7 +160,7 @@ export function SubmitListingForm({
     seoTitle ||
     (listingTitle
       ? `${listingTitle} in ${localityText}, Pimple Saudagar`
-      : "Business Name | Pimple Saudagar Directory");
+      : "Business Name | Local Business Directory");
   const previewDesc =
     seoDescription ||
     "Find contact phone, opening hours, WhatsApp, ratings, and customer reviews for verified businesses in Pimple Saudagar, PCMC.";
@@ -177,7 +177,7 @@ export function SubmitListingForm({
             Listing Submitted Successfully!
           </h2>
           <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-            Thank you for registering your business in the Pimple Saudagar Directory.
+            Thank you for registering your business in the Local Business Directory.
             Your listing has been submitted and is currently in the verification queue.
           </p>
         </div>
@@ -863,7 +863,7 @@ export function SubmitListingForm({
       {/* Submit Button */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t">
         <p className="text-xs text-muted-foreground">
-          By submitting, you agree to Pimple Saudagar Directory terms and community guidelines.
+          By submitting, you agree to Local Business Directory terms and community guidelines.
         </p>
 
         <button

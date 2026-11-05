@@ -1,6 +1,6 @@
 # India Digital Personal Data Protection (DPDP) Act 2023 Compliance Audit
 
-This document verifies the technical and organizational measures implemented across the Pimple Saudagar Directory platform to satisfy the requirements of India's **Digital Personal Data Protection Act 2023** (DPDP Act).
+This document verifies the technical and organizational measures implemented across the Local Business Directory platform to satisfy the requirements of India's **Digital Personal Data Protection Act 2023** (DPDP Act).
 
 ---
 

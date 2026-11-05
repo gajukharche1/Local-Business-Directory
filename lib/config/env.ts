@@ -55,7 +55,7 @@ const envSchema = z.object({
 
   // Email (Resend)
   RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().default("Pimple Saudagar Directory <noreply@pimplesaudagar.local>"),
+  EMAIL_FROM: z.string().default("Local Business Directory <noreply@localbusiness.local>"),
 
   // Payments (Razorpay & Stripe)
   RAZORPAY_KEY_ID: z.string().optional(),

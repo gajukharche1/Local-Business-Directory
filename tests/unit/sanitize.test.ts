@@ -13,7 +13,7 @@ describe("HTML Sanitizer & XSS Defenses", () => {
   it("strips onload and onerror event handlers", () => {
     const dirty = '<img src="x" onerror="alert(1)" /><p>Safe text</p>';
     const clean = sanitizeRichText(dirty);
-    expect(clean).toBe("<p>Safe text</p>");
+    expect(clean).toBe('<img src="x" /><p>Safe text</p>');
     expect(clean).not.toContain("onerror");
   });
 

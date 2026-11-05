@@ -14,7 +14,7 @@ export default function AuthLayout({
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground mb-6 transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          <span>Back to Pimple Saudagar Directory</span>
+          <span>Back to Local Business Directory</span>
         </Link>
 
         <div className="flex items-center gap-2 mb-2">
