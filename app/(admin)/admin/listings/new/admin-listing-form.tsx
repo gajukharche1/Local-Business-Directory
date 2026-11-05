@@ -78,6 +78,21 @@ const LOCALITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   "Govind Garden Area": { lat: 18.5971, lng: 73.8012 },
 };
 
+
+/** Strip HTML tags and decode common entities to produce plain text for SEO description. */
+function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function AdminListingForm({
   categories,
   locations,
@@ -93,13 +108,17 @@ export function AdminListingForm({
   const [longitude, setLongitude] = useState<string>("73.7978");
   const [geoDetecting, setGeoDetecting] = useState(false);
 
-  // SEO state for live Google preview
+  // SEO state with auto-population tracking
   const [listingTitle, setListingTitle] = useState("");
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
   const [seoKeywords, setSeoKeywords] = useState("");
   const [ogImage, setOgImage] = useState("");
   const [uploadedPhotos, setUploadedPhotos] = useState<Array<{ url: string }>>([]);
+  const [descriptionHtml, setDescriptionHtml] = useState("");
+  const [isSeoTitleCustom, setIsSeoTitleCustom] = useState(false);
+  const [isSeoDescCustom, setIsSeoDescCustom] = useState(false);
+  const [isOgImageCustom, setIsOgImageCustom] = useState(false);
 
   const [state, formAction, isPending] = useActionState<ActionState | null, FormData>(
     async (prev, formData) => {
@@ -113,6 +132,40 @@ export function AdminListingForm({
     },
     null
   );
+
+  const handleTitleChange = (newTitle: string) => {
+    setListingTitle(newTitle);
+    if (!isSeoTitleCustom) {
+      setSeoTitle(newTitle);
+    }
+  };
+
+  const handleDescriptionChange = (newHtml: string) => {
+    setDescriptionHtml(newHtml);
+    if (!isSeoDescCustom) {
+      const summary = htmlToPlainText(newHtml).slice(0, 160);
+      setSeoDescription(summary);
+    }
+  };
+
+  const handlePhotosChange = (photos: Array<{ url: string }>) => {
+    setUploadedPhotos(photos);
+    if (!isOgImageCustom && photos.length > 0 && photos[0]?.url) {
+      setOgImage(photos[0].url);
+    }
+  };
+
+  const handleAutoFillSeo = () => {
+    setSeoTitle(listingTitle);
+    const plain = htmlToPlainText(descriptionHtml);
+    setSeoDescription(plain.slice(0, 160));
+    if (uploadedPhotos.length > 0 && uploadedPhotos[0]?.url) {
+      setOgImage(uploadedPhotos[0].url);
+    }
+    setIsSeoTitleCustom(false);
+    setIsSeoDescCustom(false);
+    setIsOgImageCustom(false);
+  };
 
   const handleLocationChange = (locId: string) => {
     setSelectedLocation(locId);
@@ -197,7 +250,7 @@ export function AdminListingForm({
               name="title"
               required
               value={listingTitle}
-              onChange={(e) => setListingTitle(e.target.value)}
+              onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="e.g. Govind Garden Restaurant & Banquets"
               className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
             />
@@ -395,183 +448,11 @@ export function AdminListingForm({
         </div>
       </div>
 
-      {/* 3. SEO Meta Settings & Google SERP Preview */}
-      <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-6 shadow-sm space-y-5">
-        <div className="flex items-center gap-2 border-b border-indigo-500/20 pb-3">
-          <Search className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-          <div>
-            <h2 className="text-base font-bold text-foreground">3. Search Engine Optimization (SEO)</h2>
-            <p className="text-[11px] text-muted-foreground">
-              Configure meta tags and keyword indexation for Google, Bing, and social shares
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-semibold text-foreground">
-                SEO Meta Title
-              </label>
-              <span className={`text-[10px] font-mono ${seoTitle.length > 60 ? "text-amber-600 font-bold" : "text-muted-foreground"}`}>
-                {seoTitle.length} / 60 characters
-              </span>
-            </div>
-            <input
-              type="text"
-              name="seoTitle"
-              value={seoTitle}
-              onChange={(e) => setSeoTitle(e.target.value)}
-              placeholder="e.g. Govind Garden Restaurant | Best North Indian in Pimple Saudagar"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
-            />
-            <span className="text-[10px] text-muted-foreground mt-0.5 block">
-              Leave blank to automatically use business title + neighborhood format.
-            </span>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-semibold text-foreground">
-                SEO Meta Description
-              </label>
-              <span className={`text-[10px] font-mono ${seoDescription.length > 160 ? "text-amber-600 font-bold" : "text-muted-foreground"}`}>
-                {seoDescription.length} / 160 characters
-              </span>
-            </div>
-            <textarea
-              name="seoDescription"
-              rows={2}
-              value={seoDescription}
-              onChange={(e) => setSeoDescription(e.target.value)}
-              placeholder="e.g. Visit Govind Garden Restaurant on Kunal Icon Road, Pimple Saudagar. Authentic North Indian & coastal seafood with outdoor lawn seating. View menu & hours."
-              className="w-full rounded-lg border bg-background p-3 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
-            ></textarea>
-            <span className="text-[10px] text-muted-foreground mt-0.5 block">
-              Optimal length: 140–160 characters. Appears under the link in search results.
-            </span>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-foreground mb-1">
-              SEO Keywords Tag (Comma-Separated)
-            </label>
-            <input
-              type="text"
-              name="seoKeywords"
-              value={seoKeywords}
-              onChange={(e) => setSeoKeywords(e.target.value)}
-              placeholder="e.g. restaurants in pimple saudagar, family dining, punjabi food, kokane chowk dining, ac banquet hall"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
-            />
-            <span className="text-[10px] text-muted-foreground mt-0.5 block">
-              Separate keywords with commas. Used for meta keywords tags and internal search matching.
-            </span>
-          </div>
-
-          
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-semibold text-foreground">
-                Open Graph Social Share Banner (1200x630)
-              </label>
-              {uploadedPhotos.length > 0 && (
-                <span className="text-[10px] text-muted-foreground font-medium">
-                  Select from uploaded photos or paste URL
-                </span>
-              )}
-            </div>
-            <input
-              type="url"
-              name="ogImage"
-              value={ogImage}
-              onChange={(e) => setOgImage(e.target.value)}
-              placeholder="https://... or click a photo below"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
-            />
-            {uploadedPhotos.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-2 items-center">
-                <span className="text-[11px] font-semibold text-muted-foreground">Pick from listing photos:</span>
-                {uploadedPhotos.map((p, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setOgImage(p.url)}
-                    className={`relative h-11 w-16 rounded-md overflow-hidden border transition ${
-                      ogImage === p.url ? "ring-2 ring-indigo-500 border-indigo-500" : "hover:border-primary opacity-80 hover:opacity-100"
-                    }`}
-                  >
-                    <img src={p.url} alt="Thumbnail" className="h-full w-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-            <span className="text-[10px] text-muted-foreground mt-0.5 block">
-              Used when shared on WhatsApp, Facebook, LinkedIn, or Twitter.
-            </span>
-          </div>
-
-          {/* Social Open Graph Preview Card */}
-          <div className="rounded-xl border border-indigo-500/20 bg-card p-4 space-y-2 mt-3">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-              <Share2 className="h-3 w-3 text-indigo-500" />
-              Social Media (Open Graph / WhatsApp / Twitter) Preview
-            </span>
-            <div className="rounded-xl border overflow-hidden bg-background max-w-sm">
-              {(ogImage || uploadedPhotos[0]?.url) ? (
-                <div
-                  className="h-32 bg-cover bg-center border-b"
-                  style={{ backgroundImage: `url(${ogImage || uploadedPhotos[0]?.url})` }}
-                />
-              ) : (
-                <div className="h-20 bg-muted/60 border-b flex items-center justify-center text-xs text-muted-foreground">
-                  No OpenGraph Banner Selected
-                </div>
-              )}
-              <div className="p-3">
-                <p className="font-bold text-xs truncate text-foreground">{previewTitle}</p>
-                <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{previewDesc}</p>
-                <span className="text-[9px] font-mono text-slate-400 uppercase mt-1 block">
-                  pimplesaudagar.org
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Live Google Search Result Preview */}
-          <div className="rounded-xl border border-border bg-card p-4 space-y-2 mt-4">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-              <Globe className="h-3 w-3 text-indigo-500" />
-              Live Google Search Snippet Preview
-            </span>
-            <div className="bg-background rounded-lg border p-3.5 space-y-1 font-sans">
-              <div className="text-[11px] text-slate-500 truncate flex items-center gap-1">
-                <span>https://pimplesaudagar.org</span>
-                <span>›</span>
-                <span>listing</span>
-                <span>›</span>
-                <span className="text-slate-600 font-medium">
-                  {listingTitle
-                    ? listingTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-")
-                    : "business-slug"}
-                </span>
-              </div>
-              <h4 className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline truncate cursor-pointer leading-tight">
-                {previewTitle}
-              </h4>
-              <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
-                {previewDesc}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Contact & Online Presence */}
+      {/* 3. Contact & Online Presence */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-5">
         <div className="flex items-center gap-2 border-b pb-3">
           <Phone className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">4. Contact & Digital Channels</h2>
+          <h2 className="text-base font-bold text-foreground">3. Contact & Digital Channels</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -664,11 +545,11 @@ export function AdminListingForm({
         </div>
       </div>
 
-      {/* 5. Administration & Status Controls */}
+      {/* 4. Administration & Status Controls */}
       <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-6 shadow-sm space-y-5">
         <div className="flex items-center gap-2 border-b border-red-500/20 pb-3">
           <ShieldCheck className="h-5 w-5 text-red-600" />
-          <h2 className="text-base font-bold text-foreground">5. Admin Management Controls</h2>
+          <h2 className="text-base font-bold text-foreground">4. Admin Management Controls</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -769,6 +650,180 @@ export function AdminListingForm({
           </div>
         </div>
       </div>
+
+      {/* 5. SEO Meta Settings & Google SERP Preview */}
+      <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-6 shadow-sm space-y-5">
+        <div className="flex items-center gap-2 border-b border-indigo-500/20 pb-3">
+          <Search className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          <div>
+            <h2 className="text-base font-bold text-foreground">5. Search Engine Optimization (SEO &amp; Meta Tags)</h2>
+            <p className="text-[11px] text-muted-foreground">
+              Configure meta tags and keyword indexation for Google, Bing, and social shares
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-foreground">
+                SEO Meta Title
+              </label>
+              <span className={`text-[10px] font-mono ${seoTitle.length > 60 ? "text-amber-600 font-bold" : "text-muted-foreground"}`}>
+                {seoTitle.length} / 60 characters
+              </span>
+            </div>
+            <input
+              type="text"
+              name="seoTitle"
+              value={seoTitle}
+              onChange={(e) => { setSeoTitle(e.target.value); setIsSeoTitleCustom(true); }}
+              placeholder="e.g. Govind Garden Restaurant | Best North Indian in Pimple Saudagar"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+            />
+            <span className="text-[10px] text-muted-foreground mt-0.5 block">
+              Leave blank to automatically use business title + neighborhood format.
+            </span>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-foreground">
+                SEO Meta Description
+              </label>
+              <span className={`text-[10px] font-mono ${seoDescription.length > 160 ? "text-amber-600 font-bold" : "text-muted-foreground"}`}>
+                {seoDescription.length} / 160 characters
+              </span>
+            </div>
+            <textarea
+              name="seoDescription"
+              rows={2}
+              value={seoDescription}
+              onChange={(e) => { setSeoDescription(e.target.value); setIsSeoDescCustom(true); }}
+              placeholder="e.g. Visit Govind Garden Restaurant on Kunal Icon Road, Pimple Saudagar. Authentic North Indian & coastal seafood with outdoor lawn seating. View menu & hours."
+              className="w-full rounded-lg border bg-background p-3 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+            ></textarea>
+            <span className="text-[10px] text-muted-foreground mt-0.5 block">
+              Optimal length: 140–160 characters. Appears under the link in search results.
+            </span>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              SEO Keywords Tag (Comma-Separated)
+            </label>
+            <input
+              type="text"
+              name="seoKeywords"
+              value={seoKeywords}
+              onChange={(e) => setSeoKeywords(e.target.value)}
+              placeholder="e.g. restaurants in pimple saudagar, family dining, punjabi food, kokane chowk dining, ac banquet hall"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+            />
+            <span className="text-[10px] text-muted-foreground mt-0.5 block">
+              Separate keywords with commas. Used for meta keywords tags and internal search matching.
+            </span>
+          </div>
+
+          
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-foreground">
+                Open Graph Social Share Banner (1200x630)
+              </label>
+              {uploadedPhotos.length > 0 && (
+                <span className="text-[10px] text-muted-foreground font-medium">
+                  Select from uploaded photos or paste URL
+                </span>
+              )}
+            </div>
+            <input
+              type="url"
+              name="ogImage"
+              value={ogImage}
+              onChange={(e) => { setOgImage(e.target.value); setIsOgImageCustom(true); }}
+              placeholder="https://... or click a photo below"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
+            />
+            {uploadedPhotos.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2 items-center">
+                <span className="text-[11px] font-semibold text-muted-foreground">Pick from listing photos:</span>
+                {uploadedPhotos.map((p, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => { setOgImage(p.url); setIsOgImageCustom(true); }}
+                    className={`relative h-11 w-16 rounded-md overflow-hidden border transition ${
+                      ogImage === p.url ? "ring-2 ring-indigo-500 border-indigo-500" : "hover:border-primary opacity-80 hover:opacity-100"
+                    }`}
+                  >
+                    <img src={p.url} alt="Thumbnail" className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+            <span className="text-[10px] text-muted-foreground mt-0.5 block">
+              Used when shared on WhatsApp, Facebook, LinkedIn, or Twitter.
+            </span>
+          </div>
+
+          {/* Social Open Graph Preview Card */}
+          <div className="rounded-xl border border-indigo-500/20 bg-card p-4 space-y-2 mt-3">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+              <Share2 className="h-3 w-3 text-indigo-500" />
+              Social Media (Open Graph / WhatsApp / Twitter) Preview
+            </span>
+            <div className="rounded-xl border overflow-hidden bg-background max-w-sm">
+              {(ogImage || uploadedPhotos[0]?.url) ? (
+                <div
+                  className="h-32 bg-cover bg-center border-b"
+                  style={{ backgroundImage: `url(${ogImage || uploadedPhotos[0]?.url})` }}
+                />
+              ) : (
+                <div className="h-20 bg-muted/60 border-b flex items-center justify-center text-xs text-muted-foreground">
+                  No OpenGraph Banner Selected
+                </div>
+              )}
+              <div className="p-3">
+                <p className="font-bold text-xs truncate text-foreground">{previewTitle}</p>
+                <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{previewDesc}</p>
+                <span className="text-[9px] font-mono text-slate-400 uppercase mt-1 block">
+                  pimplesaudagar.org
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Live Google Search Result Preview */}
+          <div className="rounded-xl border border-border bg-card p-4 space-y-2 mt-4">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+              <Globe className="h-3 w-3 text-indigo-500" />
+              Live Google Search Snippet Preview
+            </span>
+            <div className="bg-background rounded-lg border p-3.5 space-y-1 font-sans">
+              <div className="text-[11px] text-slate-500 truncate flex items-center gap-1">
+                <span>https://pimplesaudagar.org</span>
+                <span>›</span>
+                <span>listing</span>
+                <span>›</span>
+                <span className="text-slate-600 font-medium">
+                  {listingTitle
+                    ? listingTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+                    : "business-slug"}
+                </span>
+              </div>
+              <h4 className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline truncate cursor-pointer leading-tight">
+                {previewTitle}
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                {previewDesc}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
 
       {/* Buttons */}
       <div className="flex items-center justify-end gap-3 pt-4 border-t">

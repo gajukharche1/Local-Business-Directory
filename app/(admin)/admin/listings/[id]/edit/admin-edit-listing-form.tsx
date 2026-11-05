@@ -97,13 +97,6 @@ export function AdminEditListingForm({
   const [longitude, setLongitude] = useState(listing.longitude ? listing.longitude.toString() : "");
   const [geoDetecting, setGeoDetecting] = useState(false);
 
-  // SEO States
-  const [seoTitle, setSeoTitle] = useState(listing.seoTitle || "");
-  const [seoDescription, setSeoDescription] = useState(listing.seoDescription || "");
-  const [seoKeywords, setSeoKeywords] = useState(listing.seoKeywords || "");
-  const [ogImage, setOgImage] = useState(listing.ogImage || "");
-  const [descriptionHtml, setDescriptionHtml] = useState(listing.description || "");
-
   // Amenities
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>(
     listing.amenities || []
@@ -115,6 +108,21 @@ export function AdminEditListingForm({
     mediaId: m.id,
   }));
   const [uploadedPhotos, setUploadedPhotos] = useState<Array<{ url: string }>>(initialImages);
+
+  const initialDescSummary = listing.description ? htmlToPlainText(listing.description).slice(0, 160) : "";
+  const initialOgImage = listing.ogImage || (initialImages[0]?.url ?? "");
+
+  // SEO States - default populated from listing title, description, and feature image
+  const [seoTitle, setSeoTitle] = useState(listing.seoTitle || listing.title || "");
+  const [seoDescription, setSeoDescription] = useState(listing.seoDescription || initialDescSummary);
+  const [seoKeywords, setSeoKeywords] = useState(listing.seoKeywords || "");
+  const [ogImage, setOgImage] = useState(initialOgImage);
+  const [descriptionHtml, setDescriptionHtml] = useState(listing.description || "");
+
+  // Track if user manually customized SEO values
+  const [isSeoTitleCustom, setIsSeoTitleCustom] = useState(Boolean(listing.seoTitle));
+  const [isSeoDescCustom, setIsSeoDescCustom] = useState(Boolean(listing.seoDescription));
+  const [isOgImageCustom, setIsOgImageCustom] = useState(Boolean(listing.ogImage));
 
   const handleLocationChange = (locId: string) => {
     setSelectedLocation(locId);
@@ -155,17 +163,38 @@ export function AdminEditListingForm({
   };
 
 
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle);
+    if (!isSeoTitleCustom) {
+      setSeoTitle(newTitle);
+    }
+  };
+
+  const handleDescriptionChange = (newHtml: string) => {
+    setDescriptionHtml(newHtml);
+    if (!isSeoDescCustom) {
+      const summary = htmlToPlainText(newHtml).slice(0, 160);
+      setSeoDescription(summary);
+    }
+  };
+
+  const handlePhotosChange = (photos: Array<{ url: string }>) => {
+    setUploadedPhotos(photos);
+    if (!isOgImageCustom && photos.length > 0 && photos[0]?.url) {
+      setOgImage(photos[0].url);
+    }
+  };
+
   const handleAutoFillSeo = () => {
-    if (!seoTitle) {
-      setSeoTitle(title);
+    setSeoTitle(title);
+    const plain = htmlToPlainText(descriptionHtml);
+    setSeoDescription(plain.slice(0, 160));
+    if (uploadedPhotos.length > 0 && uploadedPhotos[0]?.url) {
+      setOgImage(uploadedPhotos[0].url);
     }
-    if (!seoDescription) {
-      const plain = htmlToPlainText(descriptionHtml);
-      setSeoDescription(plain.slice(0, 160));
-    }
-    if (!ogImage && uploadedPhotos.length > 0) {
-      setOgImage(uploadedPhotos[0]?.url ?? "");
-    }
+    setIsSeoTitleCustom(false);
+    setIsSeoDescCustom(false);
+    setIsOgImageCustom(false);
   };
 
   const toggleAmenity = (amenity: string) => {
@@ -247,7 +276,7 @@ export function AdminEditListingForm({
               name="title"
               required
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="e.g. Kokane Chowk Multi-Speciality Clinic"
               className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
             />
@@ -378,7 +407,7 @@ export function AdminEditListingForm({
             name="description"
             initialValue={listing.description}
             error={state?.fieldErrors?.description?.[0]}
-            onChange={setDescriptionHtml}
+            onChange={handleDescriptionChange}
           />
         </div>
 
@@ -390,8 +419,8 @@ export function AdminEditListingForm({
             maxPhotos={15}
             label="Listing Showcase Photos & Media"
             description="Upload storefront, menu, and facility photos. The first image will be set as the main directory cover image."
-            onChange={setUploadedPhotos}
-            onSetOgImage={setOgImage}
+            onChange={handlePhotosChange}
+            onSetOgImage={(url) => { setOgImage(url); setIsOgImageCustom(true); }}
           />
         </div>
       </div>
@@ -723,7 +752,7 @@ export function AdminEditListingForm({
               type="text"
               name="seoTitle"
               value={seoTitle}
-              onChange={(e) => setSeoTitle(e.target.value)}
+              onChange={(e) => { setSeoTitle(e.target.value); setIsSeoTitleCustom(true); }}
               placeholder="e.g. Best Dental Clinic in Kokane Chowk, Pimple Saudagar | Dr. Sharma"
               maxLength={120}
               className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
@@ -747,7 +776,7 @@ export function AdminEditListingForm({
               name="seoDescription"
               rows={3}
               value={seoDescription}
-              onChange={(e) => setSeoDescription(e.target.value)}
+              onChange={(e) => { setSeoDescription(e.target.value); setIsSeoDescCustom(true); }}
               placeholder="e.g. Looking for reliable dental care in Pimple Saudagar? Dr. Sharma's Clinic at Kokane Chowk provides painless root canals, implants, and teeth cleaning."
               maxLength={320}
               className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
@@ -783,7 +812,7 @@ export function AdminEditListingForm({
               type="url"
               name="ogImage"
               value={ogImage}
-              onChange={(e) => setOgImage(e.target.value)}
+              onChange={(e) => { setOgImage(e.target.value); setIsOgImageCustom(true); }}
               placeholder="https://... or click a photo below"
               className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-indigo-500 focus:outline-none"
             />
@@ -796,7 +825,7 @@ export function AdminEditListingForm({
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setOgImage(p.url)}
+                    onClick={() => { setOgImage(p.url); setIsOgImageCustom(true); }}
                     className={`relative h-11 w-16 rounded-md overflow-hidden border transition ${
                       ogImage === p.url ? "ring-2 ring-indigo-500 border-indigo-500" : "hover:border-primary opacity-80 hover:opacity-100"
                     }`}
