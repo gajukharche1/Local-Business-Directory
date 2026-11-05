@@ -58,6 +58,21 @@ const LOCALITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   "Govind Garden Area": { lat: 18.5971, lng: 73.8012 },
 };
 
+
+/** Strip HTML tags and decode common entities to produce plain text for SEO description. */
+function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function AdminEditListingForm({
   listing,
   categories,
@@ -87,6 +102,7 @@ export function AdminEditListingForm({
   const [seoDescription, setSeoDescription] = useState(listing.seoDescription || "");
   const [seoKeywords, setSeoKeywords] = useState(listing.seoKeywords || "");
   const [ogImage, setOgImage] = useState(listing.ogImage || "");
+  const [descriptionHtml, setDescriptionHtml] = useState(listing.description || "");
 
   // Amenities
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>(
@@ -136,6 +152,20 @@ export function AdminEditListingForm({
       },
       { timeout: 10000, enableHighAccuracy: true }
     );
+  };
+
+
+  const handleAutoFillSeo = () => {
+    if (!seoTitle) {
+      setSeoTitle(title);
+    }
+    if (!seoDescription) {
+      const plain = htmlToPlainText(descriptionHtml);
+      setSeoDescription(plain.slice(0, 160));
+    }
+    if (!ogImage && uploadedPhotos.length > 0) {
+      setOgImage(uploadedPhotos[0]?.url ?? "");
+    }
   };
 
   const toggleAmenity = (amenity: string) => {
@@ -348,6 +378,7 @@ export function AdminEditListingForm({
             name="description"
             initialValue={listing.description}
             error={state?.fieldErrors?.description?.[0]}
+            onChange={setDescriptionHtml}
           />
         </div>
 
@@ -445,18 +476,233 @@ export function AdminEditListingForm({
         </div>
       </div>
 
-      {/* 3. Search Engine Optimization (SEO) */}
+
+
+      {/* 3. Contact & Channels */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-5">
         <div className="flex items-center gap-2 border-b pb-3">
-          <Search className="h-5 w-5 text-primary" />
+          <Phone className="h-5 w-5 text-primary" />
+          <h2 className="text-base font-bold text-foreground">3. Contact & Direct Channels</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h2 className="text-base font-bold text-foreground">
-              3. Search Engine Optimization (SEO & Meta Tags)
-            </h2>
-            <p className="text-[11px] text-muted-foreground">
-              Configure search engine title, meta description, and keywords for Google indexation
-            </p>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Primary Phone Number
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              defaultValue={listing.phone || ""}
+              placeholder="+91 98765 43210"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            />
           </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              WhatsApp Contact Number
+            </label>
+            <input
+              type="tel"
+              name="whatsapp"
+              defaultValue={listing.whatsapp || ""}
+              placeholder="+91 98765 43210"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Official Email Address
+            </label>
+            <input
+              type="email"
+              name="email"
+              defaultValue={listing.email || ""}
+              placeholder="contact@business.com"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Official Website URL
+            </label>
+            <input
+              type="url"
+              name="website"
+              defaultValue={listing.website || ""}
+              placeholder="https://www.business.com"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Amenities & Facilities */}
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-4">
+        <div className="flex items-center gap-2 border-b pb-3">
+          <Tag className="h-5 w-5 text-primary" />
+          <h2 className="text-base font-bold text-foreground">4. Amenities & Facilities</h2>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+          {POPULAR_AMENITIES.map((amenity) => {
+            const checked = selectedAmenities.includes(amenity);
+            return (
+              <label
+                key={amenity}
+                className={`flex items-center gap-2 rounded-lg border p-2.5 text-xs font-medium cursor-pointer transition ${
+                  checked
+                    ? "bg-primary/10 border-primary text-primary"
+                    : "hover:bg-muted/40 text-foreground"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  name="amenities"
+                  value={amenity}
+                  checked={checked}
+                  onChange={() => toggleAmenity(amenity)}
+                  className="rounded border-border text-primary focus:ring-primary"
+                />
+                <span>{amenity}</span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 5. Administrative Controls */}
+      <div className="rounded-2xl border border-red-500/20 bg-card p-6 shadow-sm space-y-5">
+        <div className="flex items-center gap-2 border-b pb-3">
+          <ShieldCheck className="h-5 w-5 text-red-600" />
+          <h2 className="text-base font-bold text-foreground">5. Administrative Controls</h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Publication Status
+            </label>
+            <select
+              name="status"
+              defaultValue={listing.status}
+              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            >
+              <option value="published">Published (Live to public)</option>
+              <option value="pending_review">Pending Review</option>
+              <option value="draft">Draft (Hidden)</option>
+              <option value="rejected">Rejected</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Claim / Verification Status
+            </label>
+            <select
+              name="claimStatus"
+              defaultValue={listing.claimStatus}
+              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            >
+              <option value="verified">Verified Business</option>
+              <option value="claimed">Claimed</option>
+              <option value="unclaimed">Unclaimed</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Subscription Plan
+            </label>
+            <select
+              name="planId"
+              defaultValue={listing.planId || ""}
+              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            >
+              <option value="">-- Free Tier Default --</option>
+              {plans.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} (₹{p.priceMinor / 100})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Assigned Account Owner
+            </label>
+            <select
+              name="ownerId"
+              defaultValue={listing.ownerId || ""}
+              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            >
+              <option value="">-- No Owner Assigned --</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name} ({u.email}) [{u.role}]
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Search Priority (0 to 100)
+            </label>
+            <input
+              type="number"
+              name="priority"
+              defaultValue={listing.priority || 0}
+              min="0"
+              max="100"
+              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            />
+          </div>
+
+          <div className="flex items-center pt-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="featured"
+                value="true"
+                defaultChecked={listing.featured}
+                className="rounded border-border text-red-600 focus:ring-red-600 h-4 w-4"
+              />
+              <span className="text-xs font-bold text-foreground">
+                Feature on Homepage & Spotlight
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. Search Engine Optimization (SEO) */}
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-5">
+        <div className="flex items-center justify-between border-b pb-3">
+          <div className="flex items-center gap-2">
+            <Search className="h-5 w-5 text-primary" />
+            <div>
+              <h2 className="text-base font-bold text-foreground">
+                6. Search Engine Optimization (SEO &amp; Meta Tags)
+              </h2>
+              <p className="text-[11px] text-muted-foreground">
+                Configure search engine title, meta description, and keywords for Google indexation
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleAutoFillSeo}
+            className="inline-flex items-center gap-1.5 rounded-lg border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition shrink-0"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+            <span>Auto-fill from Content</span>
+          </button>
         </div>
 
         <div className="space-y-4">
@@ -618,210 +864,7 @@ export function AdminEditListingForm({
         </div>
       </div>
 
-      {/* 4. Contact & Channels */}
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-5">
-        <div className="flex items-center gap-2 border-b pb-3">
-          <Phone className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">4. Contact & Direct Channels</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-foreground mb-1">
-              Primary Phone Number
-            </label>
-            <input
-              type="tel"
-              name="phone"
-              defaultValue={listing.phone || ""}
-              placeholder="+91 98765 43210"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-foreground mb-1">
-              WhatsApp Contact Number
-            </label>
-            <input
-              type="tel"
-              name="whatsapp"
-              defaultValue={listing.whatsapp || ""}
-              placeholder="+91 98765 43210"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-foreground mb-1">
-              Official Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              defaultValue={listing.email || ""}
-              placeholder="contact@business.com"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-foreground mb-1">
-              Official Website URL
-            </label>
-            <input
-              type="url"
-              name="website"
-              defaultValue={listing.website || ""}
-              placeholder="https://www.business.com"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* 5. Amenities & Facilities */}
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-4">
-        <div className="flex items-center gap-2 border-b pb-3">
-          <Tag className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-foreground">5. Amenities & Facilities</h2>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-          {POPULAR_AMENITIES.map((amenity) => {
-            const checked = selectedAmenities.includes(amenity);
-            return (
-              <label
-                key={amenity}
-                className={`flex items-center gap-2 rounded-lg border p-2.5 text-xs font-medium cursor-pointer transition ${
-                  checked
-                    ? "bg-primary/10 border-primary text-primary"
-                    : "hover:bg-muted/40 text-foreground"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  name="amenities"
-                  value={amenity}
-                  checked={checked}
-                  onChange={() => toggleAmenity(amenity)}
-                  className="rounded border-border text-primary focus:ring-primary"
-                />
-                <span>{amenity}</span>
-              </label>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 6. Administrative Controls */}
-      <div className="rounded-2xl border border-red-500/20 bg-card p-6 shadow-sm space-y-5">
-        <div className="flex items-center gap-2 border-b pb-3">
-          <ShieldCheck className="h-5 w-5 text-red-600" />
-          <h2 className="text-base font-bold text-foreground">6. Administrative Controls</h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-foreground mb-1">
-              Publication Status
-            </label>
-            <select
-              name="status"
-              defaultValue={listing.status}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
-            >
-              <option value="published">Published (Live to public)</option>
-              <option value="pending_review">Pending Review</option>
-              <option value="draft">Draft (Hidden)</option>
-              <option value="rejected">Rejected</option>
-              <option value="archived">Archived</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-foreground mb-1">
-              Claim / Verification Status
-            </label>
-            <select
-              name="claimStatus"
-              defaultValue={listing.claimStatus}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
-            >
-              <option value="verified">Verified Business</option>
-              <option value="claimed">Claimed</option>
-              <option value="unclaimed">Unclaimed</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-foreground mb-1">
-              Subscription Plan
-            </label>
-            <select
-              name="planId"
-              defaultValue={listing.planId || ""}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
-            >
-              <option value="">-- Free Tier Default --</option>
-              {plans.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} (₹{p.priceMinor / 100})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-foreground mb-1">
-              Assigned Account Owner
-            </label>
-            <select
-              name="ownerId"
-              defaultValue={listing.ownerId || ""}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
-            >
-              <option value="">-- No Owner Assigned --</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name} ({u.email}) [{u.role}]
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-foreground mb-1">
-              Search Priority (0 to 100)
-            </label>
-            <input
-              type="number"
-              name="priority"
-              defaultValue={listing.priority || 0}
-              min="0"
-              max="100"
-              className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
-            />
-          </div>
-
-          <div className="flex items-center pt-6">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                name="featured"
-                value="true"
-                defaultChecked={listing.featured}
-                className="rounded border-border text-red-600 focus:ring-red-600 h-4 w-4"
-              />
-              <span className="text-xs font-bold text-foreground">
-                Feature on Homepage & Spotlight
-              </span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Action Submit Buttons */}
+            {/* Action Submit Buttons */}
       <div className="flex items-center justify-end gap-3 pt-4 border-t">
         <Link
           href="/admin/listings"

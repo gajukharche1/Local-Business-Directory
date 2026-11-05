@@ -24,6 +24,7 @@ interface ContentBlockEditorProps {
   name?: string;
   required?: boolean;
   error?: string;
+  onChange?: (html: string) => void;
 }
 
 const HTML_TEMPLATES = [
@@ -100,20 +101,26 @@ export function ContentBlockEditor({
   name = "description",
   required = true,
   error,
+  onChange,
 }: ContentBlockEditorProps) {
   const [content, setContent] = useState(
     initialValue ||
       `<p>Welcome to our business in Pimple Saudagar. We provide premier local services tailored for residents and families across PCMC.</p>`
   );
+  /** Stream content to parent for SEO auto-fill without touching form submission. */
+  const updateContent = (val: string) => {
+    setContent(val);
+    onChange?.(val);
+  };
   const [activeTab, setActiveTab] = useState<"visual" | "code">("visual");
 
   const insertTag = (openTag: string, closeTag: string, defaultText: string) => {
     const snippet = `${openTag}${defaultText}${closeTag}`;
-    setContent((prev) => prev + "\n" + snippet);
+    updateContent(content + "\n" + snippet);
   };
 
   const insertTemplate = (templateHtml: string) => {
-    setContent((prev) => prev.trim() + "\n\n" + templateHtml);
+    updateContent(content.trim() + "\n\n" + templateHtml);
   };
 
   return (
@@ -214,7 +221,7 @@ export function ContentBlockEditor({
           </button>
           <button
             type="button"
-            onClick={() => setContent((prev) => prev + "\n<hr />")}
+            onClick={() => updateContent(content + "\n<hr />")}
             title="Horizontal Divider"
             className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground text-xs"
           >
@@ -253,7 +260,7 @@ export function ContentBlockEditor({
             <textarea
               name={name}
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={(e) => updateContent(e.target.value)}
               required={required}
               rows={10}
               placeholder="<div>Enter or paste HTML content blocks here...</div>"
