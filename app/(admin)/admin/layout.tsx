@@ -46,9 +46,9 @@ export default async function AdminLayout({
     },
     {
       label: "Listing",
-      icon: "clipboard-list",
+      icon: "Store",
       children: [
-        { label: "All Listing", href: "/admin/listings", icon: "clipboard-list" },
+        { label: "All Listing", href: "/admin/listings", icon: "clipboard" },
         { label: "Add New Listing", href: "/admin/listings/new", icon: "plus" },
       ],
     },

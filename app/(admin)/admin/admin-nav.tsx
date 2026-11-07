@@ -8,6 +8,7 @@ import {
   Sliders,
   Store,
   ClipboardList,
+  Clipboard,
   Upload,
   PlusCircle,
   FolderTree,
@@ -22,6 +23,8 @@ export type NavIconKey =
   | "sliders"
   | "shield"
   | "store"
+  | "Store"
+  | "clipboard"
   | "clipboard-list"
   | "plus"
   | "folder"
@@ -34,6 +37,8 @@ const NAV_ICONS: Record<NavIconKey, LucideIcon> = {
   sliders: Sliders,
   shield: ShieldAlert,
   store: Store,
+  Store: Store,
+  clipboard: Clipboard,
   "clipboard-list": ClipboardList,
   plus: PlusCircle,
   folder: FolderTree,

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Search, MapPin, Building2, Star, ShieldCheck, ArrowRight, Sparkles, Megaphone } from "lucide-react";
+import { Search, MapPin, Building2, Star, ShieldCheck, ArrowRight, Sparkles } from "lucide-react";
 import { TaxonomyService } from "@/lib/services/taxonomy.service";
 import { SettingsService } from "@/lib/services/settings.service";
 import { CategoryCard } from "@/components/taxonomy/category-card";
@@ -39,14 +39,6 @@ export default async function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      {/* Optional Global Announcement Banner */}
-      {settings.announcementActive && settings.announcementBanner && (
-        <div className="bg-primary text-primary-foreground py-2 px-4 text-center text-xs font-semibold flex items-center justify-center gap-2">
-          <Megaphone className="h-3.5 w-3.5 shrink-0" />
-          <span>{settings.announcementBanner}</span>
-        </div>
-      )}
-
       {/* Top Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
