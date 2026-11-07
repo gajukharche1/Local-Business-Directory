@@ -34,7 +34,7 @@ export default async function AdminDashboardPage() {
           System Overview & Operations
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Directory health, moderation queue status, and community activity for Pimple Saudagar
+          Directory health, moderation queue status, and community activity for <Your Business Name>
         </p>
       </div>
 
