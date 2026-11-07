@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
+import { SettingsService } from "@/lib/services/settings.service";
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const settings = await SettingsService.getAll();
+
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-muted/20">
       <div className="sm:mx-auto sm:w-full sm:max-w-md px-4">
@@ -14,16 +17,16 @@ export default function AuthLayout({
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground mb-6 transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          <span>Back to Local Business Directory</span>
+          <span>Back to {settings.siteName || "Local Business Directory"}</span>
         </Link>
 
         <div className="flex items-center gap-2 mb-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-base shadow-sm">
-            PS
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-base shadow-sm uppercase shrink-0">
+            {settings.siteBadge || "PS"}
           </div>
           <div>
             <span className="font-bold tracking-tight text-lg text-foreground block leading-none">
-              Pimple Saudagar
+              {settings.siteName || "Pimple Saudagar"}
             </span>
             <span className="text-[10px] tracking-wider text-muted-foreground uppercase font-semibold">
               Hyperlocal Business Directory
