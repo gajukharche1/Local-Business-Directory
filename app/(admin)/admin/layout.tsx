@@ -37,15 +37,21 @@ export default async function AdminLayout({
   const pendingTotal = pendingReviews + pendingClaims + pendingListings;
 
   const navItems: AdminNavItem[] = [
-    { label: "Dashboard & Health", href: "/admin", icon: "sliders" },
+    { label: "Dashboard", href: "/admin", icon: "sliders" },
     {
       label: "Moderation Queue",
       href: "/admin/moderation",
       icon: "shield",
       badge: pendingTotal > 0 ? pendingTotal : undefined,
     },
-    { label: "All Listings", href: "/admin/listings", icon: "clipboard-list" },
-    { label: "Add New Listing", href: "/admin/listings/new", icon: "plus" },
+    {
+      label: "Listing",
+      icon: "clipboard-list",
+      children: [
+        { label: "All Listing", href: "/admin/listings", icon: "clipboard-list" },
+        { label: "Add New Listing", href: "/admin/listings/new", icon: "plus" },
+      ],
+    },
     { label: "Categories", href: "/admin/categories", icon: "folder" },
     { label: "Locations", href: "/admin/locations", icon: "map" },
     { label: "CSV Import / Export", href: "/admin/imports", icon: "upload" },
