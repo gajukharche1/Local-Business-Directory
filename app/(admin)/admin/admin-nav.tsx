@@ -2,12 +2,43 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { type LucideIcon } from "lucide-react";
+import {
+  ShieldAlert,
+  Sliders,
+  Store,
+  Upload,
+  PlusCircle,
+  FolderTree,
+  MapPin,
+  Settings,
+  type LucideIcon,
+} from "lucide-react";
+
+export type NavIconKey =
+  | "sliders"
+  | "shield"
+  | "store"
+  | "plus"
+  | "folder"
+  | "map"
+  | "upload"
+  | "settings";
+
+const NAV_ICONS: Record<NavIconKey, LucideIcon> = {
+  sliders: Sliders,
+  shield: ShieldAlert,
+  store: Store,
+  plus: PlusCircle,
+  folder: FolderTree,
+  map: MapPin,
+  upload: Upload,
+  settings: Settings,
+};
 
 export interface AdminNavItem {
   label: string;
   href: string;
-  icon: LucideIcon;
+  icon: NavIconKey;
   badge?: number;
 }
 
@@ -21,7 +52,7 @@ export function AdminNav({ items }: AdminNavProps) {
   return (
     <nav className="p-3 space-y-1">
       {items.map((item) => {
-        const Icon = item.icon;
+        const Icon = NAV_ICONS[item.icon] || Sliders;
         const isActive =
           item.href === "/admin"
             ? pathname === "/admin"
@@ -69,4 +100,3 @@ export function AdminNav({ items }: AdminNavProps) {
     </nav>
   );
 }
-

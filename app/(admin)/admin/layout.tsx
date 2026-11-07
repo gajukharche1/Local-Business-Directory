@@ -9,14 +9,8 @@ import { SettingsService } from "@/lib/services/settings.service";
 import { AdminNav, type AdminNavItem } from "./admin-nav";
 import {
   ShieldAlert,
-  Sliders,
-  Store,
-  Upload,
   ArrowLeft,
   LogOut,
-  PlusCircle,
-  FolderTree,
-  MapPin,
   Settings,
   ExternalLink,
 } from "lucide-react";
@@ -43,20 +37,20 @@ export default async function AdminLayout({
   const pendingTotal = pendingReviews + pendingClaims + pendingListings;
 
   const navItems: AdminNavItem[] = [
-    { label: "Dashboard & Health", href: "/admin", icon: Sliders },
+    { label: "Dashboard & Health", href: "/admin", icon: "sliders" },
     {
       label: "Moderation Queue",
       href: "/admin/moderation",
-      icon: ShieldAlert,
+      icon: "shield",
       badge: pendingTotal > 0 ? pendingTotal : undefined,
     },
-    { label: "Listings Directory", href: "/admin/listings", icon: Store },
-    { label: "Add New Listing", href: "/admin/listings/new", icon: PlusCircle },
-    { label: "Categories & SEO", href: "/admin/categories", icon: FolderTree },
-    { label: "Locations & SEO", href: "/admin/locations", icon: MapPin },
-    { label: "CSV Import / Export", href: "/admin/imports", icon: Upload },
+    { label: "Listings Directory", href: "/admin/listings", icon: "store" },
+    { label: "Add New Listing", href: "/admin/listings/new", icon: "plus" },
+    { label: "Categories & SEO", href: "/admin/categories", icon: "folder" },
+    { label: "Locations & SEO", href: "/admin/locations", icon: "map" },
+    { label: "CSV Import / Export", href: "/admin/imports", icon: "upload" },
     ...(hasRole(user.role, UserRole.admin)
-      ? [{ label: "Site & Settings", href: "/admin/settings", icon: Settings }]
+      ? [{ label: "Site & Settings", href: "/admin/settings", icon: "settings" as const }]
       : []),
   ];
 
