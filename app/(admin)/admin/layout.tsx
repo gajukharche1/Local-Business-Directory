@@ -44,10 +44,10 @@ export default async function AdminLayout({
       icon: "shield",
       badge: pendingTotal > 0 ? pendingTotal : undefined,
     },
-    { label: "Listings Directory", href: "/admin/listings", icon: "store" },
+    { label: "All Listings", href: "/admin/listings", icon: "clipboard-list" },
     { label: "Add New Listing", href: "/admin/listings/new", icon: "plus" },
-    { label: "Categories & SEO", href: "/admin/categories", icon: "folder" },
-    { label: "Locations & SEO", href: "/admin/locations", icon: "map" },
+    { label: "Categories", href: "/admin/categories", icon: "folder" },
+    { label: "Locations", href: "/admin/locations", icon: "map" },
     { label: "CSV Import / Export", href: "/admin/imports", icon: "upload" },
     ...(hasRole(user.role, UserRole.admin)
       ? [{ label: "Site & Settings", href: "/admin/settings", icon: "settings" as const }]
