@@ -1,37 +1,80 @@
-# Development Plan: Admin Dashboard & Site Settings
+# Development & Modernization Plan: Admin Dashboard & Site Settings
 
 ## 1. Overview
-The **Dashboard & Site Settings** module allows administrators to dynamically manage the directory's branding, admin interface identity, and minor operational settings from a centralized interface at `/admin/settings`.
+The **Dashboard & Site Settings** module allows administrators to dynamically manage the directory's branding, admin interface identity, and operational governance from a centralized interface at `/admin/settings`.
 
-This resolves hardcoded values such as the `<Your Business Name>` placeholder in `app/(admin)/admin/page.tsx` and the hardcoded `Pimple Saudagar` / `PS` logo initials in the admin navigation sidebar in `app/(admin)/admin/layout.tsx`.
-
----
-
-## 2. Scope & Features
-
-### A. Dynamic Identity & Branding
-- **Website / Directory Name**: Configurable main directory name (e.g. *Pimple Saudagar Local Directory* or custom name).
-- **Admin Dashboard Title**: Configurable subtitle displayed under the brand badge in the admin sidebar.
-- **Logo Badge Initials**: 2-4 character shortcode (e.g. *PS*) for the header badge and mobile icons.
-- **Site Tagline / Description**: Displayed in the admin overview header and available across metadata.
-
-### B. Directory Governance & Minor Controls
-- **Public Submissions Toggle**: Enable or disable new public business submissions (`/submit`).
-- **Review Moderation Toggle**: Automatically publish user reviews or require moderator review before publishing.
-- **Listing Claim Requests Toggle**: Enable or disable business ownership claim submissions.
-- **Announcement Banner**: Optional alert banner message with active/inactive toggle displayed across the directory.
-
-### C. Contact & Regional Details
-- **Primary Support Email**: Contact email for listing alerts and user notifications.
-- **Primary Support Phone**: Helpline / WhatsApp support number.
-- **Primary Locality / City**: Default geographic scope (e.g. *Pimple Saudagar, PCMC, Pune*).
+This document outlines the core architecture, data persistence, and the **modern UI/UX design overhaul** for the entire Admin Dashboard following modern design system principles (`agency-ui-designer` & `design-system` standards).
 
 ---
 
-## 3. Architecture & Technical Design
+## 2. Design System Architecture & Invariants
 
-### Data Persistence (`prisma/schema.prisma`)
-A lightweight, flexible key-value model stored in PostgreSQL:
+### A. Token Architecture & Semantic Mapping
+All interface elements map to consistent semantic primitives without random color values:
+- **Brand & Accent**: `primary` (`bg-primary`, `text-primary-foreground`) with subtle hover states (`hover:bg-primary/90`).
+- **Surface Elevation**:
+  - Base: `bg-background`
+  - Cards & Panels: `bg-card` with `border-border/60` and `shadow-card`
+  - Inset & Active Indicators: `bg-muted/40` and `bg-primary/10`
+- **Functional Semantics**:
+  - **Success / Live**: Emerald (`text-emerald-600`, `bg-emerald-500/10`, `border-emerald-500/20`)
+  - **Attention / Pending**: Amber (`text-amber-600`, `bg-amber-500/10`, `border-amber-500/20`)
+  - **Security / Claims**: Indigo/Blue (`text-blue-600`, `bg-blue-500/10`, `border-blue-500/20`)
+  - **Audience / Users**: Purple (`text-purple-600`, `bg-purple-500/10`, `border-purple-500/20`)
+- **Concentric Radii**:
+  - Container cards: `rounded-2xl` (16px)
+  - Nested elements / inner panels: `rounded-xl` (12px)
+  - Buttons / Controls: `rounded-lg` (8px)
+  - Badges / Avatars: `rounded-full` or `rounded-lg` with concentric gap rules.
+
+### B. Typography & Data Presentation
+- **Headings**: Heavier weights (`font-bold`, `font-extrabold`), tighter letter tracking (`tracking-tight`) for high-contrast visual hierarchy.
+- **Data & Numbers**: All metrics and counters use `font-mono tabular-nums font-extrabold` for clean columnar alignment.
+- **Labels & UI Text**: Medium weight (`font-semibold`), legible sizing (`text-xs`, `text-sm`).
+- **No Trend Slop**: No decorative fake metadata or faux-technical captions; clear, human-readable copy only.
+
+### C. Chrome Stability
+- Fixed-height top navigation (`h-14` / `h-16`) with stable flex layouts.
+- Truncated text (`truncate`, `whitespace-nowrap`) prevents unexpected layout shifts when labels or user names change.
+- Micro-interactions restrained to 150ms–200ms ease-out transitions.
+
+---
+
+## 3. UI/UX Modernization Checklist
+
+- [ ] **1. Admin Sidebar & Top Chrome Overhaul (`layout.tsx` & `admin-nav.tsx`)**
+  - Extract sidebar navigation to a Client Component (`admin-nav.tsx`) utilizing `usePathname()`.
+  - Active route highlighting: Active tab receives soft accent background (`bg-primary/10 text-primary font-bold`), clean icon fill, and left accent border.
+  - Refined Brand Avatar: Rounded-xl brand icon with subtle gradient and typography hierarchy.
+  - User Status Capsule: Modern avatar circle with role badge and operational status pulse dot.
+  - Header Upgrade: Live pulsing operational indicator ("ASVS Level 2 Guard Active"), live clock/date display, and quick moderation pill.
+
+- [ ] **2. Dashboard Overview Re-imagination (`app/(admin)/admin/page.tsx`)**
+  - **Hero Greeting**: Personalized welcome greeting ("Welcome back, {admin}") with dynamic system status pill and quick action buttons.
+  - **KPI Metric Cards**:
+    - High-polish cards with hover elevation (`hover:-translate-y-1 hover:shadow-lg transition-all duration-200`).
+    - Dual-tone iconography with rounded-xl containers.
+    - Real-time trend & status sub-badges (e.g., "Live in directory", "Awaiting verification").
+    - Tabular numbers (`tabular-nums`) for crisp metric rendering.
+  - **Moderation Queue Command Center**:
+    - Interactive summary card showing breakdown of Pending Reviews, Pending Claims, and Pending Listings with distinct badges.
+    - One-click CTA to open the moderation queue.
+  - **Operations Quick Launchpad**:
+    - 4-card quick action grid: *Add New Listing*, *Manage Categories*, *Review Claims*, *Site Settings*.
+  - **System Health & Security Matrix**:
+    - Visual indicators for Database connectivity, Media Storage status, Authentication policy, and Cache latency.
+
+- [ ] **3. Settings Interface Beautification (`settings-form.tsx`)**
+  - **Segmented Tab Navigation**: Switch smoothly between *Identity & Branding*, *Directory Governance*, *Regional & Contacts*, and *Announcement Banner*.
+  - **Interactive Real-Time Simulation**: Live sidebar header preview matching the exact 1:1 redesigned sidebar dimensions and styling.
+  - **Concentric Accessible Switches**: Smooth custom toggle switches with keyboard focus rings and ARIA support.
+  - **Sticky Action Bar**: Prominent save and reset controls with animated pending state indicators.
+
+---
+
+## 4. Architecture & Technical Invariants
+
+### Database (`prisma/schema.prisma`)
 ```prisma
 model SiteSetting {
   id        String   @id @default(cuid())
@@ -46,55 +89,23 @@ model SiteSetting {
 }
 ```
 
-### Service Layer (`lib/services/settings.service.ts`)
-- **Default Fallback Strategy**: Provides safe, pre-configured defaults if database rows do not exist or during offline local development.
-- **Cache-Optimized Reads**: Uses Next.js data caching mechanisms for sub-millisecond retrieval on server renders.
-- **Batch Updates**: Type-safe updates of multiple key-value pairs in a single transaction.
+### Safe Fallback Service (`lib/services/settings.service.ts`)
+- Returns `DEFAULT_SITE_SETTINGS` seamlessly if database queries fail or during offline development.
+- Batch upsert logic handles updates in an interactive transaction with automatic cache busting.
 
 ### Server Actions (`actions/settings.ts`)
-- **Security & Authorization**: Enforces role-based access control with `assertAuthorized(user, UserRole.admin)`.
-- **Validation**: Enforces type and string length constraints with Zod.
-- **Revalidation**: Invalidates `/admin`, `/admin/settings`, and `/` via `revalidatePath` to immediately reflect updates across all active views.
-
-### UI Components (`app/(admin)/admin/settings/`)
-- `page.tsx`: Server Component verifying authorization and fetching current values.
-- `settings-form.tsx`: Responsive client component utilizing React 19 transitions, accessible fieldsets, live preview badge, and status toast notifications.
+- Role-based authorization (`assertAuthorized(user, UserRole.admin)`).
+- Zod schema input validation.
+- Friendly error catching for missing database tables.
 
 ---
 
-## 4. Implementation Steps (Action Items)
+## 5. Completed Implementation Milestones
 
-- [x] **Step 1: Database Model & Prisma Client**
-  - Add `SiteSetting` model to `prisma/schema.prisma`.
-  - Run `prisma generate` to update Prisma Client types.
-  
-- [x] **Step 2: Settings Service Layer**
-  - Create `lib/services/settings.service.ts` with typed defaults, safe fallback error handling, and query helpers.
-
-- [x] **Step 3: Server Action & RBAC**
-  - Create `actions/settings.ts` with input validation, admin permission guard, and path revalidation.
-
-- [x] **Step 4: Frontend Settings Form Component**
-  - Build `app/(admin)/admin/settings/settings-form.tsx` with tabs/cards for Branding, Operations, and Region/Contact info.
-  - Implement instant live preview for branding badge & title.
-
-- [x] **Step 5: Admin Settings Page**
-  - Build `app/(admin)/admin/settings/page.tsx` integrating breadcrumbs, description, and the settings form.
-
-- [x] **Step 6: Sidebar & Navigation Integration**
-  - Update `app/(admin)/admin/layout.tsx` to add "Settings" to the sidebar navigation.
-  - Replace static `Pimple Saudagar` and `PS` sidebar header with dynamic values from the settings service.
-
-- [x] **Step 7: Admin Dashboard Overview Integration**
-  - Update `app/(admin)/admin/page.tsx` to dynamically render the configured site name in place of `<Your Business Name>`.
-
-- [x] **Step 8: Verification & Quality Assurance**
-  - Run TypeScript verification (`npx tsc --noEmit`).
-  - Verify error handling and fallback resilience when offline.
-
----
-
-## 5. Verification & Safety Criteria
-- Zero regression to existing admin features (Moderation, Listings, Categories, Locations, CSV Imports).
-- Offline robustness: Pages render cleanly with defaults if the database is temporarily unreachable.
-- Security: Strictly restricted to users with `admin` role.
+- [x] **Step 1: Database Model & Prisma Client**: Added `SiteSetting` and executed `prisma generate`.
+- [x] **Step 2: Settings Service Layer**: Implemented `lib/services/settings.service.ts` with typed defaults.
+- [x] **Step 3: Server Action**: Implemented `actions/settings.ts` with error handling and RBAC protection.
+- [x] **Step 4: Settings Page & Form**: Built initial `page.tsx` and `settings-form.tsx`.
+- [x] **Step 5: Database Push to Remote**: Pushed schema to remote database `db.prisma.io:5432`.
+- [x] **Step 6: Git Merge & Vercel Deploy**: Merged to `main` and verified live deployment on `https://ps-lyart.vercel.app`.
+- [x] **Step 7: Modern UI/UX Overhaul**: Applied modern design practices across sidebar (active navigation state with client component), header (operational pulse indicator), dashboard overview (KPI cards with tabular-nums and quick launchpad), and settings form (segmented tabs, accessible switches, 1:1 live preview).
