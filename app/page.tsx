@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Search, MapPin, Building2, Star, ShieldCheck, ArrowRight, Sparkles } from "lucide-react";
+import { Search, MapPin, Building2, Star, ShieldCheck, ArrowRight, Sparkles, Megaphone } from "lucide-react";
 import { TaxonomyService } from "@/lib/services/taxonomy.service";
+import { SettingsService } from "@/lib/services/settings.service";
 import { CategoryCard } from "@/components/taxonomy/category-card";
 import { ListingCard } from "@/components/listing/listing-card";
 import db from "@/lib/db/client";
@@ -9,7 +10,7 @@ import { ListingStatus } from "@prisma/client";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [categories, locations, featuredListings] = await Promise.all([
+  const [categories, locations, featuredListings, settings] = await Promise.all([
     TaxonomyService.getFeaturedCategories(),
     TaxonomyService.getFeaturedLocations(),
     db.listing
@@ -33,26 +34,35 @@ export default async function HomePage() {
         take: 6,
       })
       .catch(() => []),
+    SettingsService.getAll(),
   ]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      {/* Optional Global Announcement Banner */}
+      {settings.announcementActive && settings.announcementBanner && (
+        <div className="bg-primary text-primary-foreground py-2 px-4 text-center text-xs font-semibold flex items-center justify-center gap-2">
+          <Megaphone className="h-3.5 w-3.5 shrink-0" />
+          <span>{settings.announcementBanner}</span>
+        </div>
+      )}
+
       {/* Top Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow-sm">
-              LBD
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow-sm uppercase shrink-0">
+              {settings.siteBadge || "LBD"}
             </div>
             <div>
               <span className="font-bold tracking-tight text-lg text-foreground block leading-none">
-                Local Business
+                {settings.siteName || "Local Business"}
               </span>
               <span className="text-[10px] tracking-wider text-muted-foreground uppercase font-semibold">
                 Directory
               </span>
             </div>
-          </div>
+          </Link>
 
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
             <Link href="/search" className="transition-colors hover:text-foreground">
@@ -73,12 +83,14 @@ export default async function HomePage() {
             >
               Sign In
             </Link>
-            <Link
-              href="/submit"
-              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              + List Business
-            </Link>
+            {settings.allowPublicSubmissions && (
+              <Link
+                href="/submit"
+                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                + List Business
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -94,7 +106,7 @@ export default async function HomePage() {
 
             <h1 className="max-w-4xl text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl text-foreground">
               Find Trusted Services & Businesses in{" "}
-              <span className="text-primary-600">Your City</span>
+              <span className="text-primary-600">{settings.defaultLocality || "Your City"}</span>
             </h1>
 
             <p className="mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
@@ -210,7 +222,7 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* Popular Locations in Pimple Saudagar */}
+        {/* Popular Locations */}
         <section className="container py-12 border-t">
           <div className="mb-6">
             <h2 className="text-2xl font-bold tracking-tight text-foreground">
@@ -281,7 +293,7 @@ export default async function HomePage() {
       {/* Footer */}
       <footer className="border-t bg-muted/40 py-8 text-sm text-muted-foreground">
         <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
-          <p>© {new Date().getFullYear()} Local Business Directory. Built for the community.</p>
+          <p>© {new Date().getFullYear()} {settings.siteName || "Local Business Directory"}. Built for the community.</p>
           <div className="flex gap-6">
             <Link href="/privacy" className="hover:text-foreground">
               Privacy (DPDP Act)
