@@ -48,14 +48,14 @@ export default async function SubmitListingPage() {
         <div className="container flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-base shadow-sm">
-              PS
+              LBD
             </div>
             <div>
               <span className="font-bold tracking-tight text-sm text-foreground block leading-none">
-                Pimple Saudagar
+                Local Business
               </span>
               <span className="text-[10px] tracking-wider text-muted-foreground uppercase font-semibold">
-                Local Business Directory
+                Directory
               </span>
             </div>
           </Link>
@@ -80,12 +80,11 @@ export default async function SubmitListingPage() {
           </div>
 
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-            List Your Business in Pimple Saudagar
+            List Your Business in the Local Directory
           </h1>
 
           <p className="text-sm text-muted-foreground">
-            Connect directly with residents looking for verified services across Kunal Icon Road,
-            Kokane Chowk, Shivar Chowk, and Govind Garden.
+            Connect directly with residents looking for verified services across your local neighborhood and commercial hubs.
           </p>
         </div>
 

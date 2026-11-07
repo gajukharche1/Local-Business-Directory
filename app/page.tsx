@@ -42,14 +42,14 @@ export default async function HomePage() {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow-sm">
-              PS
+              LBD
             </div>
             <div>
               <span className="font-bold tracking-tight text-lg text-foreground block leading-none">
-                Pimple Saudagar
+                Local Business
               </span>
               <span className="text-[10px] tracking-wider text-muted-foreground uppercase font-semibold">
-                Local Business Directory
+                Directory
               </span>
             </div>
           </div>
@@ -89,17 +89,17 @@ export default async function HomePage() {
           <div className="container relative z-10 flex flex-col items-center text-center">
             <div className="inline-flex items-center gap-2 rounded-full border bg-background/80 px-3.5 py-1 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur mb-6">
               <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-              <span>Verified Local Business Directory for Pimple Saudagar, PCMC</span>
+              <span>Verified Local Business Directory for Your Community</span>
             </div>
 
             <h1 className="max-w-4xl text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl text-foreground">
               Find Trusted Services & Businesses in{" "}
-              <span className="text-primary-600">Pimple Saudagar</span>
+              <span className="text-primary-600">Your City</span>
             </h1>
 
             <p className="mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
               Explore top-rated clinics, restaurants, salons, home maintenance, and retail stores
-              across Kunal Icon Road, Kokane Chowk, Govind Garden, and Shivar Chowk.
+              across your favorite neighborhoods and local commercial hubs.
             </p>
 
             {/* Search Box Preview */}
@@ -120,7 +120,6 @@ export default async function HomePage() {
                   <input
                     type="text"
                     name="location"
-                    defaultValue="Pimple Saudagar"
                     placeholder="Locality / Landmark"
                     className="w-full rounded-lg bg-background py-3 pl-11 pr-4 text-sm outline-none ring-1 ring-border focus:ring-2 focus:ring-primary"
                   />
@@ -218,7 +217,7 @@ export default async function HomePage() {
               Neighborhood Hubs & Localities
             </h2>
             <p className="text-xs text-muted-foreground mt-1">
-              Find commercial complexes, markets, and shops near prominent junctions in Pimple Saudagar
+              Find commercial complexes, markets, and shops near prominent junctions in your local area
             </p>
           </div>
 
@@ -252,7 +251,7 @@ export default async function HomePage() {
               </div>
               <h3 className="font-bold text-lg mb-2">5,000+ Local Listings</h3>
               <p className="text-sm text-muted-foreground">
-                Comprehensive coverage of independent stores, clinics, services, and commercial establishments in Pimple Saudagar.
+                Comprehensive coverage of independent stores, clinics, services, and commercial establishments in your neighborhood.
               </p>
             </div>
 

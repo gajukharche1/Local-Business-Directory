@@ -159,11 +159,11 @@ export function SubmitListingForm({
   const previewTitle =
     seoTitle ||
     (listingTitle
-      ? `${listingTitle} in ${localityText}, Pimple Saudagar`
+      ? `${listingTitle} in ${localityText}`
       : "Business Name | Local Business Directory");
   const previewDesc =
     seoDescription ||
-    "Find contact phone, opening hours, WhatsApp, ratings, and customer reviews for verified businesses in Pimple Saudagar, PCMC.";
+    "Find contact phone, opening hours, WhatsApp, ratings, and customer reviews for verified local businesses.";
 
   if (state?.success) {
     return (
@@ -364,7 +364,7 @@ export function SubmitListingForm({
 
           <div>
             <label className="block text-xs font-semibold text-foreground mb-1">
-              Locality in Pimple Saudagar *
+              Locality / Neighborhood Area *
             </label>
             <select
               name="locationId"
@@ -390,7 +390,7 @@ export function SubmitListingForm({
               type="text"
               name="address"
               required
-              placeholder="Shop/Office No., Wing, Building Name, Street Name, Pimple Saudagar, Pune - 411027"
+              placeholder="Shop/Office No., Wing, Building Name, Street Name, City, State - Pin Code"
               className="w-full rounded-lg border bg-background px-3.5 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
             />
             {state?.fieldErrors?.address && (
@@ -651,13 +651,13 @@ export function SubmitListingForm({
               )}
               <div className="p-3">
                 <p className="font-bold text-xs truncate">
-                  {seoTitle || (listingTitle ? `${listingTitle} | Pimple Saudagar` : "Business Listing in Pimple Saudagar")}
+                  {seoTitle || (listingTitle ? `${listingTitle} | Local Directory` : "Business Listing in Local Directory")}
                 </p>
                 <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
-                  {seoDescription || "Explore verified business details, contact information, customer reviews, and ratings in Pimple Saudagar."}
+                  {seoDescription || "Explore verified business details, contact information, customer reviews, and ratings in the directory."}
                 </p>
                 <span className="text-[9px] font-mono text-slate-400 uppercase mt-1 block">
-                  PIMPLESUDAGAR.ORG • VERIFIED LISTING
+                  LOCAL BUSINESS DIRECTORY • VERIFIED LISTING
                 </span>
               </div>
             </div>

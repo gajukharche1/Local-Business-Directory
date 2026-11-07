@@ -70,7 +70,7 @@ export function SearchFilters({
             defaultValue={currentLocation}
             className="w-full rounded-lg border bg-background px-3 py-2 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           >
-            <option value="all">All Pimple Saudagar</option>
+            <option value="all">All Localities</option>
             {locations.map((l) => (
               <option key={l.id} value={l.slug}>
                 {l.name}

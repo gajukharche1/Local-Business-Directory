@@ -44,7 +44,7 @@ export function ReviewForm({
       <div className="mb-5 pb-3 border-b">
         <h3 className="font-bold text-base text-foreground">Write a Review for {listingTitle}</h3>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Share your verified experience to help neighbors in Pimple Saudagar
+          Share your verified experience to help neighbors in your local community
         </p>
       </div>
 
