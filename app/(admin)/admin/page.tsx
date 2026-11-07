@@ -1,6 +1,7 @@
 import Link from "next/link";
 import db from "@/lib/db/client";
 import { ListingStatus, ReviewStatus, ClaimRequestStatus } from "@prisma/client";
+import { SettingsService } from "@/lib/services/settings.service";
 import {
   ShieldAlert,
   Store,
@@ -8,6 +9,7 @@ import {
   Star,
   ArrowRight,
   Clock,
+  Megaphone,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -19,12 +21,14 @@ export default async function AdminDashboardPage() {
     pendingReviews,
     pendingClaims,
     totalUsers,
+    settings,
   ] = await Promise.all([
     db.listing.count({ where: { status: ListingStatus.published } }).catch(() => 0),
     db.listing.count({ where: { status: ListingStatus.pending_review } }).catch(() => 0),
     db.review.count({ where: { status: ReviewStatus.pending } }).catch(() => 0),
     db.claimRequest.count({ where: { status: ClaimRequestStatus.pending } }).catch(() => 0),
     db.user.count().catch(() => 0),
+    SettingsService.getAll(),
   ]);
 
   return (
@@ -34,9 +38,29 @@ export default async function AdminDashboardPage() {
           System Overview & Operations
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Directory health, moderation queue status, and community activity for <Your Business Name>
+          {settings.siteTagline
+            ? `${settings.siteTagline} for ${settings.siteName}`
+            : `Directory health, moderation queue status, and community activity for ${settings.siteName}`}
         </p>
       </div>
+
+      {/* Active Announcement Notice (if enabled in settings) */}
+      {settings.announcementActive && settings.announcementBanner && (
+        <div className="rounded-xl border border-blue-300 dark:border-blue-800 bg-blue-50/60 dark:bg-blue-950/20 p-4 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5">
+            <Megaphone className="h-4 w-4 text-blue-600 shrink-0" />
+            <span className="font-semibold text-blue-950 dark:text-blue-200">
+              {settings.announcementBanner}
+            </span>
+          </div>
+          <Link
+            href="/admin/settings"
+            className="text-[11px] font-bold text-blue-600 hover:underline shrink-0"
+          >
+            Edit in Settings
+          </Link>
+        </div>
+      )}
 
       {/* KPI Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { hasRole } from "@/lib/auth/rbac";
 import { logoutAction } from "@/actions/auth";
 import { UserRole } from "@prisma/client";
+import { SettingsService } from "@/lib/services/settings.service";
 import {
   ShieldAlert,
   Sliders,
@@ -15,6 +16,7 @@ import {
   PlusCircle,
   FolderTree,
   MapPin,
+  Settings,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +26,10 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
+  const [user, settings] = await Promise.all([
+    getCurrentUser(),
+    SettingsService.getAll(),
+  ]);
 
   if (!user || !hasRole(user.role, UserRole.moderator)) {
     redirect("/login?redirectTo=/admin");
@@ -38,6 +43,9 @@ export default async function AdminLayout({
     { label: "Categories & SEO", href: "/admin/categories", icon: FolderTree },
     { label: "Locations & SEO", href: "/admin/locations", icon: MapPin },
     { label: "CSV Import / Export", href: "/admin/imports", icon: Upload },
+    ...(hasRole(user.role, UserRole.admin)
+      ? [{ label: "Site & Settings", href: "/admin/settings", icon: Settings }]
+      : []),
   ];
 
   return (
@@ -48,15 +56,15 @@ export default async function AdminLayout({
           {/* Header */}
           <div className="p-4 border-b">
             <Link href="/admin" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600 text-white font-bold text-sm shadow-sm">
-                PS
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600 text-white font-bold text-sm shadow-sm uppercase shrink-0">
+                {settings.siteBadge || "PS"}
               </div>
-              <div>
-                <span className="font-bold tracking-tight text-sm text-foreground block leading-none">
-                  Pimple Saudagar
+              <div className="min-w-0">
+                <span className="font-bold tracking-tight text-sm text-foreground block leading-none truncate">
+                  {settings.siteName || "Pimple Saudagar"}
                 </span>
-                <span className="text-[10px] text-red-600 uppercase font-bold tracking-wider">
-                  Admin Console
+                <span className="text-[10px] text-red-600 uppercase font-bold tracking-wider block truncate">
+                  {settings.adminTitle || "Admin Console"}
                 </span>
               </div>
             </Link>
