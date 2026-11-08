@@ -5,8 +5,9 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { assertAuthorized } from "@/lib/auth/rbac";
 import { ReviewService } from "@/lib/services/review.service";
 import { ClaimService } from "@/lib/services/claim.service";
-import { UserRole, ReviewStatus, ListingStatus } from "@prisma/client";
+import { UserRole, ReviewStatus, ListingStatus, Prisma } from "@prisma/client";
 import db from "@/lib/db/client";
+import { parseOpeningHoursInput } from "@/lib/utils/opening-hours-parser";
 
 export async function approveReviewAction(reviewId: string) {
   const user = await getCurrentUser();
@@ -98,8 +99,8 @@ export async function updateListingStatusAction(listingId: string, status: Listi
 
 export interface ImportListingInput {
   title: string;
-  categorySlug: string;
-  locationSlug: string;
+  categorySlug?: string;
+  locationSlug?: string;
   phone?: string;
   whatsapp?: string;
   email?: string;
@@ -109,6 +110,7 @@ export interface ImportListingInput {
   landmark?: string;
   description?: string;
   priceRange?: number;
+  openingHours?: string;
 }
 
 export async function importListingsAction(items: ImportListingInput[]) {
@@ -145,7 +147,7 @@ export async function importListingsAction(items: ImportListingInput[]) {
 
       // Resolve category
       let category = item.categorySlug
-        ? await db.category.findUnique({ where: { slug: item.categorySlug } })
+        ? await db.category.findUnique({ where: { slug: item.categorySlug.trim().toLowerCase() } })
         : null;
 
       if (!category) {
@@ -154,12 +156,15 @@ export async function importListingsAction(items: ImportListingInput[]) {
 
       // Resolve location
       let location = item.locationSlug
-        ? await db.location.findUnique({ where: { slug: item.locationSlug } })
+        ? await db.location.findUnique({ where: { slug: item.locationSlug.trim().toLowerCase() } })
         : null;
 
       if (!location) {
         location = await db.location.findFirst();
       }
+
+      // Parse opening hours (supporting text shorthand and JSON)
+      const parsedHours = parseOpeningHoursInput(item.openingHours);
 
       const listing = await db.listing.create({
         data: {
@@ -169,13 +174,14 @@ export async function importListingsAction(items: ImportListingInput[]) {
           status: ListingStatus.published,
           publishedAt: new Date(),
           address: item.address.trim(),
-          locality: item.locality?.trim() || "Pimple Saudagar",
+          locality: item.locality?.trim() || location?.name || "Pimple Saudagar",
           landmark: item.landmark?.trim() || null,
           phone: item.phone?.trim() || null,
           whatsapp: item.whatsapp?.trim() || null,
           email: item.email?.trim() || null,
           website: item.website?.trim() || null,
           priceRange: item.priceRange && item.priceRange >= 1 && item.priceRange <= 4 ? item.priceRange : 2,
+          openingHours: parsedHours,
         },
       });
 
@@ -207,6 +213,198 @@ export async function importListingsAction(items: ImportListingInput[]) {
   revalidatePath("/admin/listings");
   revalidatePath("/admin");
   revalidatePath("/search");
+
+  return {
+    success: true,
+    importedCount,
+    failedCount: errors.length,
+    errors,
+  };
+}
+
+export interface ImportCategoryInput {
+  name: string;
+  slug?: string;
+  parentSlug?: string;
+  description?: string;
+  icon?: string;
+  sortOrder?: number;
+  featuredOnHome?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+}
+
+export async function importCategoriesAction(items: ImportCategoryInput[]) {
+  const user = await getCurrentUser();
+  assertAuthorized(user, UserRole.admin);
+
+  if (!items || items.length === 0) {
+    return { success: false, error: "No categories provided to import." };
+  }
+
+  let importedCount = 0;
+  const errors: string[] = [];
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (!item) continue;
+    try {
+      if (!item.name?.trim()) {
+        errors.push(`Row ${i + 1}: Category name is required.`);
+        continue;
+      }
+
+      const name = item.name.trim();
+      const baseSlug = (item.slug?.trim() || name)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+
+      let parentId: string | null = null;
+      if (item.parentSlug?.trim()) {
+        const parent = await db.category.findUnique({
+          where: { slug: item.parentSlug.trim().toLowerCase() },
+        });
+        if (parent) {
+          parentId = parent.id;
+        }
+      }
+
+      await db.category.upsert({
+        where: { slug: baseSlug },
+        create: {
+          name,
+          slug: baseSlug,
+          parentId,
+          description: item.description?.trim() || null,
+          icon: item.icon?.trim() || null,
+          sortOrder: typeof item.sortOrder === "number" ? item.sortOrder : 0,
+          featuredOnHome: Boolean(item.featuredOnHome),
+          seoTitle: item.seoTitle?.trim() || `${name} in Pimple Saudagar | Local Directory`,
+          seoDescription: item.seoDescription?.trim() || `Explore top verified ${name} listings, contact numbers, and reviews in Pimple Saudagar.`,
+        },
+        update: {
+          name,
+          ...(parentId ? { parentId } : {}),
+          ...(item.description ? { description: item.description.trim() } : {}),
+          ...(item.icon ? { icon: item.icon.trim() } : {}),
+          ...(typeof item.sortOrder === "number" ? { sortOrder: item.sortOrder } : {}),
+          ...(item.featuredOnHome !== undefined ? { featuredOnHome: Boolean(item.featuredOnHome) } : {}),
+          ...(item.seoTitle ? { seoTitle: item.seoTitle.trim() } : {}),
+          ...(item.seoDescription ? { seoDescription: item.seoDescription.trim() } : {}),
+        },
+      });
+
+      importedCount++;
+    } catch (err) {
+      errors.push(`Row ${i + 1} (${item.name}): ${err instanceof Error ? err.message : "Database error"}`);
+    }
+  }
+
+  revalidatePath("/admin/categories");
+  revalidatePath("/admin");
+  revalidatePath("/");
+
+  return {
+    success: true,
+    importedCount,
+    failedCount: errors.length,
+    errors,
+  };
+}
+
+export interface ImportLocationInput {
+  name: string;
+  slug?: string;
+  parentSlug?: string;
+  description?: string;
+  latitude?: number | string;
+  longitude?: number | string;
+  sortOrder?: number;
+  featured?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+}
+
+export async function importLocationsAction(items: ImportLocationInput[]) {
+  const user = await getCurrentUser();
+  assertAuthorized(user, UserRole.admin);
+
+  if (!items || items.length === 0) {
+    return { success: false, error: "No locations provided to import." };
+  }
+
+  let importedCount = 0;
+  const errors: string[] = [];
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (!item) continue;
+    try {
+      if (!item.name?.trim()) {
+        errors.push(`Row ${i + 1}: Location/Area name is required.`);
+        continue;
+      }
+
+      const name = item.name.trim();
+      const baseSlug = (item.slug?.trim() || name)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+
+      let parentId: string | null = null;
+      if (item.parentSlug?.trim()) {
+        const parent = await db.location.findUnique({
+          where: { slug: item.parentSlug.trim().toLowerCase() },
+        });
+        if (parent) {
+          parentId = parent.id;
+        }
+      }
+
+      const lat = item.latitude !== undefined && item.latitude !== "" && !isNaN(Number(item.latitude))
+        ? new Prisma.Decimal(Number(item.latitude))
+        : null;
+      const lng = item.longitude !== undefined && item.longitude !== "" && !isNaN(Number(item.longitude))
+        ? new Prisma.Decimal(Number(item.longitude))
+        : null;
+
+      await db.location.upsert({
+        where: { slug: baseSlug },
+        create: {
+          name,
+          slug: baseSlug,
+          parentId,
+          description: item.description?.trim() || null,
+          latitude: lat,
+          longitude: lng,
+          sortOrder: typeof item.sortOrder === "number" ? item.sortOrder : 0,
+          featured: Boolean(item.featured),
+          seoTitle: item.seoTitle?.trim() || `${name}, Pimple Saudagar Directory | Local Businesses & Services`,
+          seoDescription: item.seoDescription?.trim() || `Discover top verified businesses, shops, and services around ${name}, Pimple Saudagar.`,
+        },
+        update: {
+          name,
+          ...(parentId ? { parentId } : {}),
+          ...(item.description ? { description: item.description.trim() } : {}),
+          ...(lat ? { latitude: lat } : {}),
+          ...(lng ? { longitude: lng } : {}),
+          ...(typeof item.sortOrder === "number" ? { sortOrder: item.sortOrder } : {}),
+          ...(item.featured !== undefined ? { featured: Boolean(item.featured) } : {}),
+          ...(item.seoTitle ? { seoTitle: item.seoTitle.trim() } : {}),
+          ...(item.seoDescription ? { seoDescription: item.seoDescription.trim() } : {}),
+        },
+      });
+
+      importedCount++;
+    } catch (err) {
+      errors.push(`Row ${i + 1} (${item.name}): ${err instanceof Error ? err.message : "Database error"}`);
+    }
+  }
+
+  revalidatePath("/admin/locations");
+  revalidatePath("/admin");
+  revalidatePath("/");
 
   return {
     success: true,

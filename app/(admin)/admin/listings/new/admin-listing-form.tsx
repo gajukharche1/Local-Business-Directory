@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { createListingAdminAction, ActionState } from "@/actions/listing";
 import { ContentBlockEditor } from "@/components/forms/content-block-editor";
 import { ImageUpload } from "@/components/forms/image-upload";
+import { OpeningHoursScheduler } from "@/components/forms/opening-hours-scheduler";
 import {
+  Clock,
   Share2,
   Store,
   MapPin,
@@ -598,11 +600,26 @@ export function AdminListingForm({
         </div>
       </div>
 
-      {/* 4. Administration & Status Controls */}
+      {/* 4. Operating Hours & Schedule */}
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-4">
+        <div className="flex items-center gap-2 border-b pb-3">
+          <Clock className="h-5 w-5 text-primary" />
+          <div>
+            <h2 className="text-base font-bold text-foreground">4. Operating Hours &amp; Schedule</h2>
+            <p className="text-[11px] text-muted-foreground">
+              Define weekly opening times and closed days for customer visibility &amp; schema markup
+            </p>
+          </div>
+        </div>
+
+        <OpeningHoursScheduler name="openingHours" />
+      </div>
+
+      {/* 5. Administration & Status Controls */}
       <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-6 shadow-sm space-y-5">
         <div className="flex items-center gap-2 border-b border-red-500/20 pb-3">
           <ShieldCheck className="h-5 w-5 text-red-600" />
-          <h2 className="text-base font-bold text-foreground">4. Admin Management Controls</h2>
+          <h2 className="text-base font-bold text-foreground">5. Admin Management Controls</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -704,12 +721,12 @@ export function AdminListingForm({
         </div>
       </div>
 
-      {/* 5. SEO Meta Settings & Google SERP Preview */}
+      {/* 6. SEO Meta Settings & Google SERP Preview */}
       <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-6 shadow-sm space-y-5">
         <div className="flex items-center gap-2 border-b border-indigo-500/20 pb-3">
           <Search className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
           <div>
-            <h2 className="text-base font-bold text-foreground">5. Search Engine Optimization (SEO &amp; Meta Tags)</h2>
+            <h2 className="text-base font-bold text-foreground">6. Search Engine Optimization (SEO &amp; Meta Tags)</h2>
             <p className="text-[11px] text-muted-foreground">
               Configure meta tags and keyword indexation for Google, Bing, and social shares
             </p>

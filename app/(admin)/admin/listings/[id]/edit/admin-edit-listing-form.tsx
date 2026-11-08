@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { updateListingAdminAction, ActionState } from "@/actions/listing";
 import { ContentBlockEditor } from "@/components/forms/content-block-editor";
 import { ImageUpload } from "@/components/forms/image-upload";
+import { OpeningHoursScheduler } from "@/components/forms/opening-hours-scheduler";
 import {
+  Clock,
   Share2,
   Store,
   MapPin,
@@ -653,11 +655,29 @@ export function AdminEditListingForm({
         </div>
       </div>
 
-      {/* 5. Administrative Controls */}
+      {/* 5. Operating Hours & Schedule */}
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-4">
+        <div className="flex items-center gap-2 border-b pb-3">
+          <Clock className="h-5 w-5 text-primary" />
+          <div>
+            <h2 className="text-base font-bold text-foreground">5. Operating Hours &amp; Schedule</h2>
+            <p className="text-[11px] text-muted-foreground">
+              Define weekly opening times and closed days for customer visibility &amp; schema markup
+            </p>
+          </div>
+        </div>
+
+        <OpeningHoursScheduler
+          name="openingHours"
+          initialHours={listing.openingHours}
+        />
+      </div>
+
+      {/* 6. Administrative Controls */}
       <div className="rounded-2xl border border-red-500/20 bg-card p-6 shadow-sm space-y-5">
         <div className="flex items-center gap-2 border-b pb-3">
           <ShieldCheck className="h-5 w-5 text-red-600" />
-          <h2 className="text-base font-bold text-foreground">5. Administrative Controls</h2>
+          <h2 className="text-base font-bold text-foreground">6. Administrative Controls</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -760,14 +780,14 @@ export function AdminEditListingForm({
         </div>
       </div>
 
-      {/* 6. Search Engine Optimization (SEO) */}
+      {/* 7. Search Engine Optimization (SEO) */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-5">
         <div className="flex items-center justify-between border-b pb-3">
           <div className="flex items-center gap-2">
             <Search className="h-5 w-5 text-primary" />
             <div>
               <h2 className="text-base font-bold text-foreground">
-                6. Search Engine Optimization (SEO &amp; Meta Tags)
+                7. Search Engine Optimization (SEO &amp; Meta Tags)
               </h2>
               <p className="text-[11px] text-muted-foreground">
                 Configure search engine title, meta description, and keywords for Google indexation

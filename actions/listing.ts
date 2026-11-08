@@ -8,6 +8,7 @@ import { assertAuthorized } from "@/lib/auth/rbac";
 import { sanitizeRichText, stripHtml } from "@/lib/security/sanitize";
 import { hashPassword } from "@/lib/auth/password";
 import { ListingStatus, ClaimStatus, UserRole, Prisma } from "@prisma/client";
+import { parseOpeningHoursInput } from "@/lib/utils/opening-hours-parser";
 
 const baseListingSchema = z.object({
   title: z.string().min(1, "Business title cannot be blank.").default("Untitled Business"),
@@ -141,7 +142,13 @@ export async function createListingAdminAction(
   const claimStatus = (formData.get("claimStatus") as ClaimStatus) || ClaimStatus.verified;
   const featured = formData.get("featured") === "true" || formData.get("featured") === "on";
   const priority = Number(formData.get("priority") || 0);
+  const rawOpeningHours = formData.get("openingHours") as string;
+  const updatedOpeningHours = rawOpeningHours ? parseOpeningHoursInput(rawOpeningHours) : undefined;
   const ownerId = (formData.get("ownerId") as string) || user.id;
+  const rawOpeningHours = formData.get("openingHours") as string;
+  const resolvedOpeningHours = rawOpeningHours
+    ? parseOpeningHoursInput(rawOpeningHours)
+    : defaultOpeningHours;
 
   try {
     // Resolve location to get locality fallback if needed
@@ -186,7 +193,7 @@ export async function createListingAdminAction(
         ogImage: data.ogImage?.trim() || null,
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
-        openingHours: defaultOpeningHours,
+        openingHours: resolvedOpeningHours,
         amenities: data.amenities || [],
         categories: {
           create: [{ categoryId: data.categoryId }],
@@ -351,7 +358,7 @@ export async function submitListingPublicAction(
         ogImage: data.ogImage?.trim() || null,
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
-        openingHours: defaultOpeningHours,
+        openingHours: resolvedOpeningHours,
         amenities: data.amenities || [],
         categories: {
           create: [{ categoryId: data.categoryId }],
@@ -453,6 +460,8 @@ export async function updateListingAdminAction(
   const claimStatus = (formData.get("claimStatus") as ClaimStatus) || existing.claimStatus;
   const featured = formData.get("featured") === "true" || formData.get("featured") === "on";
   const priority = Number(formData.get("priority") || 0);
+  const rawOpeningHours = formData.get("openingHours") as string;
+  const updatedOpeningHours = rawOpeningHours ? parseOpeningHoursInput(rawOpeningHours) : undefined;
 
   // Check custom slug
   let targetSlug = existing.slug;
@@ -506,6 +515,7 @@ export async function updateListingAdminAction(
         ogImage: data.ogImage?.trim() || null,
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
+        ...(updatedOpeningHours && { openingHours: updatedOpeningHours }),
         amenities: data.amenities || [],
       },
     });

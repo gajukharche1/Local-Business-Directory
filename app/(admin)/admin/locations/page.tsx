@@ -41,7 +41,7 @@ export default async function AdminLocationsPage() {
             <span>Geographic Engine</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Location &amp; SEO Management
+            Location Management
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
             Configure Pimple Saudagar localities, GPS coordinates, permanent directory URLs, and search snippet previews.

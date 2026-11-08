@@ -69,3 +69,37 @@ Following the Dribbble design reference, skeleton elements will feature a flowin
 - [x] Commit changes to `main` and sync with `Admin-Dashboard-UI`.
 - [x] Deploy to Vercel production (`https://ps-lyart.vercel.app`) and verify live health.
 
+#### How to run this repo or this project on a local machine ###
+I have started the local development server for you, and it is currently running.
+
+1. View It In Your Browser Right Now
+
+Open your browser and navigate to:
+
+Admin Dashboard: http://localhost:3000/admin
+All Listings (with Shimmer & New Badges): http://localhost:3000/admin/listings
+Add New Listing: http://localhost:3000/admin/listings/new
+Categories: http://localhost:3000/admin/categories
+Locations: http://localhost:3000/admin/locations
+Directory Homepage: http://localhost:3000
+2. How to Run It Yourself Anytime
+
+Whenever you want to start or restart the local development server in your own terminal (PowerShell, Command Prompt, or VS Code terminal):
+
+Open a terminal in the project directory:
+
+powershell
+cd "d:\Website Code\Local Business Directory"
+
+Start the development server:
+
+powershell
+npm run dev
+
+(This runs next dev --turbopack with sub-second hot reload).
+
+Stop the server: Press Ctrl + C in that terminal window.
+
+TIP
+
+With Turbopack enabled, any edits you make to files like admin-nav.tsx or listings/page.tsx will update immediately in your browser without needing to refresh or restart the server.

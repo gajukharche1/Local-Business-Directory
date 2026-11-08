@@ -41,7 +41,7 @@ export default async function AdminCategoriesPage() {
             <span>Taxonomy Engine</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Category &amp; SEO Management
+            Category Management
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
             Manage permanent category URL paths, parent hierarchies, Google search SERP snippets, and social sharing Open Graph cards.
