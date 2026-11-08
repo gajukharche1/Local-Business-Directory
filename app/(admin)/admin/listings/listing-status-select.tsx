@@ -34,6 +34,11 @@ const STATUS_CONFIG: Record<
     dot: "bg-rose-500",
     badge: "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-400",
   },
+  [ListingStatus.expired]: {
+    label: "Expired",
+    dot: "bg-orange-500",
+    badge: "border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400",
+  },
   [ListingStatus.archived]: {
     label: "Archived",
     dot: "bg-muted-foreground/60",

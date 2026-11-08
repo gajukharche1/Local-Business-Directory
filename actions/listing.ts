@@ -191,7 +191,7 @@ export async function createListingAdminAction(
         ogImage: data.ogImage?.trim() || null,
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
-        openingHours: resolvedOpeningHours,
+        openingHours: (resolvedOpeningHours as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
         amenities: data.amenities || [],
         categories: {
           create: [{ categoryId: data.categoryId }],
@@ -331,6 +331,11 @@ export async function submitListingPublicAction(
 
     const status = isModeratorOrAdmin ? ListingStatus.published : ListingStatus.pending_review;
 
+    const rawOpeningHours = formData.get("openingHours") as string;
+    const resolvedOpeningHours = rawOpeningHours
+      ? parseOpeningHoursInput(rawOpeningHours)
+      : defaultOpeningHours;
+
     const listing = await db.listing.create({
       data: {
         title: stripHtml(data.title),
@@ -356,7 +361,7 @@ export async function submitListingPublicAction(
         ogImage: data.ogImage?.trim() || null,
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
-        openingHours: resolvedOpeningHours,
+        openingHours: (resolvedOpeningHours as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
         amenities: data.amenities || [],
         categories: {
           create: [{ categoryId: data.categoryId }],
@@ -513,7 +518,7 @@ export async function updateListingAdminAction(
         ogImage: data.ogImage?.trim() || null,
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
-        ...(updatedOpeningHours && { openingHours: updatedOpeningHours }),
+        ...(updatedOpeningHours && { openingHours: updatedOpeningHours as unknown as Prisma.InputJsonValue }),
         amenities: data.amenities || [],
       },
     });
