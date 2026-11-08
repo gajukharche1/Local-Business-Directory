@@ -62,4 +62,6 @@ In branch `user-management`, we implement five interconnected capabilities adher
 - [x] Integrate User Management tab into `app/(admin)/admin/settings/settings-form.tsx` and pass users from `app/(admin)/admin/settings/page.tsx`.
 - [x] Fix DOM nesting error: separate Site Settings form from User Management dialog forms.
 - [x] Build collapsible `AdminSidebar` and `DashboardSidebar` with floating flyout menus for collapsed submenus and `localStorage` persistence.
+- [x] Remove extraneous `w-20` badge from the bottom sidebar collapse button across admin and dashboard sidebars.
+- [x] Integrate `DashboardUserMenu` into the top-right header of `app/(admin)/admin/layout.tsx` matching the owner dashboard experience.
 - [x] Pass `tsc --noEmit` and verify build compatibility.

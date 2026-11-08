@@ -7,9 +7,9 @@ import { UserRole, ReviewStatus, ClaimRequestStatus, ListingStatus } from "@pris
 import { SettingsService } from "@/lib/services/settings.service";
 import { type AdminNavItem } from "./admin-nav";
 import { AdminSidebar } from "./admin-sidebar";
+import { DashboardUserMenu } from "@/components/dashboard/dashboard-user-menu";
 import {
   ShieldAlert,
-  Settings,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -116,13 +116,14 @@ export default async function AdminLayout({
               </Link>
             )}
 
-            <Link
-              href="/admin/settings"
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <Settings className="h-3.5 w-3.5" />
-              <span>Settings</span>
-            </Link>
+            <DashboardUserMenu
+              user={{
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+              }}
+            />
           </div>
         </header>
 
