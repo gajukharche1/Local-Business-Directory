@@ -68,4 +68,5 @@ In branch `user-management`, we implement five interconnected capabilities adher
 - [x] Integrate `DashboardUserMenu` into the top-right header of `app/(admin)/admin/layout.tsx` matching the owner dashboard experience.
 - [x] Upgrade dependencies to `next@16.4.5` and `eslint-config-next@16.4.5`.
 - [x] Upgrade safe dependencies: `react@19.3.1`, `react-dom@19.3.1`, `@prisma/client@6.19.3`, `prisma@6.19.3`, and `vitest@5.1.0`.
-- [x] Pass `tsc --noEmit` and verify full production build compatibility.
+- [x] Major package migrations: upgraded `lucide-react@1.70.0` (v1 major), `zod@4.6.7` (v4 major), and implemented native Next.js ESLint flat configuration (`eslint.config.mjs`).
+- [x] Pass `tsc --noEmit`, `vitest run`, `eslint .`, and verify full production build compatibility.
