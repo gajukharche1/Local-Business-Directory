@@ -182,7 +182,7 @@ export async function importListingsAction(items: ImportListingInput[]) {
           email: item.email?.trim() || null,
           website: item.website?.trim() || null,
           priceRange: item.priceRange && item.priceRange >= 1 && item.priceRange <= 4 ? item.priceRange : 2,
-          openingHours: parsedHours,
+          openingHours: parsedHours ? (parsedHours as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
         },
       });
 
@@ -564,6 +564,52 @@ export async function updateUserRoleAndStatusAction(
     return {
       success: false,
       error: err instanceof Error ? err.message : "Failed to update user.",
+    };
+  }
+}
+
+export async function resetUserPasswordAdminAction(targetUserId: string, newPassword: string) {
+  const currentUser = await getCurrentUser();
+  assertAuthorized(currentUser, UserRole.admin);
+
+  const cleanPassword = newPassword?.trim();
+  if (!cleanPassword || cleanPassword.length < 6) {
+    return { success: false, error: "New password must be at least 6 characters long." };
+  }
+
+  try {
+    const targetUser = await db.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true, name: true, email: true },
+    });
+
+    if (!targetUser) {
+      return { success: false, error: "User account not found." };
+    }
+
+    const passwordHash = await hashPassword(cleanPassword);
+
+    await db.user.update({
+      where: { id: targetUserId },
+      data: {
+        passwordHash,
+        failedLoginCount: 0,
+        lockedUntil: null,
+      },
+    });
+
+    // Invalidate target user's active sessions to force re-login with the new password
+    await db.session.deleteMany({ where: { userId: targetUserId } });
+
+    revalidatePath("/admin/settings");
+    return {
+      success: true,
+      message: `Password for ${targetUser.name} (${targetUser.email}) was updated successfully.`,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to reset password.",
     };
   }
 }

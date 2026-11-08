@@ -263,16 +263,17 @@ export function AdminNav({ items, isCollapsed = false }: AdminNavProps) {
               </button>
 
               {/* Submenu rail */}
-              {isOpen && (
+              {isOpen && item.children && (
                 <div className="ml-4 pl-3 border-l-2 border-border/60 space-y-1 pt-0.5 pb-1">
                   {item.children.map((subItem) => {
                     const SubIcon = subItem.icon ? NAV_ICONS[subItem.icon] : null;
+                    const childrenList = item.children ?? [];
                     const isSubActive =
                       subItem.href === "/admin"
                         ? pathname === "/admin"
                         : pathname === subItem.href ||
                           (pathname.startsWith(`${subItem.href}/`) &&
-                            !item.children.some(
+                            !childrenList.some(
                               (other) =>
                                 other.href !== subItem.href &&
                                 (pathname === other.href || pathname.startsWith(`${other.href}/`))

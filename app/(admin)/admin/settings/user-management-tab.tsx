@@ -6,6 +6,7 @@ import {
   createUserAdminAction,
   deleteUserAdminAction,
   updateUserRoleAndStatusAction,
+  resetUserPasswordAdminAction,
   CreateUserInput,
 } from "@/actions/admin";
 import {
@@ -95,7 +96,8 @@ function generateRandomPassword(length = 14): string {
     const values = new Uint32Array(length);
     cryptoObj.getRandomValues(values);
     for (let i = 0; i < length; i++) {
-      pass += chars[values[i] % chars.length];
+      const val = values[i] ?? 0;
+      pass += chars[val % chars.length];
     }
   } else {
     for (let i = 0; i < length; i++) {
@@ -120,6 +122,12 @@ export function UserManagementTab({ initialUsers, currentUserId }: UserManagemen
   const [formRole, setFormRole] = useState<UserRole>(UserRole.owner);
   const [showPassword, setShowPassword] = useState(false);
   const [copiedPassword, setCopiedPassword] = useState(false);
+
+  // Reset password modal state
+  const [resetUser, setResetUser] = useState<SerializedUser | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [copiedResetPassword, setCopiedResetPassword] = useState(false);
 
   // Status feedback
   const [statusMessage, setStatusMessage] = useState<{
@@ -275,14 +283,12 @@ export function UserManagementTab({ initialUsers, currentUserId }: UserManagemen
     });
   };
 
-  const handleStatusToggle = (user: SerializedUser) => {
-    const newStatus =
-      user.status === UserStatus.active ? UserStatus.suspended : UserStatus.active;
+  const handleStatusChange = (userId: string, newStatus: UserStatus) => {
     startTransition(async () => {
-      const res = await updateUserRoleAndStatusAction(user.id, { status: newStatus });
+      const res = await updateUserRoleAndStatusAction(userId, { status: newStatus });
       if (res.success && res.user) {
         setUsers((prev) =>
-          prev.map((u) => (u.id === user.id ? { ...u, status: newStatus } : u))
+          prev.map((u) => (u.id === userId ? { ...u, status: newStatus } : u))
         );
         setStatusMessage({
           type: "success",
@@ -292,6 +298,37 @@ export function UserManagementTab({ initialUsers, currentUserId }: UserManagemen
         setStatusMessage({
           type: "error",
           text: res.error || "Failed to update status.",
+        });
+      }
+    });
+  };
+
+  const handleResetPasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetUser) return;
+    setStatusMessage(null);
+
+    if (!resetPassword.trim() || resetPassword.length < 6) {
+      setStatusMessage({
+        type: "error",
+        text: "New password must be at least 6 characters.",
+      });
+      return;
+    }
+
+    startTransition(async () => {
+      const res = await resetUserPasswordAdminAction(resetUser.id, resetPassword);
+      if (res.success) {
+        setStatusMessage({
+          type: "success",
+          text: res.message || `Password for ${resetUser.name} was successfully reset.`,
+        });
+        setResetUser(null);
+        setResetPassword("");
+      } else {
+        setStatusMessage({
+          type: "error",
+          text: res.error || "Failed to reset password.",
         });
       }
     });
@@ -505,26 +542,24 @@ export function UserManagementTab({ initialUsers, currentUserId }: UserManagemen
 
                       {/* Status */}
                       <td className="py-3.5 px-4">
-                        <button
-                          type="button"
+                        <select
+                          value={user.status}
                           disabled={isPending || isSelf}
-                          onClick={() => handleStatusToggle(user)}
-                          title={`Click to ${user.status === UserStatus.active ? "suspend" : "activate"} user`}
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border transition ${
+                          onChange={(e) =>
+                            handleStatusChange(user.id, e.target.value as UserStatus)
+                          }
+                          className={`rounded-lg border px-2 py-1 text-[11px] font-bold focus:outline-none transition cursor-pointer disabled:opacity-80 ${
                             user.status === UserStatus.active
                               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
+                              : user.status === UserStatus.suspended
+                              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/20"
                               : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 hover:bg-red-500/20"
-                          } disabled:cursor-not-allowed`}
+                          }`}
                         >
-                          <span
-                            className={`h-1.5 w-1.5 rounded-full ${
-                              user.status === UserStatus.active
-                                ? "bg-emerald-500"
-                                : "bg-red-500"
-                            }`}
-                          />
-                          <span className="capitalize">{user.status}</span>
-                        </button>
+                          <option value={UserStatus.active}>● Active</option>
+                          <option value={UserStatus.suspended}>▲ Suspended</option>
+                          <option value={UserStatus.locked}>■ Locked</option>
+                        </select>
                       </td>
 
                       {/* Listing Count */}
@@ -546,6 +581,23 @@ export function UserManagementTab({ initialUsers, currentUserId }: UserManagemen
                       {/* Actions */}
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1">
+                          {/* Reset / Change Password Action */}
+                          <button
+                            type="button"
+                            disabled={isPending}
+                            onClick={() => {
+                              setResetUser(user);
+                              const newPass = generateRandomPassword();
+                              setResetPassword(newPass);
+                              setShowResetPassword(true);
+                            }}
+                            title={`Reset Password for ${user.name}`}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30"
+                          >
+                            <KeyRound className="h-4 w-4" />
+                          </button>
+
+                          {/* Delete Account Action */}
                           <button
                             type="button"
                             disabled={isPending || isSelf}
@@ -787,6 +839,150 @@ export function UserManagementTab({ initialUsers, currentUserId }: UserManagemen
                     <>
                       <UserPlus className="h-4 w-4" />
                       <span>Create User</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Reset / Edit Password */}
+      {resetUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in-50">
+          <div
+            className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="flex items-start justify-between border-b border-border/70 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-xs">
+                  <KeyRound className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground">
+                    Reset User Password
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Admin security override for {resetUser.name}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setResetUser(null)}
+                className="rounded-xl p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
+              <div className="p-3 rounded-xl bg-muted/30 border border-border/60 text-xs text-muted-foreground flex items-center justify-between">
+                <span className="font-semibold text-foreground truncate">{resetUser.name}</span>
+                <span className="font-mono text-[11px] truncate">{resetUser.email}</span>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label
+                    htmlFor="resetNewPassword"
+                    className="text-xs font-bold text-foreground flex items-center gap-1.5"
+                  >
+                    <span>New Password</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary px-1.5 py-0.5 rounded-md bg-primary/10">
+                      * Min 6 chars
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const pass = generateRandomPassword();
+                      setResetPassword(pass);
+                      setShowResetPassword(true);
+                    }}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-primary/80 transition"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    <span>Generate New</span>
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <input
+                    id="resetNewPassword"
+                    type={showResetPassword ? "text" : "password"}
+                    required
+                    minLength={6}
+                    value={resetPassword}
+                    onChange={(e) => setResetPassword(e.target.value)}
+                    placeholder="Enter or generate strong password"
+                    className="w-full rounded-xl border border-border bg-background pl-3.5 pr-20 py-2.5 text-xs font-mono font-medium text-foreground placeholder:font-sans placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    {resetPassword && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(resetPassword);
+                          setCopiedResetPassword(true);
+                          setTimeout(() => setCopiedResetPassword(false), 2000);
+                        }}
+                        title="Copy password"
+                        className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition"
+                      >
+                        {copiedResetPassword ? (
+                          <Check className="h-3.5 w-3.5 text-emerald-500" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowResetPassword(!showResetPassword)}
+                      title={showResetPassword ? "Hide password" : "Show password"}
+                      className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition"
+                    >
+                      {showResetPassword ? (
+                        <EyeOff className="h-3.5 w-3.5" />
+                      ) : (
+                        <Eye className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300 leading-relaxed">
+                  <strong>Security Notice:</strong> Setting a new password will terminate all active login sessions on other devices for this user.
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/70">
+                <button
+                  type="button"
+                  onClick={() => setResetUser(null)}
+                  disabled={isPending}
+                  className="rounded-xl border border-border px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-primary-foreground shadow hover:bg-primary/90 transition disabled:opacity-50"
+                >
+                  {isPending ? (
+                    <>
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                      <span>Updating Password...</span>
+                    </>
+                  ) : (
+                    <>
+                      <KeyRound className="h-4 w-4" />
+                      <span>Update Password</span>
                     </>
                   )}
                 </button>
