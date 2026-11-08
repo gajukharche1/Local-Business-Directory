@@ -142,8 +142,6 @@ export async function createListingAdminAction(
   const claimStatus = (formData.get("claimStatus") as ClaimStatus) || ClaimStatus.verified;
   const featured = formData.get("featured") === "true" || formData.get("featured") === "on";
   const priority = Number(formData.get("priority") || 0);
-  const rawOpeningHours = formData.get("openingHours") as string;
-  const updatedOpeningHours = rawOpeningHours ? parseOpeningHoursInput(rawOpeningHours) : undefined;
   const ownerId = (formData.get("ownerId") as string) || user.id;
   const rawOpeningHours = formData.get("openingHours") as string;
   const resolvedOpeningHours = rawOpeningHours
