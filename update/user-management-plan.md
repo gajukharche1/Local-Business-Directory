@@ -46,11 +46,13 @@ In branch `user-management`, we implement five interconnected capabilities adher
 
 ---
 
-## 3. Next.js Version Upgrade Assessment
-- **Current Version**: `15.5.28` (with Turbopack).
-- **Available Updates**:
-  - `15.5.29`: Recommended minor patch update (includes latest stability fixes and security backports without breaking changes).
-  - `16.4.5`: Next.js 16 major upgrade (requires migrating async request APIs and validating all server actions and third-party dependencies).
+## 3. Next.js Version Upgrade Assessment & Execution
+- **Previous Version**: `15.5.28` (with Turbopack).
+- **Upgraded Version**: `16.4.5` (Latest) along with `eslint-config-next@16.4.5`.
+- **Config Adjustments**:
+  - Removed deprecated `eslint` block from `next.config.ts`.
+  - Updated `tsconfig.json` automatic runtime configuration.
+  - Verified full production build (`next build --turbopack`) with 0 errors across all 40 routes.
 
 ---
 
@@ -64,4 +66,5 @@ In branch `user-management`, we implement five interconnected capabilities adher
 - [x] Build collapsible `AdminSidebar` and `DashboardSidebar` with floating flyout menus for collapsed submenus and `localStorage` persistence.
 - [x] Remove extraneous `w-20` badge from the bottom sidebar collapse button across admin and dashboard sidebars.
 - [x] Integrate `DashboardUserMenu` into the top-right header of `app/(admin)/admin/layout.tsx` matching the owner dashboard experience.
-- [x] Pass `tsc --noEmit` and verify build compatibility.
+- [x] Upgrade dependencies to `next@16.4.5` and `eslint-config-next@16.4.5`.
+- [x] Pass `tsc --noEmit` and verify full production build compatibility.
