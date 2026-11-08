@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { hasRole } from "@/lib/auth/rbac";
 import { UserRole } from "@prisma/client";
 import { SettingsService } from "@/lib/services/settings.service";
+import db from "@/lib/db/client";
 import { SettingsForm } from "./settings-form";
 import Link from "next/link";
 import { ChevronRight, Settings, ShieldCheck, Sparkles } from "lucide-react";
@@ -16,7 +17,29 @@ export default async function AdminSettingsPage() {
     redirect("/admin");
   }
 
-  const settings = await SettingsService.getAll();
+  const [settings, rawUsers] = await Promise.all([
+    SettingsService.getAll(),
+    db.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        status: true,
+        createdAt: true,
+        _count: {
+          select: { listings: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
+  const initialUsers = rawUsers.map((u) => ({
+    ...u,
+    createdAt: u.createdAt.toISOString(),
+  }));
 
   return (
     <div className="space-y-6">
@@ -54,7 +77,11 @@ export default async function AdminSettingsPage() {
       </div>
 
       {/* Main Settings Form */}
-      <SettingsForm initialSettings={settings} />
+      <SettingsForm
+        initialSettings={settings}
+        initialUsers={initialUsers}
+        currentUserId={user.id}
+      />
     </div>
   );
 }

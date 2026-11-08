@@ -5,9 +5,10 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { assertAuthorized } from "@/lib/auth/rbac";
 import { ReviewService } from "@/lib/services/review.service";
 import { ClaimService } from "@/lib/services/claim.service";
-import { UserRole, ReviewStatus, ListingStatus, Prisma } from "@prisma/client";
+import { UserRole, UserStatus, ReviewStatus, ListingStatus, Prisma } from "@prisma/client";
 import db from "@/lib/db/client";
 import { parseOpeningHoursInput } from "@/lib/utils/opening-hours-parser";
+import { hashPassword } from "@/lib/auth/password";
 
 export async function approveReviewAction(reviewId: string) {
   const user = await getCurrentUser();
@@ -412,4 +413,157 @@ export async function importLocationsAction(items: ImportLocationInput[]) {
     failedCount: errors.length,
     errors,
   };
+}
+
+export interface CreateUserInput {
+  name: string;
+  email: string;
+  password: string;
+  role?: UserRole;
+  phone?: string;
+}
+
+export async function createUserAdminAction(input: CreateUserInput) {
+  const currentUser = await getCurrentUser();
+  assertAuthorized(currentUser, UserRole.admin);
+
+  const name = input.name?.trim();
+  const email = input.email?.trim().toLowerCase();
+  const password = input.password?.trim();
+  const phone = input.phone?.trim() || null;
+  const role = input.role || UserRole.visitor;
+
+  if (!name || name.length < 2) {
+    return { success: false, error: "Name is compulsory and must be at least 2 characters long." };
+  }
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { success: false, error: "A valid email address is compulsory." };
+  }
+
+  if (!password || password.length < 6) {
+    return { success: false, error: "Password is compulsory and must be at least 6 characters long." };
+  }
+
+  try {
+    const existing = await db.user.findUnique({
+      where: { email },
+    });
+
+    if (existing) {
+      return { success: false, error: "A user with this email address already exists." };
+    }
+
+    const passwordHash = await hashPassword(password);
+
+    const newUser = await db.user.create({
+      data: {
+        name,
+        email,
+        passwordHash,
+        phone,
+        role,
+        status: UserStatus.active,
+        emailVerifiedAt: new Date(),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        phone: true,
+        createdAt: true,
+        _count: {
+          select: { listings: true },
+        },
+      },
+    });
+
+    revalidatePath("/admin/settings");
+    revalidatePath("/admin");
+    return {
+      success: true,
+      user: {
+        ...newUser,
+        createdAt: newUser.createdAt.toISOString(),
+      },
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to create user.",
+    };
+  }
+}
+
+export async function deleteUserAdminAction(userId: string) {
+  const currentUser = await getCurrentUser();
+  assertAuthorized(currentUser, UserRole.admin);
+
+  if (currentUser.id === userId) {
+    return { success: false, error: "You cannot delete your own active administrator account." };
+  }
+
+  try {
+    await db.session.deleteMany({ where: { userId } });
+    await db.user.delete({ where: { id: userId } });
+
+    revalidatePath("/admin/settings");
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to delete user.",
+    };
+  }
+}
+
+export async function updateUserRoleAndStatusAction(
+  userId: string,
+  data: { role?: UserRole; status?: UserStatus }
+) {
+  const currentUser = await getCurrentUser();
+  assertAuthorized(currentUser, UserRole.admin);
+
+  if (currentUser.id === userId && data.role && data.role !== UserRole.admin) {
+    return { success: false, error: "You cannot demote your own administrator account." };
+  }
+
+  try {
+    const updated = await db.user.update({
+      where: { id: userId },
+      data: {
+        ...(data.role && { role: data.role }),
+        ...(data.status && { status: data.status }),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        phone: true,
+        createdAt: true,
+        _count: {
+          select: { listings: true },
+        },
+      },
+    });
+
+    revalidatePath("/admin/settings");
+    return {
+      success: true,
+      user: {
+        ...updated,
+        createdAt: updated.createdAt.toISOString(),
+      },
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to update user.",
+    };
+  }
 }
