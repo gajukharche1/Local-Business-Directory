@@ -67,4 +67,5 @@ In branch `user-management`, we implement five interconnected capabilities adher
 - [x] Remove extraneous `w-20` badge from the bottom sidebar collapse button across admin and dashboard sidebars.
 - [x] Integrate `DashboardUserMenu` into the top-right header of `app/(admin)/admin/layout.tsx` matching the owner dashboard experience.
 - [x] Upgrade dependencies to `next@16.4.5` and `eslint-config-next@16.4.5`.
+- [x] Upgrade safe dependencies: `react@19.3.1`, `react-dom@19.3.1`, `@prisma/client@6.19.3`, `prisma@6.19.3`, and `vitest@5.1.0`.
 - [x] Pass `tsc --noEmit` and verify full production build compatibility.

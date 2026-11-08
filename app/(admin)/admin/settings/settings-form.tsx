@@ -127,7 +127,7 @@ export function SettingsForm({
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            Live Sidebar Simulation (1:1 Ratio)
+            Live Sidebar Simulation
           </span>
           <span className="text-[11px] font-mono text-muted-foreground">
             Real-time visual feedback
