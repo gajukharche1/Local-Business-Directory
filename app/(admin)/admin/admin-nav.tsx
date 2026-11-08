@@ -9,6 +9,8 @@ import {
   Store,
   ClipboardList,
   Clipboard,
+  List,
+  ListPlus,
   Upload,
   PlusCircle,
   FolderTree,
@@ -29,10 +31,16 @@ export type NavIconKey =
   | "clipboard-list"
   | "plus"
   | "folder"
+  | "Folder"
   | "map"
+  | "Map"
   | "upload"
   | "settings"
-  | "circle";
+  | "circle"
+  | "list"
+  | "List"
+  | "list-plus"
+  | "ListPlus";
 
 const NAV_ICONS: Record<NavIconKey, LucideIcon> = {
   sliders: Sliders,
@@ -43,10 +51,16 @@ const NAV_ICONS: Record<NavIconKey, LucideIcon> = {
   "clipboard-list": ClipboardList,
   plus: PlusCircle,
   folder: FolderTree,
+  Folder: FolderTree,
   map: MapPin,
+  Map: MapPin,
   upload: Upload,
   settings: Settings,
   circle: Circle,
+  list: List,
+  List: List,
+  "list-plus": ListPlus,
+  ListPlus: ListPlus,
 };
 
 export interface AdminNavSubItem {
@@ -157,7 +171,13 @@ export function AdminNav({ items }: AdminNavProps) {
                     const isSubActive =
                       subItem.href === "/admin"
                         ? pathname === "/admin"
-                        : pathname === subItem.href || pathname.startsWith(`${subItem.href}/`);
+                        : pathname === subItem.href ||
+                          (pathname.startsWith(`${subItem.href}/`) &&
+                            !item.children.some(
+                              (other) =>
+                                other.href !== subItem.href &&
+                                (pathname === other.href || pathname.startsWith(`${other.href}/`))
+                            ));
                     const isNavigating = navigatingHref === subItem.href;
 
                     return (

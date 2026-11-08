@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import db from "@/lib/db/client";
 import { CategoryManager, CategoryItem } from "./category-manager";
@@ -49,7 +50,9 @@ export default async function AdminCategoriesPage() {
       </div>
 
       {/* Interactive Category Manager */}
-      <CategoryManager initialCategories={categories as CategoryItem[]} />
+      <Suspense fallback={null}>
+        <CategoryManager initialCategories={categories as CategoryItem[]} />
+      </Suspense>
     </div>
   );
 }

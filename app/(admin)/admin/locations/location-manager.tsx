@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   MapPin,
   Plus,
@@ -64,6 +65,8 @@ const LOCALITY_PRESETS = [
 ];
 
 export function LocationManager({ initialLocations }: LocationManagerProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [locations, setLocations] = useState<LocationItem[]>(initialLocations);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -91,6 +94,19 @@ export function LocationManager({ initialLocations }: LocationManagerProps) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [isPending, startTransition] = useTransition();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const closeModal = () => {
+    setModalOpen(false);
+    if (searchParams.get("action") === "new" || searchParams.get("create") === "true") {
+      router.replace("/admin/locations", { scroll: false });
+    }
+  };
+
+  useEffect(() => {
+    if (searchParams.get("action") === "new" || searchParams.get("create") === "true") {
+      openCreateModal();
+    }
+  }, [searchParams]);
 
   // Auto-slug generator
   const handleNameChange = (newName: string) => {
@@ -243,7 +259,7 @@ export function LocationManager({ initialLocations }: LocationManagerProps) {
           };
           setLocations((prev) => [...prev, newLoc]);
         }
-        setModalOpen(false);
+        closeModal();
       }
     });
   };
@@ -433,7 +449,7 @@ export function LocationManager({ initialLocations }: LocationManagerProps) {
                 </h3>
               </div>
               <button
-                onClick={() => setModalOpen(false)}
+                onClick={closeModal}
                 className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition"
               >
                 <X className="h-4 w-4" />
@@ -744,7 +760,7 @@ export function LocationManager({ initialLocations }: LocationManagerProps) {
               <div className="flex items-center justify-end gap-3 pt-4 border-t">
                 <button
                   type="button"
-                  onClick={() => setModalOpen(false)}
+                  onClick={closeModal}
                   className="px-4 py-2 border rounded-lg text-xs font-semibold hover:bg-muted transition"
                 >
                   Cancel

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import db from "@/lib/db/client";
 import { LocationManager, LocationItem } from "./location-manager";
@@ -49,14 +50,15 @@ export default async function AdminLocationsPage() {
       </div>
 
       {/* Interactive Location Manager */}
-      <LocationManager
-        initialLocations={locations.map((loc) => ({
-          ...loc,
-          latitude: loc.latitude !== null && loc.latitude !== undefined ? Number(loc.latitude) : null,
-          longitude: loc.longitude !== null && loc.longitude !== undefined ? Number(loc.longitude) : null,
-        }))}
-      />
+      <Suspense fallback={null}>
+        <LocationManager
+          initialLocations={locations.map((loc) => ({
+            ...loc,
+            latitude: loc.latitude !== null && loc.latitude !== undefined ? Number(loc.latitude) : null,
+            longitude: loc.longitude !== null && loc.longitude !== undefined ? Number(loc.longitude) : null,
+          }))}
+        />
+      </Suspense>
     </div>
   );
 }
-
