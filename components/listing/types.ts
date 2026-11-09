@@ -42,3 +42,21 @@ export interface ListingReviewItem {
   ownerReplyAt?: Date | string | null;
   createdAt: Date | string;
 }
+
+export interface ListingSectionToggles {
+  services: boolean;
+  insights: boolean;
+  paymentModes: boolean;
+  hours: boolean;
+  amenities: boolean;
+  reviews: boolean;
+  leadSidebar: boolean;
+}
+
+export interface ListingCustomSections {
+  toggles?: Partial<ListingSectionToggles>;
+  services?: ListingServiceItem[];
+  insights?: string[];
+  paymentModes?: string[];
+}
+

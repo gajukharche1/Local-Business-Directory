@@ -32,6 +32,7 @@ const baseListingSchema = z.object({
   seoDescription: z.string().max(320, "SEO description must be 320 characters or less.").optional().or(z.literal("")),
   seoKeywords: z.string().max(250, "SEO keywords must be 250 characters or less.").optional().or(z.literal("")),
   ogImage: z.string().optional().or(z.literal("")),
+  customSections: z.any().optional(),
 });
 
 function parseListingFormData(formData: FormData) {
@@ -59,6 +60,13 @@ function parseListingFormData(formData: FormData) {
   const rawSeoKeywords = (formData.get("seoKeywords") as string)?.trim();
   const rawOgImage = (formData.get("ogImage") as string)?.trim();
   const rawAmenities = formData.getAll("amenities") as string[];
+  const rawCustomSections = (formData.get("customSections") as string)?.trim();
+  let resolvedCustomSections: Prisma.InputJsonValue | undefined = undefined;
+  if (rawCustomSections) {
+    try {
+      resolvedCustomSections = JSON.parse(rawCustomSections);
+    } catch {}
+  }
 
   return {
     title: rawTitle || undefined,
@@ -82,6 +90,7 @@ function parseListingFormData(formData: FormData) {
     seoDescription: rawSeoDesc || undefined,
     seoKeywords: rawSeoKeywords || undefined,
     ogImage: rawOgImage || undefined,
+    customSections: resolvedCustomSections,
   };
 }
 
@@ -192,6 +201,7 @@ export async function createListingAdminAction(
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
         openingHours: (resolvedOpeningHours as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
+        customSections: (data.customSections as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
         amenities: data.amenities || [],
         categories: {
           create: [{ categoryId: data.categoryId }],
@@ -362,6 +372,7 @@ export async function submitListingPublicAction(
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
         openingHours: (resolvedOpeningHours as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
+        customSections: (data.customSections as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
         amenities: data.amenities || [],
         categories: {
           create: [{ categoryId: data.categoryId }],
@@ -519,6 +530,7 @@ export async function updateListingAdminAction(
         yearEstablished: data.yearEstablished || null,
         priceRange: data.priceRange || 1,
         ...(updatedOpeningHours && { openingHours: updatedOpeningHours as unknown as Prisma.InputJsonValue }),
+        ...(data.customSections !== undefined && { customSections: data.customSections as unknown as Prisma.InputJsonValue }),
         amenities: data.amenities || [],
       },
     });

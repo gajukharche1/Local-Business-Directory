@@ -7,6 +7,7 @@ import { createListingAdminAction, ActionState } from "@/actions/listing";
 import { ContentBlockEditor } from "@/components/forms/content-block-editor";
 import { ImageUpload } from "@/components/forms/image-upload";
 import { OpeningHoursScheduler } from "@/components/forms/opening-hours-scheduler";
+import { ModularSectionsManager } from "@/components/forms/modular-sections-manager";
 import {
   Clock,
   Share2,
@@ -615,7 +616,12 @@ export function AdminListingForm({
         <OpeningHoursScheduler name="openingHours" />
       </div>
 
-      {/* 5. Administration & Status Controls */}
+      {/* 5. Modular Frontend Sections & Components */}
+      <div className="space-y-4">
+        <ModularSectionsManager />
+      </div>
+
+      {/* 6. Administration & Status Controls */}
       <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-6 shadow-sm space-y-5">
         <div className="flex items-center gap-2 border-b border-red-500/20 pb-3">
           <ShieldCheck className="h-5 w-5 text-red-600" />

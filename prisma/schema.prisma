@@ -277,6 +277,7 @@ model Listing {
   openingHours   Json?             // Structured weekly hours
   amenities      String[]          @default([])
   socialLinks    Json?             // { facebook, instagram, linkedin, x, youtube }
+  customSections Json?             // Modular components & section config { enabledSections, servicesList, insightsList, paymentModes }
 
   // SEO & Meta Attributes
   seoTitle       String?

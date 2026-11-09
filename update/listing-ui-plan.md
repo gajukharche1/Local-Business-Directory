@@ -229,3 +229,14 @@ Enhance `SeoService.generateLocalBusinessSchema` to inject comprehensive metadat
 - [x] Verify SEO Schema.org JSON-LD contains rich attributes (`priceRange`, `paymentAccepted`, `geo`, `openingHoursSpecification`).
 - [x] Run `npm run typecheck` (`tsc --noEmit`) and verify 0 errors.
 - [x] Verify build via `npx next build --turbopack`.
+
+### Phase 6: Admin Dashboard Modular Component Controls
+- [x] Add `customSections` JSON field to Prisma `Listing` model and sync database schema.
+- [x] Build `components/forms/modular-sections-manager.tsx` providing:
+  - Master on/off toggles for each component (Services, Insights, Payment Modes, Hours, Amenities, Reviews, Lead Form).
+  - Interactive rate card & service package editor (add/edit/delete items with prices, duration, and popular badge).
+  - Customer sentiment highlight editor ("Why Customers Love This Place").
+  - Payment modes accepted selector (UPI, Credit/Debit Cards, Cash, Net Banking, EMI, Custom).
+- [x] Integrate `ModularSectionsManager` into both `AdminListingForm` (new listing) and `AdminEditListingForm` (edit listing).
+- [x] Wire `actions/listing.ts` to parse and persist `customSections` on create and update.
+- [x] Update frontend `app/(public)/listing/[slug]/page.tsx` and `ListingStickyNav` to dynamically show or hide components based on configured toggles.

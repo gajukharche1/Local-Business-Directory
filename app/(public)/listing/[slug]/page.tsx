@@ -13,6 +13,7 @@ import { OpeningHoursCard } from "@/components/listing/opening-hours-card";
 import { ListingReviewsSection } from "@/components/listing/listing-reviews-section";
 import { ListingLeadSidebar } from "@/components/listing/listing-lead-sidebar";
 import { ListingMobileActionBar } from "@/components/listing/listing-mobile-action-bar";
+import { ListingCustomSections, ListingSectionToggles } from "@/components/listing/types";
 import { Check, ChevronRight, Info } from "lucide-react";
 
 interface ListingPageProps {
@@ -90,6 +91,25 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
   const primaryCategory = listing.categories[0]?.category;
   const ratingNumber = Number(listing.averageRating);
 
+  // Unpack modular component configurations & toggles
+  const customConfig = (listing.customSections as unknown as ListingCustomSections | null) ?? null;
+  const toggles: ListingSectionToggles = {
+    services: true,
+    insights: true,
+    paymentModes: true,
+    hours: true,
+    amenities: true,
+    reviews: true,
+    leadSidebar: true,
+    ...(customConfig?.toggles || {}),
+  };
+
+  const startingPrice = toggles.services
+    ? customConfig?.services && customConfig.services.length > 0
+      ? `Starting from ₹ ${Math.min(...customConfig.services.map((s) => s.price)).toLocaleString("en-IN")}`
+      : "Starting from ₹ 413"
+    : null;
+
   // Generate Structured Data (JSON-LD)
   const localBusinessSchema = SeoService.generateLocalBusinessSchema(listing, baseUrl);
   const breadcrumbSchema = SeoService.generateBreadcrumbSchema(
@@ -165,7 +185,7 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
           <ListingHeroBento
             media={listing.media}
             title={listing.title}
-            startingPrice="Starting from ₹ 413"
+            startingPrice={startingPrice}
             categoryName={primaryCategory?.name}
           />
         </div>
@@ -174,13 +194,17 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
         <ListingStickyNav
           photoCount={listing.media.length}
           reviewCount={listing.reviewCount > 0 ? listing.reviewCount : 142}
-          hasServices={true}
+          hasServices={toggles.services}
+          hasInsights={toggles.insights || toggles.paymentModes}
+          hasTimings={toggles.hours}
+          hasReviews={toggles.reviews}
+          hasAmenities={toggles.amenities && Boolean(listing.amenities && listing.amenities.length > 0)}
         />
 
         {/* Two-Column Responsive Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Main Info Rail (8 cols on desktop) */}
-          <div className="lg:col-span-8 space-y-8">
+        <div className={toggles.leadSidebar ? "grid grid-cols-1 lg:grid-cols-12 gap-8 items-start" : "max-w-4xl mx-auto space-y-8"}>
+          {/* Main Info Rail */}
+          <div className={toggles.leadSidebar ? "lg:col-span-8 space-y-8" : "w-full space-y-8"}>
             {/* Identity & Action Hub */}
             <div id="overview" className="scroll-mt-28">
               <ListingHeaderCard
@@ -207,17 +231,26 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
             </div>
 
             {/* Interactive Services & Rate Card */}
-            <ListingServicesCatalogue
-              listingId={listing.id}
-              listingTitle={listing.title}
-              categoryName={primaryCategory?.name}
-            />
+            {toggles.services && (
+              <ListingServicesCatalogue
+                listingId={listing.id}
+                listingTitle={listing.title}
+                categoryName={primaryCategory?.name}
+                customServices={customConfig?.services}
+              />
+            )}
 
             {/* Key Customer Insights & Payment Modes */}
-            <ListingInsightsCard
-              title={listing.title}
-              yearEstablished={listing.yearEstablished}
-            />
+            {(toggles.insights || toggles.paymentModes) && (
+              <ListingInsightsCard
+                title={listing.title}
+                yearEstablished={listing.yearEstablished}
+                customInsights={customConfig?.insights}
+                paymentModes={customConfig?.paymentModes}
+                showInsights={toggles.insights}
+                showPaymentModes={toggles.paymentModes}
+              />
+            )}
 
             {/* About / Rich Text Description */}
             <section className="rounded-3xl border border-border/80 bg-card p-6 md:p-8 shadow-sm space-y-4">
@@ -239,7 +272,7 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
             </section>
 
             {/* Amenities & Key Facilities */}
-            {listing.amenities && listing.amenities.length > 0 && (
+            {toggles.amenities && listing.amenities && listing.amenities.length > 0 && (
               <section id="amenities" className="rounded-3xl border border-border/80 bg-card p-6 md:p-8 shadow-sm space-y-5 scroll-mt-28">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
@@ -266,48 +299,54 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
             )}
 
             {/* Operational Schedule & Timetable */}
-            <OpeningHoursCard openingHours={listing.openingHours} />
+            {toggles.hours && <OpeningHoursCard openingHours={listing.openingHours} />}
 
             {/* Customer Reviews & Feedback */}
-            <ListingReviewsSection
-              listingId={listing.id}
-              slug={listing.slug}
-              title={listing.title}
-              averageRating={ratingNumber}
-              reviewCount={listing.reviewCount}
-              reviews={listing.reviews}
-            />
+            {toggles.reviews && (
+              <ListingReviewsSection
+                listingId={listing.id}
+                slug={listing.slug}
+                title={listing.title}
+                averageRating={ratingNumber}
+                reviewCount={listing.reviewCount}
+                reviews={listing.reviews}
+              />
+            )}
           </div>
 
           {/* Right Lead Sidebar (4 cols on desktop) */}
-          <div className="lg:col-span-4">
-            <ListingLeadSidebar
-              listingId={listing.id}
-              slug={listing.slug}
-              title={listing.title}
-              phone={listing.phone}
-              whatsapp={listing.whatsapp}
-              website={listing.website}
-              address={listing.address}
-              locality={listing.locality}
-              landmark={listing.landmark}
-              claimStatus={listing.claimStatus}
-              callAllowed={listing.plan?.callButtonAllowed ?? true}
-              whatsappAllowed={listing.plan?.whatsappAllowed ?? true}
-            />
-          </div>
+          {toggles.leadSidebar && (
+            <div className="lg:col-span-4">
+              <ListingLeadSidebar
+                listingId={listing.id}
+                slug={listing.slug}
+                title={listing.title}
+                phone={listing.phone}
+                whatsapp={listing.whatsapp}
+                website={listing.website}
+                address={listing.address}
+                locality={listing.locality}
+                landmark={listing.landmark}
+                claimStatus={listing.claimStatus}
+                callAllowed={listing.plan?.callButtonAllowed ?? true}
+                whatsappAllowed={listing.plan?.whatsappAllowed ?? true}
+              />
+            </div>
+          )}
         </div>
       </main>
 
       {/* Mobile Sticky Bottom Action Conversion Bar */}
-      <ListingMobileActionBar
-        listingId={listing.id}
-        title={listing.title}
-        phone={listing.phone}
-        whatsapp={listing.whatsapp}
-        callAllowed={listing.plan?.callButtonAllowed ?? true}
-        whatsappAllowed={listing.plan?.whatsappAllowed ?? true}
-      />
+      {toggles.leadSidebar && (
+        <ListingMobileActionBar
+          listingId={listing.id}
+          title={listing.title}
+          phone={listing.phone}
+          whatsapp={listing.whatsapp}
+          callAllowed={listing.plan?.callButtonAllowed ?? true}
+          whatsappAllowed={listing.plan?.whatsappAllowed ?? true}
+        />
+      )}
     </div>
   );
 }
