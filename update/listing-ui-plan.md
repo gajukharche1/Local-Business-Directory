@@ -81,11 +81,14 @@ app/(public)/listing/[slug]/
     ├── listing-sticky-nav.tsx         # Sticky anchor tabs (Overview, Services, Photos, Reviews, Hours)
     ├── listing-services-catalogue.tsx # Interactive rate card / service price list with categories
     ├── listing-insights-card.tsx      # "What Customers Love" AI highlights + Payment modes
-    ├── listing-hours-card.tsx         # Live operational schedule with today highlight & countdown
+    ├── opening-hours-card.tsx         # Live operational schedule with today highlight & countdown
     ├── listing-reviews-section.tsx    # Rating histogram, review filters, customer cards, and reply threads
     ├── listing-lead-sidebar.tsx       # Sticky right-rail "Get Best Deal" instant enquiry form
     ├── listing-lightbox.tsx           # Full-screen photo browser modal with thumbnail carousel
     └── listing-mobile-action-bar.tsx  # Mobile sticky bottom bar (Call, WhatsApp, Enquire)
+
+components/forms/
+└── modular-sections-manager.tsx       # Admin Dashboard Section & Component Manager (Add / Remove / Configure)
 ```
 
 ---
@@ -188,7 +191,76 @@ app/(public)/listing/[slug]/
 
 ---
 
-## 6. SEO & Schema.org JSON-LD Enhancement
+## 6. Backend Admin Dashboard: Modular Component Management (Add / Remove / Configure)
+
+### A. Architectural Motivation & Business Flexibility
+Not all local businesses operate identically:
+- A **Hair & Beauty Salon** or **Dental Clinic** requires a prominent **Services & Rate Card Catalogue** with pricing and duration.
+- A **Real Estate Broker** or **Law Firm** needs verified credentials, direct consultations, and enquiry capture, but no fixed service rate card.
+- A **Neighborhood Supermarket** requires payment modes, parking facilities, and operating hours, but no booking widget.
+
+To support this variety without codebase fragmentation, every frontend listing component is made **modular, toggleable, and customizable** directly within the Admin Dashboard when creating (`/admin/listings/new`) or editing (`/admin/listings/[id]/edit`) a listing.
+
+### B. Modular Sections Manager (`ModularSectionsManager`)
+Located at `components/forms/modular-sections-manager.tsx`, this component provides:
+
+1. **Master Component Toggles (`ListingSectionToggles`)**:
+   - `services`: Services & Rate Card Catalogue (`true` | `false`)
+   - `insights`: "Why Customers Love This" Sentiment Highlights (`true` | `false`)
+   - `paymentModes`: Accepted Payment Modes (`true` | `false`)
+   - `hours`: Weekly Timetable & Live Schedule (`true` | `false`)
+   - `amenities`: Facilities & Key Conveniences (`true` | `false`)
+   - `reviews`: Customer Ratings & Feedback Hub (`true` | `false`)
+   - `leadSidebar`: Sticky "Get Best Deal" Lead Widget (`true` | `false`)
+
+2. **Interactive Rate Card & Pricing Package Editor**:
+   - Live list of services showing item title, category, duration, selling price, and original MRP.
+   - Dynamic form to append new items:
+     - `title`: Service Name (e.g. *"Organic Botanical Hair Spa"*)
+     - `price`: Discounted Selling Price in ₹ (e.g. `1299`)
+     - `originalPrice`: Strikethrough MRP in ₹ (e.g. `1750`)
+     - `duration`: Time needed (e.g. *"60 mins"*)
+     - `category`: Category group tag (e.g. *"Hair Care"*)
+     - `description`: Service explanation
+     - `popular`: Toggle switch for "Popular" highlight badge
+   - 1-click removal of any individual service.
+   - 1-click *"Reset Template"* button to populate industry-standard benchmark packages.
+
+3. **Customer Sentiment Highlight Editor ("Why People Love This")**:
+   - Dynamic bullet point management for USPs (e.g. *"Certified 100% Organic & Vegan Formulations"*).
+   - Add/remove items with real-time UI preview.
+
+4. **Modes of Payment Accepted Selector**:
+   - Multi-select interactive pills for standard Indian payment rails:
+     - `UPI (GPay / PhonePe / Paytm)`
+     - `Credit & Debit Cards (Visa / Master / RuPay)`
+     - `Net Banking`
+     - `Cash Accepted`
+     - `EMI Options Available`
+   - Custom payment mode input for specialized payment methods (e.g., Sodexo, Meal Coupons).
+
+### C. Database & Data Pipeline Architecture
+- **Schema Storage**: Persistent JSONB column `customSections` on Prisma `Listing` model:
+  ```typescript
+  export interface ListingCustomSections {
+    toggles?: Partial<ListingSectionToggles>;
+    services?: ListingServiceItem[];
+    insights?: string[];
+    paymentModes?: string[];
+  }
+  ```
+- **Form Serialization**: A hidden `<input type="hidden" name="customSections" value={JSON.stringify(sectionsPayload)} />` transmits structured state to server actions without requiring complex multi-table migrations.
+- **Server Action Validation**: `actions/listing.ts` parses `customSections` through `baseListingSchema` with Zod validation, ensuring sanitization on create (`createListingAdminAction`, `submitListingUserAction`) and update (`updateListingAdminAction`).
+
+### D. Frontend Responsive Adaptation
+- **Dynamic Anchor Navigation (`ListingStickyNav`)**: Tabs for disabled sections are automatically filtered out from the sticky top bar.
+- **Dynamic Hero Starting Price**: Calculates `Math.min(...services.map(s => s.price))` dynamically from active rate card items.
+- **Grid Layout Reflow**: If `leadSidebar` is disabled, the page layout smoothly transitions from an asymmetric `8:4` desktop grid to a centered `max-w-4xl mx-auto` single-column reading layout.
+- **Mobile Conversion Dock (`ListingMobileActionBar`)**: Automatically disables lead capture sheets if lead submission is turned off.
+
+---
+
+## 7. SEO & Schema.org JSON-LD Enhancement
 
 Enhance `SeoService.generateLocalBusinessSchema` to inject comprehensive metadata matching the Justdial standard:
 - Specific `@type`: `HairSalon` / `Restaurant` / `LocalBusiness`.
@@ -201,7 +273,7 @@ Enhance `SeoService.generateLocalBusinessSchema` to inject comprehensive metadat
 
 ---
 
-## 7. Implementation Roadmap & Checklist
+## 8. Implementation Roadmap & Checklist
 
 ### Phase 1: Branch & Design Tokens Setup
 - [x] Create feature branch `Frontend-UI` and switch to it.
