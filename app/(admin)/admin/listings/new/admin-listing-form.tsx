@@ -8,6 +8,7 @@ import { ContentBlockEditor } from "@/components/forms/content-block-editor";
 import { ImageUpload } from "@/components/forms/image-upload";
 import { OpeningHoursScheduler } from "@/components/forms/opening-hours-scheduler";
 import { ModularSectionsManager } from "@/components/forms/modular-sections-manager";
+import { SchemaMarkupEditor } from "@/components/forms/schema-markup-editor";
 import {
   Clock,
   Share2,
@@ -895,6 +896,14 @@ export function AdminListingForm({
                 {previewDesc}
               </p>
             </div>
+          </div>
+
+          {/* Structured Data / Schema.org Rich Results Configuration */}
+          <div className="pt-2">
+            <SchemaMarkupEditor
+              listingTitle={listingTitle || "Business Name"}
+              locality={localityText}
+            />
           </div>
         </div>
       </div>

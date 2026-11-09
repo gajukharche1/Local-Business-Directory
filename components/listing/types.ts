@@ -53,10 +53,23 @@ export interface ListingSectionToggles {
   leadSidebar: boolean;
 }
 
+export interface ListingSchemaConfig {
+  schemaType?: string;
+  priceRangeText?: string;
+  currenciesAccepted?: string;
+  paymentAccepted?: string;
+  includeRatings?: boolean;
+  includeOpeningHours?: boolean;
+  includeGeo?: boolean;
+  includeReviews?: boolean;
+  customJsonLd?: string;
+}
+
 export interface ListingCustomSections {
   toggles?: Partial<ListingSectionToggles>;
   services?: ListingServiceItem[];
   insights?: string[];
   paymentModes?: string[];
+  schemaConfig?: ListingSchemaConfig;
 }
 

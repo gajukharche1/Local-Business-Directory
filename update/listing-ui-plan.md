@@ -88,7 +88,8 @@ app/(public)/listing/[slug]/
     └── listing-mobile-action-bar.tsx  # Mobile sticky bottom bar (Call, WhatsApp, Enquire)
 
 components/forms/
-└── modular-sections-manager.tsx       # Admin Dashboard Section & Component Manager (Add / Remove / Configure)
+├── modular-sections-manager.tsx       # Admin Dashboard Section & Component Manager (Add / Remove / Configure)
+└── schema-markup-editor.tsx           # Structured Data (Schema.org / JSON-LD) Rich Snippets Editor & Live Preview
 ```
 
 ---
@@ -242,15 +243,28 @@ Located at `components/forms/modular-sections-manager.tsx`, this component provi
 ### C. Database & Data Pipeline Architecture
 - **Schema Storage**: Persistent JSONB column `customSections` on Prisma `Listing` model:
   ```typescript
+  export interface ListingSchemaConfig {
+    schemaType?: string;
+    priceRangeText?: string;
+    currenciesAccepted?: string;
+    paymentAccepted?: string;
+    includeRatings?: boolean;
+    includeOpeningHours?: boolean;
+    includeGeo?: boolean;
+    includeReviews?: boolean;
+    customJsonLd?: string;
+  }
+
   export interface ListingCustomSections {
     toggles?: Partial<ListingSectionToggles>;
     services?: ListingServiceItem[];
     insights?: string[];
     paymentModes?: string[];
+    schemaConfig?: ListingSchemaConfig;
   }
   ```
-- **Form Serialization**: A hidden `<input type="hidden" name="customSections" value={JSON.stringify(sectionsPayload)} />` transmits structured state to server actions without requiring complex multi-table migrations.
-- **Server Action Validation**: `actions/listing.ts` parses `customSections` through `baseListingSchema` with Zod validation, ensuring sanitization on create (`createListingAdminAction`, `submitListingUserAction`) and update (`updateListingAdminAction`).
+- **Form Serialization**: Hidden inputs `<input type="hidden" name="customSections" />` and `<input type="hidden" name="schemaConfig" />` transmit structured state to server actions without requiring complex multi-table migrations.
+- **Server Action Validation**: `actions/listing.ts` parses `customSections` and `schemaConfig` through `baseListingSchema` with Zod validation, ensuring sanitization on create (`createListingAdminAction`, `submitListingUserAction`) and update (`updateListingAdminAction`).
 
 ### D. Frontend Responsive Adaptation
 - **Dynamic Anchor Navigation (`ListingStickyNav`)**: Tabs for disabled sections are automatically filtered out from the sticky top bar.
@@ -260,16 +274,43 @@ Located at `components/forms/modular-sections-manager.tsx`, this component provi
 
 ---
 
-## 7. SEO & Schema.org JSON-LD Enhancement
+## 7. SEO & Schema.org JSON-LD Enhancement & Admin Schema Options
 
-Enhance `SeoService.generateLocalBusinessSchema` to inject comprehensive metadata matching the Justdial standard:
-- Specific `@type`: `HairSalon` / `Restaurant` / `LocalBusiness`.
-- `priceRange`: e.g. `"Hair Cut Starting at ₹ 413"`.
-- `paymentAccepted`: `["UPI", "Visa / Master Card / Rupay", "Cash"]`.
-- `geo`: exact latitude and longitude.
-- `openingHoursSpecification`: array of daily operating hours.
-- `aggregateRating`: `ratingValue`, `ratingCount`, `bestRating: "5"`.
-- `review`: Top reviews with author, reviewBody, and datePublished.
+### A. Admin Dashboard Schema Markup Options (`SchemaMarkupEditor`)
+Embedded directly inside **Section 6: Search Engine Optimization (SEO & Meta Tags)** of both the Add Listing (`/admin/listings/new`) and Edit Listing (`/admin/listings/[id]/edit`) forms:
+
+1. **Schema.org Business Subtype (@type) Selection**:
+   - `auto`: Auto-detect from Primary Category (Recommended default).
+   - Categorized high-intent local business sub-types:
+     - **Beauty, Wellness & Personal Care**: `HairSalon`, `BeautySalon`, `HealthAndBeautyBusiness`, `TattooParlor`.
+     - **Food & Dining**: `Restaurant`, `CafeOrCoffeeShop`, `FastFoodRestaurant`, `Bakery`, `BarOrPub`.
+     - **Healthcare & Fitness**: `MedicalBusiness`, `Dentist`, `Physician`, `Pharmacy`, `HealthClub`, `SportsActivityLocation`.
+     - **Retail & Shopping**: `GroceryStore`, `ClothingStore`, `ElectronicsStore`, `Store`.
+     - **Automotive & Services**: `AutoRepair`, `AutoDealer`, `GasStation`, `CarWash`.
+     - **Professional & Home**: `EducationalOrganization`, `RealEstateAgent`, `ProfessionalService`, `HomeAndConstructionBusiness`, `LegalService`, `FinancialService`, `LocalBusiness`.
+
+2. **Custom Price Range Specification (`priceRange`)**:
+   - Explicit price string formatting (e.g., `Hair Cut Starting at ₹ 413` or `₹₹` or `₹500 - ₹2,500`).
+   - 1-click quick preset chips for instant population.
+
+3. **Currencies & Payment Methods**:
+   - `currenciesAccepted`: Default `INR`.
+   - `paymentAccepted`: Formatted comma-separated string (e.g. `Cash, Credit Card, Debit Card, UPI`).
+
+4. **Rich Snippet Microdata Inclusion Toggles**:
+   - `includeRatings`: Star score & aggregate rating count.
+   - `includeOpeningHours`: Structured daily `OpeningHoursSpecification`.
+   - `includeGeo`: Exact latitude and longitude `GeoCoordinates`.
+   - `includeReviews`: Individual customer review quotes and author markup.
+
+5. **Live JSON-LD Syntax-Highlighted Preview**:
+   - Interactive preview component rendering the real-time `<script type="application/ld+json">` code block for instant crawler validation before saving.
+
+### B. Runtime Schema Generation (`SeoService.generateLocalBusinessSchema`)
+The public listing page dynamically consumes the configured `schemaConfig`:
+- Overrides `@type` if an explicit subtype is chosen.
+- Injects formatted `priceRange`, `currenciesAccepted`, and `paymentAccepted`.
+- Conditionally includes/excludes ratings, weekly hours, geolocation, and reviews based on the admin toggles.
 
 ---
 
@@ -312,3 +353,15 @@ Enhance `SeoService.generateLocalBusinessSchema` to inject comprehensive metadat
 - [x] Integrate `ModularSectionsManager` into both `AdminListingForm` (new listing) and `AdminEditListingForm` (edit listing).
 - [x] Wire `actions/listing.ts` to parse and persist `customSections` on create and update.
 - [x] Update frontend `app/(public)/listing/[slug]/page.tsx` and `ListingStickyNav` to dynamically show or hide components based on configured toggles.
+
+### Phase 7: Structured Data (Schema.org / JSON-LD) Markup Options in SEO Section
+- [x] Build `components/forms/schema-markup-editor.tsx` providing:
+  - Schema.org business subtype selector (`schemaType`) with 18+ local business categories.
+  - Price range input (`priceRangeText`) with 1-click presets (e.g. `Hair Cut Starting at ₹ 413`, `₹₹`).
+  - Accepted currencies (`currenciesAccepted`) and payment modes (`paymentAccepted`).
+  - Rich snippet inclusion checkboxes (ratings, operating hours, geocoordinates, reviews).
+  - Real-time live JSON-LD syntax-highlighted code preview.
+- [x] Embed `SchemaMarkupEditor` into **Section 6: Search Engine Optimization (SEO & Meta Tags)** of both `AdminListingForm` (new) and `AdminEditListingForm` (edit).
+- [x] Update `actions/listing.ts` to parse and persist `schemaConfig` into `customSections.schemaConfig`.
+- [x] Upgrade `SeoService.generateLocalBusinessSchema` to dynamically respect admin overrides and microdata toggles.
+- [x] Full verification with `npm run typecheck` and `npx next build` (0 errors).

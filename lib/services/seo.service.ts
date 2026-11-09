@@ -36,8 +36,16 @@ export class SeoService {
    * Generates Schema.org LocalBusiness JSON-LD structure.
    */
   static generateLocalBusinessSchema(listing: any, appUrl: string) {
+    const customConfig = (listing.customSections as any) ?? null;
+    const schemaConfig = customConfig?.schemaConfig ?? null;
+
     const primaryCategory = listing.categories?.[0]?.category;
-    const schemaType = this.getSchemaType(primaryCategory?.slug);
+    const defaultType = this.getSchemaType(primaryCategory?.slug);
+    const schemaType =
+      schemaConfig?.schemaType && schemaConfig.schemaType !== "auto"
+        ? schemaConfig.schemaType
+        : defaultType;
+
     const listingUrl = `${appUrl}/listing/${listing.slug}`;
 
     const schema: Record<string, any> = {
@@ -65,7 +73,7 @@ export class SeoService {
       schema.sameAs = [listing.website];
     }
 
-    if (listing.latitude && listing.longitude) {
+    if (schemaConfig?.includeGeo !== false && listing.latitude && listing.longitude) {
       schema.geo = {
         "@type": "GeoCoordinates",
         latitude: Number(listing.latitude),
@@ -77,16 +85,18 @@ export class SeoService {
       schema.image = listing.media.map((m: any) => m.url);
     }
 
-    schema.currenciesAccepted = "INR";
-    schema.paymentAccepted = "Cash, Credit Card, Debit Card, UPI";
+    schema.currenciesAccepted = schemaConfig?.currenciesAccepted || "INR";
+    schema.paymentAccepted = schemaConfig?.paymentAccepted || "Cash, Credit Card, Debit Card, UPI";
 
-    if (listing.priceRange) {
+    if (schemaConfig?.priceRangeText) {
+      schema.priceRange = schemaConfig.priceRangeText;
+    } else if (listing.priceRange) {
       schema.priceRange = "₹".repeat(Math.min(4, Math.max(1, listing.priceRange)));
     } else {
       schema.priceRange = "₹₹";
     }
 
-    if (listing.reviewCount > 0 && listing.averageRating) {
+    if (schemaConfig?.includeRatings !== false && listing.reviewCount > 0 && listing.averageRating) {
       schema.aggregateRating = {
         "@type": "AggregateRating",
         ratingValue: Number(listing.averageRating).toFixed(1),
@@ -96,7 +106,7 @@ export class SeoService {
       };
     }
 
-    if (listing.reviews && Array.isArray(listing.reviews) && listing.reviews.length > 0) {
+    if (schemaConfig?.includeReviews !== false && listing.reviews && Array.isArray(listing.reviews) && listing.reviews.length > 0) {
       schema.review = listing.reviews.slice(0, 5).map((rev: any) => ({
         "@type": "Review",
         author: {
@@ -115,7 +125,7 @@ export class SeoService {
     }
 
     // Opening hours schema if available
-    if (listing.openingHours && typeof listing.openingHours === "object") {
+    if (schemaConfig?.includeOpeningHours !== false && listing.openingHours && typeof listing.openingHours === "object") {
       const dayMap: Record<string, string> = {
         monday: "https://schema.org/Monday",
         tuesday: "https://schema.org/Tuesday",

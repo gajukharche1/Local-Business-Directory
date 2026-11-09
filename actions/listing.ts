@@ -61,10 +61,21 @@ function parseListingFormData(formData: FormData) {
   const rawOgImage = (formData.get("ogImage") as string)?.trim();
   const rawAmenities = formData.getAll("amenities") as string[];
   const rawCustomSections = (formData.get("customSections") as string)?.trim();
-  let resolvedCustomSections: Prisma.InputJsonValue | undefined = undefined;
+  let resolvedCustomSections: Record<string, any> | undefined = undefined;
   if (rawCustomSections) {
     try {
       resolvedCustomSections = JSON.parse(rawCustomSections);
+    } catch {}
+  }
+
+  const rawSchemaConfig = (formData.get("schemaConfig") as string)?.trim();
+  if (rawSchemaConfig) {
+    try {
+      const parsedSchemaConfig = JSON.parse(rawSchemaConfig);
+      resolvedCustomSections = {
+        ...(resolvedCustomSections || {}),
+        schemaConfig: parsedSchemaConfig,
+      };
     } catch {}
   }
 
