@@ -54,6 +54,13 @@ enum MediaScanStatus {
   pending
   clean
   infected
+  quarantined
+}
+
+enum StorageProvider {
+  r2
+  s3
+  local
 }
 
 enum DataRequestType {
@@ -200,6 +207,7 @@ model Category {
   parent         Category?         @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children       Category[]        @relation("CategoryHierarchy")
   listings       ListingCategory[]
+  media          Media[]
 
   @@index([parentId])
   @@index([featuredOnHome])
@@ -228,6 +236,7 @@ model Location {
   parent         Location?         @relation("LocationHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children       Location[]        @relation("LocationHierarchy")
   listings       ListingLocation[]
+  media          Media[]
 
   @@index([parentId])
   @@index([featured])
@@ -410,24 +419,43 @@ model Favourite {
 }
 
 model Media {
-  id         String          @id @default(cuid())
-  listingId  String?
-  ownerId    String?
-  key        String          @unique
-  url        String
-  mimeType   String
-  bytes      Int
-  width      Int?
-  height     Int?
-  altText    String?
-  scanStatus MediaScanStatus @default(pending)
-  createdAt  DateTime        @default(now())
+  id              String          @id @default(cuid())
+  ownerId         String?
+  listingId       String?
+  categoryId      String?
+  locationId      String?
 
-  listing    Listing?        @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  owner      User?           @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  title           String?
+  fileName        String?
+  key             String          @unique
+  url             String
+  thumbnailUrl    String?
+  mimeType        String
+  bytes           Int
+  width           Int?
+  height          Int?
+  altText         String?
 
-  @@index([listingId])
-  @@index([ownerId])
+  folder          String          @default("/")
+  tags            String[]        @default([])
+  storageProvider StorageProvider @default(r2)
+  scanStatus      MediaScanStatus @default(clean)
+
+  deletedAt       DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt @default(now())
+
+  listing         Listing?        @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  owner           User?           @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  category        Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  location        Location?       @relation(fields: [locationId], references: [id], onDelete: SetNull)
+
+  @@index([ownerId, folder, deletedAt])
+  @@index([listingId, deletedAt])
+  @@index([categoryId])
+  @@index([locationId])
+  @@index([mimeType])
+  @@index([createdAt])
   @@map("media")
 }
 

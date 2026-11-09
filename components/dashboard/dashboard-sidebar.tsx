@@ -10,6 +10,7 @@ import {
   Inbox,
   Star,
   CreditCard,
+  Image as ImageIcon,
   LogOut,
   ArrowLeft,
   PanelLeftClose,
@@ -53,6 +54,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
     { label: "My Listings", href: "/dashboard/listings", icon: Store },
     { label: "Leads & Enquiries", href: "/dashboard/enquiries", icon: Inbox },
     { label: "Customer Reviews", href: "/dashboard/reviews", icon: Star },
+    { label: "Media Files", href: "/dashboard/media", icon: ImageIcon },
     { label: "Plan & Billing", href: "/dashboard/billing", icon: CreditCard },
   ];
 

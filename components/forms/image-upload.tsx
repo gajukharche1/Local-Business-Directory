@@ -2,7 +2,8 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { Upload, X, Image as ImageIcon, Link as LinkIcon, Loader2, Star } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Link as LinkIcon, Loader2, Star, Folder } from "lucide-react";
+import { MediaPickerModal } from "@/components/media/media-picker-modal";
 
 export interface UploadedImage {
   url: string;
@@ -33,6 +34,7 @@ export function ImageUpload({
   const [uploading, setUploading] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const [showUrlField, setShowUrlField] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -182,15 +184,42 @@ export function ImageUpload({
           <p className="text-[11px] text-muted-foreground mt-0.5">{description}</p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setShowUrlField(!showUrlField)}
-          className="text-xs font-semibold text-primary hover:underline self-start sm:self-auto flex items-center gap-1"
-        >
-          <LinkIcon className="h-3.5 w-3.5" />
-          <span>{showUrlField ? "Hide URL Input" : "Add via Image URL"}</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-3 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setShowPicker(true)}
+            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+          >
+            <Folder className="h-3.5 w-3.5" />
+            <span>Choose from Media Library</span>
+          </button>
+          <span className="text-muted-foreground/60 hidden sm:inline">•</span>
+          <button
+            type="button"
+            onClick={() => setShowUrlField(!showUrlField)}
+            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+          >
+            <LinkIcon className="h-3.5 w-3.5" />
+            <span>{showUrlField ? "Hide URL Input" : "Add via URL"}</span>
+          </button>
+        </div>
       </div>
+
+      {/* Media Picker Modal */}
+      <MediaPickerModal
+        isOpen={showPicker}
+        onClose={() => setShowPicker(false)}
+        maxSelections={maxPhotos - images.length}
+        title="Select Business Photos"
+        onSelect={(selected) => {
+          const newItems: UploadedImage[] = selected.map((s) => ({
+            url: s.url,
+            name: s.title || s.altText || "Selected Photo",
+            mediaId: s.mediaId,
+          }));
+          updateImages([...images, ...newItems].slice(0, maxPhotos));
+        }}
+      />
 
       {/* URL Input Bar */}
       {showUrlField && (

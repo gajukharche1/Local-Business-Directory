@@ -68,6 +68,7 @@ export default function RegisterPage() {
               name="name"
               required
               placeholder={role === "owner" ? "e.g. Rajesh Kulkarni" : "e.g. Pooja Sharma"}
+              suppressHydrationWarning
               className="w-full rounded-lg border bg-background py-2 pl-9 pr-3 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -85,6 +86,7 @@ export default function RegisterPage() {
               name="email"
               required
               placeholder="name@example.com"
+              suppressHydrationWarning
               className="w-full rounded-lg border bg-background py-2 pl-9 pr-3 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -104,6 +106,7 @@ export default function RegisterPage() {
               name="phone"
               required={role === "owner"}
               placeholder="+91 98765 43210"
+              suppressHydrationWarning
               className="w-full rounded-lg border bg-background py-2 pl-9 pr-3 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -121,6 +124,7 @@ export default function RegisterPage() {
               name="password"
               required
               placeholder="Min 8 chars, 1 uppercase, 1 number"
+              suppressHydrationWarning
               className="w-full rounded-lg border bg-background py-2 pl-9 pr-3 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -132,6 +136,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={isPending}
+          suppressHydrationWarning
           className="w-full inline-flex items-center justify-center rounded-lg bg-primary py-2.5 px-4 text-sm font-semibold text-primary-foreground shadow transition hover:bg-primary-600 disabled:opacity-50"
         >
           {isPending ? (

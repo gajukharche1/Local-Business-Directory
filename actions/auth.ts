@@ -53,10 +53,18 @@ export async function loginAction(
   const { email, password, redirectTo } = validation.data;
   const normalizedEmail = email.toLowerCase().trim();
 
-  // Find user
-  const user = await db.user.findUnique({
-    where: { email: normalizedEmail },
-  });
+  let user;
+  try {
+    // Find user
+    user = await db.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+  } catch (err: unknown) {
+    console.error("[Auth] Database connection error during login:", err);
+    return {
+      error: "Database connection failed. Please ensure your PostgreSQL database is running and DATABASE_URL is reachable.",
+    };
+  }
 
   // Protection against user enumeration / timing attacks: compute a dummy verify if user not found
   const dummyHash = "$argon2id$v=19$m=65536,t=3,p=1$AJr94bNvvPAg54zsnS9hNg$m9KzrSpruOGXN25Mdkhn0KmgwDED6A0j+3yq5X+p1hY";
@@ -144,28 +152,36 @@ export async function registerAction(
   const { name, email, phone, password, role } = validation.data;
   const normalizedEmail = email.toLowerCase().trim();
 
-  // Check if email is already taken
-  const existingUser = await db.user.findUnique({
-    where: { email: normalizedEmail },
-  });
+  let newUser;
+  try {
+    // Check if email is already taken
+    const existingUser = await db.user.findUnique({
+      where: { email: normalizedEmail },
+    });
 
-  if (existingUser) {
+    if (existingUser) {
+      return {
+        error: "An account with this email address already exists. Please sign in instead.",
+      };
+    }
+
+    const passwordHash = await hashPassword(password);
+
+    newUser = await db.user.create({
+      data: {
+        name,
+        email: normalizedEmail,
+        phone: phone || null,
+        passwordHash,
+        role: role === "owner" ? UserRole.owner : UserRole.visitor,
+      },
+    });
+  } catch (err: unknown) {
+    console.error("[Auth] Database connection error during registration:", err);
     return {
-      error: "An account with this email address already exists. Please sign in instead.",
+      error: "Database connection failed. Please ensure your PostgreSQL database is running and DATABASE_URL is reachable.",
     };
   }
-
-  const passwordHash = await hashPassword(password);
-
-  const newUser = await db.user.create({
-    data: {
-      name,
-      email: normalizedEmail,
-      phone: phone || null,
-      passwordHash,
-      role: role === "owner" ? UserRole.owner : UserRole.visitor,
-    },
-  });
 
   // Create session immediately
   await createSession(newUser.id);

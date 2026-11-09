@@ -24,8 +24,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-background font-sans antialiased selection:bg-primary/20">
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className="min-h-screen bg-background font-sans antialiased selection:bg-primary/20"
+        suppressHydrationWarning
+      >
         <SkipLink />
         <div id="main-content" tabIndex={-1} className="focus:outline-none">
           {children}

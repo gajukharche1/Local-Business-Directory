@@ -19,6 +19,7 @@ import {
   ChevronDown,
   Circle,
   Loader2,
+  Image as ImageIcon,
   type LucideIcon,
 } from "lucide-react";
 
@@ -40,7 +41,9 @@ export type NavIconKey =
   | "list"
   | "List"
   | "list-plus"
-  | "ListPlus";
+  | "ListPlus"
+  | "image"
+  | "Image";
 
 const NAV_ICONS: Record<NavIconKey, LucideIcon> = {
   sliders: Sliders,
@@ -61,6 +64,8 @@ const NAV_ICONS: Record<NavIconKey, LucideIcon> = {
   List: List,
   "list-plus": ListPlus,
   ListPlus: ListPlus,
+  image: ImageIcon,
+  Image: ImageIcon,
 };
 
 export interface AdminNavSubItem {
