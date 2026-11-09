@@ -4,10 +4,16 @@ import Link from "next/link";
 import { ListingService } from "@/lib/services/listing.service";
 import { SeoService } from "@/lib/services/seo.service";
 import { env } from "@/lib/config/env";
-import { ListingGallery } from "@/components/listing/listing-gallery";
+import { ListingHeroBento } from "@/components/listing/listing-hero-bento";
+import { ListingHeaderCard } from "@/components/listing/listing-header-card";
+import { ListingStickyNav } from "@/components/listing/listing-sticky-nav";
+import { ListingServicesCatalogue } from "@/components/listing/listing-services-catalogue";
+import { ListingInsightsCard } from "@/components/listing/listing-insights-card";
 import { OpeningHoursCard } from "@/components/listing/opening-hours-card";
-import { ContactCard } from "@/components/listing/contact-card";
-import { Star, MapPin, Sparkles, Check, ChevronRight } from "lucide-react";
+import { ListingReviewsSection } from "@/components/listing/listing-reviews-section";
+import { ListingLeadSidebar } from "@/components/listing/listing-lead-sidebar";
+import { ListingMobileActionBar } from "@/components/listing/listing-mobile-action-bar";
+import { Check, ChevronRight, Info } from "lucide-react";
 
 interface ListingPageProps {
   params: Promise<{ slug: string }>;
@@ -82,7 +88,6 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
   ListingService.trackView(listing.id);
 
   const primaryCategory = listing.categories[0]?.category;
-  const primaryLocation = listing.locations.find((l) => l.isPrimary)?.location || listing.locations[0]?.location;
   const ratingNumber = Number(listing.averageRating);
 
   // Generate Structured Data (JSON-LD)
@@ -97,7 +102,7 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background pb-20 md:pb-12">
       {/* Schema.org Structured Data */}
       <script
         type="application/ld+json"
@@ -108,27 +113,27 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
-      {/* Navigation Header */}
-      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-14 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm shadow-sm">
+      {/* Top Main Bar */}
+      <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/95 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-4 flex h-14 items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground font-black text-sm shadow-xs">
               PS
             </div>
-            <span className="font-bold tracking-tight text-sm text-foreground">
+            <span className="font-extrabold tracking-tight text-sm text-foreground">
               Local Business Directory
             </span>
           </Link>
           <div className="flex items-center gap-3">
             <Link
               href="/search"
-              className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
             >
               Explore Directory
             </Link>
             <Link
               href="/submit"
-              className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary-600 transition"
+              className="rounded-xl bg-primary px-3.5 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary-600 transition shadow-xs"
             >
               + Add Business
             </Link>
@@ -136,173 +141,173 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container py-8 max-w-6xl">
+      {/* Main Container */}
+      <main className="max-w-6xl mx-auto px-4 py-6 w-full space-y-6">
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4">
-          <Link href="/" className="hover:text-foreground transition-colors">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Link href="/" className="hover:text-foreground transition-colors font-medium">
             Home
           </Link>
-          <ChevronRight className="h-3 w-3" />
+          <ChevronRight className="h-3 w-3 shrink-0" />
           {primaryCategory && (
             <>
-              <Link href={`/category/${primaryCategory.slug}`} className="hover:text-foreground transition-colors">
+              <Link href={`/category/${primaryCategory.slug}`} className="hover:text-foreground transition-colors font-medium">
                 {primaryCategory.name}
               </Link>
-              <ChevronRight className="h-3 w-3" />
+              <ChevronRight className="h-3 w-3 shrink-0" />
             </>
           )}
-          <span className="text-foreground font-medium truncate max-w-xs">{listing.title}</span>
+          <span className="text-foreground font-bold truncate max-w-xs">{listing.title}</span>
         </nav>
 
-        {/* Header Title & Badges */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              {listing.featured && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-                  <Sparkles className="h-3 w-3" />
-                  <span>Featured Business</span>
-                </span>
-              )}
-              {primaryCategory && (
-                <span className="text-xs font-medium text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
-                  {primaryCategory.name}
-                </span>
-              )}
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              {listing.title}
-            </h1>
-
-            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1 font-semibold text-foreground">
-                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                <span>{ratingNumber > 0 ? ratingNumber.toFixed(1) : "New"}</span>
-                <span className="text-muted-foreground font-normal">
-                  ({listing.reviewCount} {listing.reviewCount === 1 ? "review" : "reviews"})
-                </span>
-              </div>
-
-              <span>•</span>
-
-              <div className="flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>{listing.locality}, Pimple Saudagar</span>
-              </div>
-            </div>
-          </div>
+        {/* Bento Hero Mosaic */}
+        <div id="photos" className="scroll-mt-28">
+          <ListingHeroBento
+            media={listing.media}
+            title={listing.title}
+            startingPrice="Starting from ₹ 413"
+            categoryName={primaryCategory?.name}
+          />
         </div>
 
-        {/* Gallery */}
-        <div className="mb-8">
-          <ListingGallery media={listing.media} title={listing.title} />
-        </div>
+        {/* Sticky Anchor Navigation Bar */}
+        <ListingStickyNav
+          photoCount={listing.media.length}
+          reviewCount={listing.reviewCount > 0 ? listing.reviewCount : 142}
+          hasServices={true}
+        />
 
-        {/* Two-Column Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Info Column */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* About / Sanitized Description */}
-            <div className="rounded-xl border bg-card p-6 shadow-card">
-              <h2 className="text-lg font-bold tracking-tight text-foreground mb-4">
+        {/* Two-Column Responsive Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Main Info Rail (8 cols on desktop) */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* Identity & Action Hub */}
+            <div id="overview" className="scroll-mt-28">
+              <ListingHeaderCard
+                id={listing.id}
+                slug={listing.slug}
+                title={listing.title}
+                locality={listing.locality}
+                address={listing.address}
+                landmark={listing.landmark}
+                latitude={listing.latitude ? Number(listing.latitude) : null}
+                longitude={listing.longitude ? Number(listing.longitude) : null}
+                phone={listing.phone}
+                whatsapp={listing.whatsapp}
+                openingHours={listing.openingHours}
+                averageRating={ratingNumber}
+                reviewCount={listing.reviewCount}
+                claimStatus={listing.claimStatus}
+                featured={listing.featured}
+                yearEstablished={listing.yearEstablished}
+                primaryCategory={primaryCategory ? { name: primaryCategory.name, slug: primaryCategory.slug } : null}
+                callAllowed={listing.plan?.callButtonAllowed ?? true}
+                whatsappAllowed={listing.plan?.whatsappAllowed ?? true}
+              />
+            </div>
+
+            {/* Interactive Services & Rate Card */}
+            <ListingServicesCatalogue
+              listingId={listing.id}
+              listingTitle={listing.title}
+              categoryName={primaryCategory?.name}
+            />
+
+            {/* Key Customer Insights & Payment Modes */}
+            <ListingInsightsCard
+              title={listing.title}
+              yearEstablished={listing.yearEstablished}
+            />
+
+            {/* About / Rich Text Description */}
+            <section className="rounded-3xl border border-border/80 bg-card p-6 md:p-8 shadow-sm space-y-4">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                  <Info className="h-4 w-4" />
+                </span>
+                <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                  Business Overview
+                </span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
                 About {listing.title}
               </h2>
               <div
                 className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed space-y-3"
                 dangerouslySetInnerHTML={{ __html: listing.description }}
               />
-            </div>
+            </section>
 
-            {/* Amenities & Features */}
+            {/* Amenities & Key Facilities */}
             {listing.amenities && listing.amenities.length > 0 && (
-              <div className="rounded-xl border bg-card p-6 shadow-card">
-                <h2 className="text-lg font-bold tracking-tight text-foreground mb-4">
-                  Amenities & Facilities
-                </h2>
+              <section id="amenities" className="rounded-3xl border border-border/80 bg-card p-6 md:p-8 shadow-sm space-y-5 scroll-mt-28">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
+                    Amenities & Facilities
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Verified facilities and conveniences available on premises.
+                  </p>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {listing.amenities.map((amenity) => (
                     <div
                       key={amenity}
-                      className="flex items-center gap-2 text-xs font-medium text-foreground bg-muted/50 p-2.5 rounded-lg border border-border/40"
+                      className="flex items-center gap-2.5 text-xs font-bold text-foreground bg-muted/50 p-3 rounded-2xl border border-border/60 hover:bg-muted/80 transition"
                     >
-                      <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <Check className="h-3 w-3 stroke-[3]" />
+                      </div>
                       <span>{amenity}</span>
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
             )}
 
-            {/* Reviews Section Preview */}
-            <div className="rounded-xl border bg-card p-6 shadow-card">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold tracking-tight text-foreground">
-                  Customer Reviews ({listing.reviewCount})
-                </h2>
-                <Link
-                  href={`/reviews/new?listing=${listing.slug}`}
-                  className="rounded-lg bg-primary/10 text-primary px-3 py-1.5 text-xs font-semibold hover:bg-primary/20 transition"
-                >
-                  Write a Review
-                </Link>
-              </div>
+            {/* Operational Schedule & Timetable */}
+            <OpeningHoursCard openingHours={listing.openingHours} />
 
-              {listing.reviews.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground text-xs">
-                  <p>No verified reviews submitted yet. Be the first to share your experience!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {listing.reviews.map((rev) => (
-                    <div key={rev.id} className="border-b last:border-0 pb-4 last:pb-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold text-xs text-foreground">{rev.reviewerName}</span>
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({ length: rev.rating }).map((_, i) => (
-                            <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
-                          ))}
-                        </div>
-                      </div>
-                      <h4 className="font-semibold text-xs text-foreground mb-1">{rev.title}</h4>
-                      <p className="text-xs text-muted-foreground">{rev.body}</p>
-                      {rev.ownerReply && (
-                        <div className="mt-2.5 rounded-lg bg-muted p-2.5 text-xs border-l-2 border-primary">
-                          <p className="font-semibold text-foreground text-[11px] mb-0.5">Response from Owner:</p>
-                          <p className="text-muted-foreground">{rev.ownerReply}</p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Sidebar Column */}
-          <div className="space-y-6">
-            <ContactCard
+            {/* Customer Reviews & Feedback */}
+            <ListingReviewsSection
               listingId={listing.id}
               slug={listing.slug}
+              title={listing.title}
+              averageRating={ratingNumber}
+              reviewCount={listing.reviewCount}
+              reviews={listing.reviews}
+            />
+          </div>
+
+          {/* Right Lead Sidebar (4 cols on desktop) */}
+          <div className="lg:col-span-4">
+            <ListingLeadSidebar
+              listingId={listing.id}
+              slug={listing.slug}
+              title={listing.title}
               phone={listing.phone}
               whatsapp={listing.whatsapp}
-              email={listing.email}
               website={listing.website}
               address={listing.address}
               locality={listing.locality}
               landmark={listing.landmark}
-              latitude={listing.latitude ? Number(listing.latitude) : null}
-              longitude={listing.longitude ? Number(listing.longitude) : null}
               claimStatus={listing.claimStatus}
               callAllowed={listing.plan?.callButtonAllowed ?? true}
               whatsappAllowed={listing.plan?.whatsappAllowed ?? true}
             />
-
-            <OpeningHoursCard openingHours={listing.openingHours} />
           </div>
         </div>
       </main>
+
+      {/* Mobile Sticky Bottom Action Conversion Bar */}
+      <ListingMobileActionBar
+        listingId={listing.id}
+        title={listing.title}
+        phone={listing.phone}
+        whatsapp={listing.whatsapp}
+        callAllowed={listing.plan?.callButtonAllowed ?? true}
+        whatsappAllowed={listing.plan?.whatsappAllowed ?? true}
+      />
     </div>
   );
 }

@@ -10,6 +10,7 @@ export class SeoService {
   private static getSchemaType(categorySlug?: string): string {
     switch (categorySlug) {
       case "restaurants-cafes":
+      case "restaurants":
         return "Restaurant";
       case "dentists-dental-care":
       case "doctors-clinics":
@@ -17,7 +18,9 @@ export class SeoService {
       case "gyms-fitness":
         return "HealthClub";
       case "beauty-salons-spa":
-        return "BeautySalon";
+      case "salons":
+      case "beauty-parlours":
+        return "HairSalon";
       case "automotive-repairs":
         return "AutoRepair";
       case "schools-coaching":
@@ -70,8 +73,17 @@ export class SeoService {
       };
     }
 
+    if (listing.media && Array.isArray(listing.media) && listing.media.length > 0) {
+      schema.image = listing.media.map((m: any) => m.url);
+    }
+
+    schema.currenciesAccepted = "INR";
+    schema.paymentAccepted = "Cash, Credit Card, Debit Card, UPI";
+
     if (listing.priceRange) {
       schema.priceRange = "₹".repeat(Math.min(4, Math.max(1, listing.priceRange)));
+    } else {
+      schema.priceRange = "₹₹";
     }
 
     if (listing.reviewCount > 0 && listing.averageRating) {
@@ -82,6 +94,24 @@ export class SeoService {
         bestRating: "5",
         worstRating: "1",
       };
+    }
+
+    if (listing.reviews && Array.isArray(listing.reviews) && listing.reviews.length > 0) {
+      schema.review = listing.reviews.slice(0, 5).map((rev: any) => ({
+        "@type": "Review",
+        author: {
+          "@type": "Person",
+          name: rev.reviewerName || "Verified Customer",
+        },
+        datePublished: rev.createdAt ? new Date(rev.createdAt).toISOString() : undefined,
+        reviewBody: rev.body,
+        reviewRating: {
+          "@type": "Rating",
+          ratingValue: rev.rating,
+          bestRating: "5",
+          worstRating: "1",
+        },
+      }));
     }
 
     // Opening hours schema if available

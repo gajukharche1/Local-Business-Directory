@@ -205,27 +205,27 @@ Enhance `SeoService.generateLocalBusinessSchema` to inject comprehensive metadat
 
 ### Phase 1: Branch & Design Tokens Setup
 - [x] Create feature branch `Frontend-UI` and switch to it.
-- [ ] Define reusable component types in `components/listing/types.ts`.
-- [ ] Ensure Lucide icons and Tailwind styles are mapped to semantic design system tokens.
+- [x] Define reusable component types in `components/listing/types.ts`.
+- [x] Ensure Lucide icons and Tailwind styles are mapped to semantic design system tokens.
 
 ### Phase 2: Hero Gallery & Profile Header
-- [ ] Build `components/listing/listing-hero-bento.tsx` with 5-tile bento grid and starting price chip.
-- [ ] Build `components/listing/listing-lightbox.tsx` for full-screen photo browsing.
-- [ ] Build `components/listing/listing-header-card.tsx` with logo, verified badge, rating capsule, live open/closed logic, and Action Dock.
+- [x] Build `components/listing/listing-hero-bento.tsx` with 5-tile bento grid and starting price chip.
+- [x] Build `components/listing/listing-lightbox.tsx` for full-screen photo browsing.
+- [x] Build `components/listing/listing-header-card.tsx` with logo, verified badge, rating capsule, live open/closed logic, and Action Dock.
 
 ### Phase 3: In-Page Navigation & Service Catalogue
-- [ ] Build `components/listing/listing-sticky-nav.tsx` with IntersectionObserver scrollspy tabs.
-- [ ] Build `components/listing/listing-services-catalogue.tsx` with category filter pills and service cards.
-- [ ] Build `components/listing/listing-insights-card.tsx` for customer sentiment tags and payment methods.
+- [x] Build `components/listing/listing-sticky-nav.tsx` with IntersectionObserver scrollspy tabs.
+- [x] Build `components/listing/listing-services-catalogue.tsx` with category filter pills and service cards.
+- [x] Build `components/listing/listing-insights-card.tsx` for customer sentiment tags and payment methods.
 
 ### Phase 4: Timings, Reviews & Sticky Lead Sidebar
-- [ ] Enhance `components/listing/opening-hours-card.tsx` with active day highlighting and countdown.
-- [ ] Build `components/listing/listing-reviews-section.tsx` with rating histogram and owner replies.
-- [ ] Build `components/listing/listing-lead-sidebar.tsx` with sticky enquiry form.
-- [ ] Build `components/listing/listing-mobile-action-bar.tsx` for mobile sticky conversion.
+- [x] Enhance `components/listing/opening-hours-card.tsx` with active day highlighting and countdown.
+- [x] Build `components/listing/listing-reviews-section.tsx` with rating histogram and owner replies.
+- [x] Build `components/listing/listing-lead-sidebar.tsx` with sticky enquiry form.
+- [x] Build `components/listing/listing-mobile-action-bar.tsx` for mobile sticky conversion.
 
 ### Phase 5: Page Integration & Verification
-- [ ] Refactor `app/(public)/listing/[slug]/page.tsx` to compose all new components.
-- [ ] Verify SEO Schema.org JSON-LD contains rich attributes (`priceRange`, `paymentAccepted`, `geo`, `openingHoursSpecification`).
-- [ ] Run `npm run typecheck` (`tsc --noEmit`) and verify 0 errors.
-- [ ] Verify build via `npx next build --turbopack`.
+- [x] Refactor `app/(public)/listing/[slug]/page.tsx` to compose all new components.
+- [x] Verify SEO Schema.org JSON-LD contains rich attributes (`priceRange`, `paymentAccepted`, `geo`, `openingHoursSpecification`).
+- [x] Run `npm run typecheck` (`tsc --noEmit`) and verify 0 errors.
+- [x] Verify build via `npx next build --turbopack`.
