@@ -9,6 +9,7 @@ import { ImageUpload } from "@/components/forms/image-upload";
 import { OpeningHoursScheduler } from "@/components/forms/opening-hours-scheduler";
 import { ModularSectionsManager } from "@/components/forms/modular-sections-manager";
 import { SchemaMarkupEditor } from "@/components/forms/schema-markup-editor";
+import { useOrigin } from "@/lib/hooks/use-origin";
 import {
   Clock,
   Share2,
@@ -130,6 +131,7 @@ export function AdminListingForm({
   users,
 }: AdminListingFormProps) {
   const router = useRouter();
+  const { origin, host } = useOrigin();
   const [selectedLocation, setSelectedLocation] = useState(locations[0]?.id || "");
   const [localityText, setLocalityText] = useState(locations[0]?.name || "Pimple Saudagar");
 
@@ -864,8 +866,8 @@ export function AdminListingForm({
               <div className="p-3">
                 <p className="font-bold text-xs truncate text-foreground">{previewTitle}</p>
                 <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{previewDesc}</p>
-                <span className="text-[9px] font-mono text-slate-400 uppercase mt-1 block">
-                  {typeof window !== "undefined" ? window.location.host : "directory"}
+                <span className="text-[9px] font-mono text-slate-400 uppercase mt-1 block" suppressHydrationWarning>
+                  {host}
                 </span>
               </div>
             </div>
@@ -879,7 +881,7 @@ export function AdminListingForm({
             </span>
             <div className="bg-background rounded-lg border p-3.5 space-y-1 font-sans">
               <div className="text-[11px] text-slate-500 truncate flex items-center gap-1">
-                <span>{typeof window !== "undefined" ? window.location.origin : "https://directory"}</span>
+                <span suppressHydrationWarning>{origin}</span>
                 <span>›</span>
                 <span>listing</span>
                 <span>›</span>

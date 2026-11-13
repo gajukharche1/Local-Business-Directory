@@ -9,6 +9,7 @@ import { ImageUpload } from "@/components/forms/image-upload";
 import { OpeningHoursScheduler } from "@/components/forms/opening-hours-scheduler";
 import { ModularSectionsManager } from "@/components/forms/modular-sections-manager";
 import { SchemaMarkupEditor } from "@/components/forms/schema-markup-editor";
+import { useOrigin } from "@/lib/hooks/use-origin";
 import {
   Clock,
   Share2,
@@ -112,6 +113,7 @@ export function AdminEditListingForm({
   users,
 }: AdminEditListingFormProps) {
   const router = useRouter();
+  const { host } = useOrigin();
   const [state, formAction, isPending] = useActionState<ActionState | null, FormData>(
     updateListingAdminAction,
     null
@@ -955,8 +957,8 @@ export function AdminEditListingForm({
             </div>
             <div className="rounded-lg bg-card border p-3.5 shadow-sm space-y-1">
               <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
-                <span className="font-semibold text-foreground">
-                  {typeof window !== "undefined" ? window.location.host : "directory"}
+                <span className="font-semibold text-foreground" suppressHydrationWarning>
+                  {host}
                 </span>
                 <span>›</span>
                 <span>listing</span>

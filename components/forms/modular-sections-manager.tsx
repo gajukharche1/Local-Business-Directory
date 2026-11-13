@@ -28,14 +28,14 @@ interface ModularSectionsManagerProps {
 }
 
 const DEFAULT_TOGGLES: ListingSectionToggles = {
-  services: true,
-  insights: true,
-  paymentModes: true,
-  hours: true,
-  amenities: true,
-  reviews: true,
-  comments: true,
-  leadSidebar: true,
+  services: false,
+  insights: false,
+  paymentModes: false,
+  hours: false,
+  amenities: false,
+  reviews: false,
+  comments: false,
+  leadSidebar: false,
 };
 
 const DEFAULT_SERVICES_TEMPLATE: ListingServiceItem[] = [
@@ -98,7 +98,7 @@ const STANDARD_PAYMENT_MODES = [
 export function ModularSectionsManager({ initialData }: ModularSectionsManagerProps) {
   const [toggles, setToggles] = useState<ListingSectionToggles>(() => {
     const rawToggles = initialData?.toggles || {};
-    const resolvedReviews = rawToggles.reviews ?? true;
+    const resolvedReviews = rawToggles.reviews ?? false;
     const resolvedComments = rawToggles.comments ?? resolvedReviews;
     return {
       ...DEFAULT_TOGGLES,
@@ -111,19 +111,19 @@ export function ModularSectionsManager({ initialData }: ModularSectionsManagerPr
   const [services, setServices] = useState<ListingServiceItem[]>(
     initialData?.services && initialData.services.length > 0
       ? initialData.services
-      : DEFAULT_SERVICES_TEMPLATE
+      : []
   );
 
   const [insights, setInsights] = useState<string[]>(
     initialData?.insights && initialData.insights.length > 0
       ? initialData.insights
-      : DEFAULT_INSIGHTS_TEMPLATE
+      : []
   );
 
   const [paymentModes, setPaymentModes] = useState<string[]>(
     initialData?.paymentModes && initialData.paymentModes.length > 0
       ? initialData.paymentModes
-      : STANDARD_PAYMENT_MODES.slice(0, 4)
+      : []
   );
 
   // New service input states
@@ -152,6 +152,32 @@ export function ModularSectionsManager({ initialData }: ModularSectionsManagerPr
         ...prev,
         [key]: nextVal,
       };
+    });
+  };
+
+  const handleEnableAll = () => {
+    setToggles({
+      services: true,
+      insights: true,
+      paymentModes: true,
+      hours: true,
+      amenities: true,
+      reviews: true,
+      comments: true,
+      leadSidebar: true,
+    });
+  };
+
+  const handleDisableAll = () => {
+    setToggles({
+      services: false,
+      insights: false,
+      paymentModes: false,
+      hours: false,
+      amenities: false,
+      reviews: false,
+      comments: false,
+      leadSidebar: false,
     });
   };
 
@@ -227,19 +253,41 @@ export function ModularSectionsManager({ initialData }: ModularSectionsManagerPr
 
       {/* Master Section Toggle Controls */}
       <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-border/60">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
               <Layers className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="font-extrabold text-sm text-foreground">
-                Modular Frontend Components & Sections
-              </h3>
-              <p className="text-[11px] text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <h3 className="font-extrabold text-sm text-foreground">
+                  Modular Frontend Components &amp; Sections
+                </h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border/60">
+                  Disabled by default
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
                 Enable or disable sections on this listing detail page to match the business model.
               </p>
             </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={handleEnableAll}
+              className="text-[11px] font-bold text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/20 px-2.5 py-1 rounded-lg transition active:scale-95"
+            >
+              Enable All
+            </button>
+            <button
+              type="button"
+              onClick={handleDisableAll}
+              className="text-[11px] font-semibold text-muted-foreground hover:text-foreground bg-muted hover:bg-muted/80 px-2.5 py-1 rounded-lg transition active:scale-95"
+            >
+              Disable All
+            </button>
           </div>
         </div>
 
@@ -257,16 +305,16 @@ export function ModularSectionsManager({ initialData }: ModularSectionsManagerPr
             <div className="flex items-center gap-2.5">
               <Tag className="h-4 w-4 text-primary" />
               <div>
-                <p className="font-bold">Services & Rate Card</p>
-                <p className="text-[10px] text-muted-foreground">Pricing, duration & booking</p>
+                <p className="font-bold">Services &amp; Rate Card</p>
+                <p className="text-[10px] text-muted-foreground">Pricing, duration &amp; booking</p>
               </div>
             </div>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                toggles.services ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
+                toggles.services ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground border border-border/60"
               }`}
             >
-              {toggles.services ? "Active" : "Hidden"}
+              {toggles.services ? "Active" : "Disabled"}
             </span>
           </div>
 
@@ -283,15 +331,15 @@ export function ModularSectionsManager({ initialData }: ModularSectionsManagerPr
               <ThumbsUp className="h-4 w-4 text-emerald-600" />
               <div>
                 <p className="font-bold">Why Customers Love This</p>
-                <p className="text-[10px] text-muted-foreground">Sentiment USPs & highlights</p>
+                <p className="text-[10px] text-muted-foreground">Sentiment USPs &amp; highlights</p>
               </div>
             </div>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                toggles.insights ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
+                toggles.insights ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground border border-border/60"
               }`}
             >
-              {toggles.insights ? "Active" : "Hidden"}
+              {toggles.insights ? "Active" : "Disabled"}
             </span>
           </div>
 
@@ -313,10 +361,10 @@ export function ModularSectionsManager({ initialData }: ModularSectionsManagerPr
             </div>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                toggles.paymentModes ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
+                toggles.paymentModes ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground border border-border/60"
               }`}
             >
-              {toggles.paymentModes ? "Active" : "Hidden"}
+              {toggles.paymentModes ? "Active" : "Disabled"}
             </span>
           </div>
 
@@ -333,15 +381,15 @@ export function ModularSectionsManager({ initialData }: ModularSectionsManagerPr
               <Clock className="h-4 w-4 text-amber-500" />
               <div>
                 <p className="font-bold">Operational Timetable</p>
-                <p className="text-[10px] text-muted-foreground">Live open status & timetable</p>
+                <p className="text-[10px] text-muted-foreground">Live open status &amp; timetable</p>
               </div>
             </div>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                toggles.hours ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
+                toggles.hours ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground border border-border/60"
               }`}
             >
-              {toggles.hours ? "Active" : "Hidden"}
+              {toggles.hours ? "Active" : "Disabled"}
             </span>
           </div>
 
@@ -363,10 +411,10 @@ export function ModularSectionsManager({ initialData }: ModularSectionsManagerPr
             </div>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                toggles.comments && toggles.reviews ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
+                toggles.comments && toggles.reviews ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground border border-border/60"
               }`}
             >
-              {toggles.comments && toggles.reviews ? "Active" : "Hidden"}
+              {toggles.comments && toggles.reviews ? "Active" : "Disabled"}
             </span>
           </div>
 
@@ -388,10 +436,10 @@ export function ModularSectionsManager({ initialData }: ModularSectionsManagerPr
             </div>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                toggles.leadSidebar ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
+                toggles.leadSidebar ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground border border-border/60"
               }`}
             >
-              {toggles.leadSidebar ? "Active" : "Hidden"}
+              {toggles.leadSidebar ? "Active" : "Disabled"}
             </span>
           </div>
         </div>

@@ -92,7 +92,7 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
   const primaryCategory = listing.categories[0]?.category;
   const ratingNumber = Number(listing.averageRating);
 
-  // Unpack modular component configurations & toggles
+  // Unpack modular component configurations & toggles (disabled by default unless configured)
   const customConfig = (listing.customSections as unknown as ListingCustomSections | null) ?? null;
   const rawToggles = customConfig?.toggles || {};
   const isCommentsActive =
@@ -100,17 +100,17 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
       ? Boolean(rawToggles.comments)
       : rawToggles.reviews !== undefined
       ? Boolean(rawToggles.reviews)
-      : true;
+      : false;
 
   const toggles: ListingSectionToggles = {
-    services: true,
-    insights: true,
-    paymentModes: true,
-    hours: true,
-    amenities: true,
+    services: Boolean(rawToggles.services && customConfig?.services && customConfig.services.length > 0),
+    insights: Boolean(rawToggles.insights && customConfig?.insights && customConfig.insights.length > 0),
+    paymentModes: Boolean(rawToggles.paymentModes && customConfig?.paymentModes && customConfig.paymentModes.length > 0),
+    hours: rawToggles.hours !== undefined ? Boolean(rawToggles.hours) : false,
+    amenities: rawToggles.amenities !== undefined ? Boolean(rawToggles.amenities) : false,
     reviews: isCommentsActive,
     comments: isCommentsActive,
-    leadSidebar: true,
+    leadSidebar: rawToggles.leadSidebar !== undefined ? Boolean(rawToggles.leadSidebar) : false,
     ...rawToggles,
   };
 

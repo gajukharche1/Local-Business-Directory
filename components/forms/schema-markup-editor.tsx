@@ -147,7 +147,7 @@ export function SchemaMarkupEditor({
     "@context": "https://schema.org",
     "@type": resolvedType,
     name: listingTitle,
-    url: `${typeof window !== "undefined" ? window.location.origin : "https://example.com"}/listing/...`,
+    url: `https://example.com/listing/...`,
     address: {
       "@type": "PostalAddress",
       streetAddress: address,
