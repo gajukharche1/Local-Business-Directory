@@ -202,21 +202,39 @@ export function ListingHeaderCard({
               href="#reviews"
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold shadow-xs transition group cursor-pointer"
             >
-              <span>{averageRating > 0 ? averageRating.toFixed(1) : "4.5"}</span>
-              <Star className="h-3.5 w-3.5 fill-white text-white" />
-              <span className="text-[11px] font-medium text-emerald-100 pl-1 border-l border-emerald-400/40">
-                {reviewCount > 0 ? `${reviewCount} Ratings` : "142 Ratings"}
-              </span>
+              {averageRating > 0 ? (
+                <>
+                  <span>{averageRating.toFixed(1)}</span>
+                  <Star className="h-3.5 w-3.5 fill-white text-white" />
+                  <span className="text-[11px] font-medium text-emerald-100 pl-1 border-l border-emerald-400/40">
+                    {reviewCount} {reviewCount === 1 ? "Rating" : "Ratings"}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-xs">New</span>
+                  <Star className="h-3.5 w-3.5 fill-white text-white" />
+                  <span className="text-[11px] font-medium text-emerald-100 pl-1 border-l border-emerald-400/40">
+                    No reviews yet
+                  </span>
+                </>
+              )}
             </a>
           ) : (
             <div
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-600/90 text-white font-extrabold shadow-xs select-none"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-muted text-muted-foreground font-semibold text-xs shadow-xs select-none"
             >
-              <span>{averageRating > 0 ? averageRating.toFixed(1) : "4.5"}</span>
-              <Star className="h-3.5 w-3.5 fill-white text-white" />
-              <span className="text-[11px] font-medium text-emerald-100 pl-1 border-l border-emerald-400/40">
-                {reviewCount > 0 ? `${reviewCount} Ratings` : "Rating"}
-              </span>
+              {averageRating > 0 ? (
+                <>
+                  <span className="font-extrabold text-foreground">{averageRating.toFixed(1)}</span>
+                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                  <span className="text-[11px] pl-1 border-l border-border">
+                    {reviewCount} {reviewCount === 1 ? "Rating" : "Ratings"}
+                  </span>
+                </>
+              ) : (
+                <span>No reviews</span>
+              )}
             </div>
           )}
 

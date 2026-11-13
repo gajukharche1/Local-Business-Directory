@@ -10,6 +10,7 @@ interface ListingStickyNavProps {
   hasTimings?: boolean;
   hasReviews?: boolean;
   hasAmenities?: boolean;
+  hasFaqs?: boolean;
 }
 
 export function ListingStickyNav({
@@ -20,6 +21,7 @@ export function ListingStickyNav({
   hasTimings = true,
   hasReviews = true,
   hasAmenities = true,
+  hasFaqs = false,
 }: ListingStickyNavProps) {
   const [activeSection, setActiveSection] = useState("overview");
 
@@ -28,9 +30,10 @@ export function ListingStickyNav({
     ...(hasServices ? [{ id: "services", label: "Services & Prices" }] : []),
     ...(hasInsights ? [{ id: "insights", label: "Why Customers Love This" }] : []),
     ...(photoCount > 0 ? [{ id: "photos", label: `Photos (${photoCount})` }] : []),
-    ...(hasReviews ? [{ id: "reviews", label: `Reviews (${reviewCount})` }] : []),
     ...(hasTimings ? [{ id: "timings", label: "Timings & Map" }] : []),
     ...(hasAmenities ? [{ id: "amenities", label: "Amenities" }] : []),
+    ...(hasFaqs ? [{ id: "faqs", label: "FAQ" }] : []),
+    ...(hasReviews ? [{ id: "reviews", label: reviewCount > 0 ? `Reviews (${reviewCount})` : "Reviews" }] : []),
   ];
 
   useEffect(() => {

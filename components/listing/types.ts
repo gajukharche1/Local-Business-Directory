@@ -43,6 +43,12 @@ export interface ListingReviewItem {
   createdAt: Date | string;
 }
 
+export interface ListingFaqItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
 export interface ListingSectionToggles {
   services: boolean;
   insights: boolean;
@@ -52,6 +58,7 @@ export interface ListingSectionToggles {
   reviews: boolean;
   comments: boolean;
   leadSidebar: boolean;
+  faqs?: boolean;
 }
 
 export interface ListingSchemaConfig {
@@ -71,6 +78,7 @@ export interface ListingCustomSections {
   services?: ListingServiceItem[];
   insights?: string[];
   paymentModes?: string[];
+  faqs?: ListingFaqItem[];
   schemaConfig?: ListingSchemaConfig;
 }
 

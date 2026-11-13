@@ -10,6 +10,7 @@ import { ListingStickyNav } from "@/components/listing/listing-sticky-nav";
 import { ListingServicesCatalogue } from "@/components/listing/listing-services-catalogue";
 import { ListingInsightsCard } from "@/components/listing/listing-insights-card";
 import { OpeningHoursCard } from "@/components/listing/opening-hours-card";
+import { ListingFaqSection } from "@/components/listing/listing-faq-section";
 import { ListingReviewsSection } from "@/components/listing/listing-reviews-section";
 import { ListingLeadSidebar } from "@/components/listing/listing-lead-sidebar";
 import { ListingMobileActionBar } from "@/components/listing/listing-mobile-action-bar";
@@ -92,29 +93,33 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
   const primaryCategory = listing.categories[0]?.category;
   const ratingNumber = Number(listing.averageRating);
 
-  // Unpack modular component configurations & toggles (disabled by default unless configured)
+  // Unpack modular component configurations & toggles
   const customConfig = (listing.customSections as unknown as ListingCustomSections | null) ?? null;
   const rawToggles = customConfig?.toggles || {};
-  const isCommentsActive =
-    rawToggles.comments !== undefined
-      ? Boolean(rawToggles.comments)
-      : rawToggles.reviews !== undefined
-      ? Boolean(rawToggles.reviews)
-      : false;
+
+  // Core listing sections are active by default unless explicitly disabled by admin
+  const showCommentsSection = rawToggles.reviews !== false && rawToggles.comments !== false;
+  const showHoursSection = rawToggles.hours !== false && Boolean(listing.openingHours);
+  const showLeadSidebar = rawToggles.leadSidebar !== false;
+  const showAmenities = rawToggles.amenities !== false && Boolean(listing.amenities && listing.amenities.length > 0);
+
+  // Add-on modules (services, insights, payment modes, faqs) are active only when enabled and populated
+  const showServices = Boolean(rawToggles.services && customConfig?.services && customConfig.services.length > 0);
+  const showInsights = Boolean(rawToggles.insights && customConfig?.insights && customConfig.insights.length > 0);
+  const showPaymentModes = Boolean(rawToggles.paymentModes && customConfig?.paymentModes && customConfig.paymentModes.length > 0);
+  const showFaqs = Boolean(rawToggles.faqs && customConfig?.faqs && customConfig.faqs.length > 0);
 
   const toggles: ListingSectionToggles = {
-    services: Boolean(rawToggles.services && customConfig?.services && customConfig.services.length > 0),
-    insights: Boolean(rawToggles.insights && customConfig?.insights && customConfig.insights.length > 0),
-    paymentModes: Boolean(rawToggles.paymentModes && customConfig?.paymentModes && customConfig.paymentModes.length > 0),
-    hours: rawToggles.hours !== undefined ? Boolean(rawToggles.hours) : false,
-    amenities: rawToggles.amenities !== undefined ? Boolean(rawToggles.amenities) : false,
-    reviews: isCommentsActive,
-    comments: isCommentsActive,
-    leadSidebar: rawToggles.leadSidebar !== undefined ? Boolean(rawToggles.leadSidebar) : false,
-    ...rawToggles,
+    services: showServices,
+    insights: showInsights,
+    paymentModes: showPaymentModes,
+    hours: showHoursSection,
+    amenities: showAmenities,
+    reviews: showCommentsSection,
+    comments: showCommentsSection,
+    leadSidebar: showLeadSidebar,
+    faqs: showFaqs,
   };
-
-  const showCommentsSection = toggles.comments && toggles.reviews;
 
   const startingPrice = toggles.services
     ? customConfig?.services && customConfig.services.length > 0
@@ -208,12 +213,13 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
         {/* Sticky Anchor Navigation Bar */}
         <ListingStickyNav
           photoCount={listing.media.length}
-          reviewCount={listing.reviewCount > 0 ? listing.reviewCount : 142}
+          reviewCount={listing.reviewCount}
           hasServices={toggles.services}
           hasInsights={toggles.insights || toggles.paymentModes}
           hasTimings={toggles.hours}
-          hasReviews={showCommentsSection}
           hasAmenities={toggles.amenities && Boolean(listing.amenities && listing.amenities.length > 0)}
+          hasFaqs={toggles.faqs}
+          hasReviews={showCommentsSection}
         />
 
         {/* Two-Column Responsive Content Grid */}
@@ -316,6 +322,14 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
 
             {/* Operational Schedule & Timetable */}
             {toggles.hours && <OpeningHoursCard openingHours={listing.openingHours} />}
+
+            {/* Frequently Asked Questions */}
+            {toggles.faqs && customConfig?.faqs && customConfig.faqs.length > 0 && (
+              <ListingFaqSection
+                title={listing.title}
+                faqs={customConfig.faqs}
+              />
+            )}
 
             {/* Customer Reviews & Feedback */}
             {showCommentsSection && (

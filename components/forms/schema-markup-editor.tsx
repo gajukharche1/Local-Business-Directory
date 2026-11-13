@@ -189,9 +189,9 @@ export function SchemaMarkupEditor({
       review: [
         {
           "@type": "Review",
-          author: { "@type": "Person", name: "Pooja Deshmukh" },
+          author: { "@type": "Person", name: "Verified Customer" },
           reviewRating: { "@type": "Rating", ratingValue: 5 },
-          reviewBody: "Organic Element in Koregaon Park is a fantastic beauty parlour...",
+          reviewBody: `Exceptional service and friendly staff at ${listingTitle || "this business"}! Highly recommended.`,
         },
       ],
     }),
