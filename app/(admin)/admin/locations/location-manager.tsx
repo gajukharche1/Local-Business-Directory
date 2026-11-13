@@ -17,12 +17,22 @@ import {
   Compass,
   Sparkles,
   Share2,
+  Loader2,
 } from "lucide-react";
 import {
   createLocationAdminAction,
   updateLocationAdminAction,
   deleteLocationAdminAction,
+  bulkUpdateLocationsAction,
+  bulkDeleteLocationsAction,
 } from "@/actions/taxonomy";
+import { useBulkSelect } from "@/lib/hooks/use-bulk-select";
+import {
+  BulkSelectCheckbox,
+  BulkSelectToolbar,
+  BulkConfirmModal,
+  TablePagination,
+} from "@/components/ui/bulk-select";
 
 export interface LocationItem {
   id: string;
@@ -280,14 +290,127 @@ export function LocationManager({ initialLocations }: LocationManagerProps) {
     });
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
   const filteredLocations = locations.filter(
     (l) =>
       l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       l.slug.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const totalFilteredCount = filteredLocations.length;
+  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedLocations = filteredLocations.slice(
+    (safePage - 1) * pageSize,
+    safePage * pageSize
+  );
+
+  const {
+    selectedIds,
+    selectedCount,
+    selectedItems,
+    isSelected,
+    isAllSelected,
+    isPartiallySelected,
+    toggle,
+    toggleAll,
+    clearSelection,
+  } = useBulkSelect({
+    items: paginatedLocations,
+    getItemId: (l) => l.id,
+  });
+
+  const handleBulkFeature = (featured: boolean) => {
+    if (selectedCount === 0) return;
+    setFeedback(null);
+    const ids = Array.from(selectedIds);
+    startTransition(async () => {
+      const res = await bulkUpdateLocationsAction(ids, { featured });
+      if (res.success) {
+        setLocations((prev) =>
+          prev.map((l) => (selectedIds.has(l.id) ? { ...l, featured } : l))
+        );
+        setFeedback({
+          type: "success",
+          message: `Successfully updated ${res.count ?? ids.length} location${ids.length === 1 ? "" : "s"}.`,
+        });
+        clearSelection();
+        router.refresh();
+      } else {
+        setFeedback({
+          type: "error",
+          message: res.error || "Failed to update locations.",
+        });
+      }
+    });
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedCount === 0) return;
+    setFeedback(null);
+    const ids = Array.from(selectedIds);
+    startTransition(async () => {
+      const res = await bulkDeleteLocationsAction(ids);
+      if (res.success) {
+        setLocations((prev) => prev.filter((l) => !selectedIds.has(l.id)));
+        setFeedback({
+          type: "success",
+          message: `Successfully deleted ${res.count ?? ids.length} location${ids.length === 1 ? "" : "s"}.`,
+        });
+        clearSelection();
+        setBulkConfirmOpen(false);
+        router.refresh();
+      } else {
+        setFeedback({
+          type: "error",
+          message: res.error || "Failed to delete locations.",
+        });
+        setBulkConfirmOpen(false);
+      }
+    });
+  };
+
+  const selectedWithListingsCount = selectedItems.filter(
+    (l) => l._count.listings > 0 || l._count.children > 0
+  ).length;
+
+  const warningNote =
+    selectedWithListingsCount > 0
+      ? `Warning: ${selectedWithListingsCount} of the selected locations have active listings or child areas. Deleting them will unassign those listings.`
+      : undefined;
+
   return (
     <div className="space-y-6">
+      {/* Feedback Banner */}
+      {feedback && (
+        <div
+          className={`p-3.5 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all ${
+            feedback.type === "success"
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+              : "bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-400"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {feedback.type === "success" ? (
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+            ) : (
+              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+            )}
+            <span>{feedback.message}</span>
+          </div>
+          <button
+            onClick={() => setFeedback(null)}
+            className="text-muted-foreground hover:text-foreground p-1"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Top action bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-4 rounded-xl border shadow-sm">
         <div className="relative flex-1 max-w-md">
@@ -296,7 +419,10 @@ export function LocationManager({ initialLocations }: LocationManagerProps) {
             type="text"
             placeholder="Search locations by area name or URL slug..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-9 pr-4 py-2 text-sm bg-muted/30 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
           />
         </div>
@@ -317,6 +443,14 @@ export function LocationManager({ initialLocations }: LocationManagerProps) {
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/40 border-b text-xs uppercase font-semibold text-muted-foreground">
               <tr>
+                <th className="w-10 py-3 px-4">
+                  <BulkSelectCheckbox
+                    checked={isAllSelected}
+                    indeterminate={isPartiallySelected}
+                    onChange={toggleAll}
+                    aria-label="Select all locations on this page"
+                  />
+                </th>
                 <th className="py-3 px-4">Location &amp; URL</th>
                 <th className="py-3 px-4">GPS Coordinates</th>
                 <th className="py-3 px-4 text-center">Listings</th>
@@ -326,19 +460,34 @@ export function LocationManager({ initialLocations }: LocationManagerProps) {
               </tr>
             </thead>
             <tbody className="divide-y text-xs">
-              {filteredLocations.length === 0 ? (
+              {paginatedLocations.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="py-8 text-center text-muted-foreground">
                     No locations found matching &quot;{searchQuery}&quot;
                   </td>
                 </tr>
               ) : (
-                filteredLocations.map((loc) => {
+                paginatedLocations.map((loc, index) => {
                   const hasSeo = Boolean(loc.seoTitle && loc.seoDescription && loc.seoKeywords);
                   const partialSeo = Boolean(loc.seoTitle || loc.seoDescription || loc.seoKeywords);
+                  const selected = isSelected(loc.id);
 
                   return (
-                    <tr key={loc.id} className="hover:bg-muted/30 transition">
+                    <tr
+                      key={loc.id}
+                      className={`transition ${
+                        selected
+                          ? "bg-emerald-500/5 dark:bg-emerald-500/10 hover:bg-emerald-500/10"
+                          : "hover:bg-muted/30"
+                      }`}
+                    >
+                      <td className="w-10 py-3 px-4">
+                        <BulkSelectCheckbox
+                          checked={selected}
+                          onChange={(e) => toggle(loc.id, index, e)}
+                          aria-label={`Select ${loc.name}`}
+                        />
+                      </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2.5">
                           <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">
@@ -434,7 +583,79 @@ export function LocationManager({ initialLocations }: LocationManagerProps) {
             </tbody>
           </table>
         </div>
+
+        {/* Table Pagination */}
+        <TablePagination
+          currentPage={safePage}
+          pageSize={pageSize}
+          totalCount={totalFilteredCount}
+          onPageChange={(p) => setCurrentPage(p)}
+          onPageSizeChange={(s) => {
+            setPageSize(s);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[50, 100, 500]}
+          entityName="locations"
+        />
       </div>
+
+      {/* Floating Bulk Action Bar */}
+      <BulkSelectToolbar
+        selectedCount={selectedCount}
+        totalCount={paginatedLocations.length}
+        onClear={clearSelection}
+        entityName="locations"
+      >
+        <button
+          type="button"
+          onClick={() => handleBulkFeature(true)}
+          disabled={isPending}
+          className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-semibold shadow-xs transition-all active:scale-95 disabled:opacity-50"
+          title="Mark selected locations as Featured"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          <span>Feature</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleBulkFeature(false)}
+          disabled={isPending}
+          className="inline-flex items-center gap-1 rounded-xl border border-border/80 bg-card hover:bg-muted px-2.5 py-1.5 text-xs font-semibold text-foreground shadow-xs transition-all active:scale-95 disabled:opacity-50"
+          title="Remove Featured flag from selected locations"
+        >
+          <span>Unfeature</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setBulkConfirmOpen(true)}
+          disabled={isPending}
+          className="inline-flex items-center gap-1 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 px-3 py-1.5 text-xs font-semibold shadow-xs transition-all active:scale-95 disabled:opacity-50 ml-1"
+          title="Delete selected locations"
+        >
+          {isPending ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Trash2 className="h-3.5 w-3.5" />
+          )}
+          <span>Delete</span>
+        </button>
+      </BulkSelectToolbar>
+
+      {/* Bulk Delete Confirm Modal */}
+      <BulkConfirmModal
+        isOpen={bulkConfirmOpen}
+        onClose={() => setBulkConfirmOpen(false)}
+        onConfirm={handleBulkDelete}
+        title={`Delete ${selectedCount} Location${selectedCount === 1 ? "" : "s"}?`}
+        description="This will permanently delete the selected locations from the directory. Sub-locations will be promoted to root locations."
+        warningNote={warningNote}
+        itemCount={selectedCount}
+        confirmLabel="Delete Locations"
+        isDestructive={true}
+        isPending={isPending}
+      />
 
       {/* Create / Edit Modal */}
       {modalOpen && (

@@ -67,6 +67,7 @@ export default async function AdminLayout({
     },
     { label: "CSV Import / Export", href: "/admin/imports", icon: "upload" },
     { label: "Media Library", href: "/admin/media", icon: "image" as const },
+    { label: "Directory Analytics", href: "/admin/analytics", icon: "chart" as const },
     ...(hasRole(user.role, UserRole.admin)
       ? [{ label: "Site & Settings", href: "/admin/settings", icon: "settings" as const }]
       : []),

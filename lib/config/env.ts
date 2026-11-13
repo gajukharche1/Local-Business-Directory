@@ -89,3 +89,22 @@ function validateEnv(): Env {
 }
 
 export const env = validateEnv();
+
+/**
+ * Resolves the generic application base URL across environments.
+ * Priority: NEXT_PUBLIC_APP_URL -> VERCEL_PROJECT_PRODUCTION_URL -> VERCEL_URL -> localhost:3000
+ */
+export function getAppBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_APP_URL.trim() !== "") {
+    const url = process.env.NEXT_PUBLIC_APP_URL.trim();
+    return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
+  }
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+}
+

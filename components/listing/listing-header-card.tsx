@@ -19,6 +19,7 @@ import {
 import { ClaimStatus } from "@prisma/client";
 import { getOpeningStatus } from "@/lib/utils/opening-hours";
 import { EnquiryModal } from "@/components/forms/enquiry-modal";
+import { trackListingEvent } from "@/components/analytics/track-event";
 
 interface ListingHeaderCardProps {
   id: string;
@@ -251,6 +252,7 @@ export function ListingHeaderCard({
           {callAllowed && cleanPhone ? (
             <a
               href={`tel:${cleanPhone}`}
+              onClick={() => trackListingEvent(id, "click_call")}
               className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition hover:scale-101 active:scale-99 cursor-pointer"
             >
               <Phone className="h-4 w-4 animate-bounce" />
@@ -274,6 +276,7 @@ export function ListingHeaderCard({
               )}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackListingEvent(id, "click_whatsapp")}
               className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm bg-[#25D366] hover:bg-[#20BD5A] text-white shadow-xs transition hover:scale-101 active:scale-99 cursor-pointer"
             >
               <MessageCircle className="h-4 w-4" />
@@ -294,6 +297,7 @@ export function ListingHeaderCard({
             href={directionsUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackListingEvent(id, "click_directions")}
             className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm bg-background border border-border/80 hover:bg-muted text-foreground shadow-xs transition hover:scale-101 active:scale-99 cursor-pointer"
           >
             <Navigation className="h-4 w-4 text-primary" />
@@ -301,7 +305,9 @@ export function ListingHeaderCard({
           </a>
 
           {/* Get Best Deal / Enquiry Modal */}
-          <EnquiryModal listingId={id} listingTitle={title} />
+          <div onClick={() => trackListingEvent(id, "click_enquire")}>
+            <EnquiryModal listingId={id} listingTitle={title} />
+          </div>
         </div>
       </div>
     </div>

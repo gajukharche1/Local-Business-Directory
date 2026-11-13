@@ -11,6 +11,7 @@ import {
   Star,
   CreditCard,
   Image as ImageIcon,
+  BarChart3,
   LogOut,
   ArrowLeft,
   PanelLeftClose,
@@ -52,6 +53,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
   const navItems = [
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { label: "My Listings", href: "/dashboard/listings", icon: Store },
+    { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
     { label: "Leads & Enquiries", href: "/dashboard/enquiries", icon: Inbox },
     { label: "Customer Reviews", href: "/dashboard/reviews", icon: Star },
     { label: "Media Files", href: "/dashboard/media", icon: ImageIcon },

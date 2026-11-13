@@ -298,3 +298,22 @@
   - Production Docker container builds and boots to healthy status (`/api/health` returns 200).
   - Point-in-time database restore test succeeds in local simulation.
 
+---
+
+### Phase 18: Business Analytics & Click-to-Action Tracking
+- **Objective**: Privacy-first, DPDP-compliant visitor analytics and high-intent customer click-to-action conversion tracking (Calls, WhatsApp, Directions, Website clicks, and Enquiries) with interactive trend dashboards for merchants and administrators.
+- **Key Files**:
+  - `prisma/schema.prisma` (`AnalyticsEvent`, `AnalyticsDailySummary`)
+  - `lib/services/analytics.service.ts`
+  - `app/api/analytics/track/route.ts`
+  - `components/analytics/listing-analytics-tracker.tsx`, `components/analytics/track-event.ts`
+  - `components/analytics/analytics-area-chart.tsx`, `components/analytics/analytics-breakdown-bar.tsx`
+  - `app/(account)/dashboard/listings/[id]/analytics/page.tsx`, `app/(account)/dashboard/analytics/page.tsx`
+  - `app/(admin)/admin/analytics/page.tsx`
+  - `tests/unit/analytics.test.ts`
+- **Verification Gate**:
+  - `npx prisma db push` synchronizes without data loss.
+  - Event ingestion endpoint `/api/analytics/track` records unique visitors and actions with sliding-window anti-spam.
+  - Merchant dashboard displays real-time 7d/30d/90d conversion charts and action distribution.
+  - 100% pass on typecheck (`tsc --noEmit`) and unit tests (`vitest run`).
+

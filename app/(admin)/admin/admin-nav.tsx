@@ -20,6 +20,7 @@ import {
   Circle,
   Loader2,
   Image as ImageIcon,
+  BarChart3,
   type LucideIcon,
 } from "lucide-react";
 
@@ -43,7 +44,9 @@ export type NavIconKey =
   | "list-plus"
   | "ListPlus"
   | "image"
-  | "Image";
+  | "Image"
+  | "chart"
+  | "Chart";
 
 const NAV_ICONS: Record<NavIconKey, LucideIcon> = {
   sliders: Sliders,
@@ -66,6 +69,8 @@ const NAV_ICONS: Record<NavIconKey, LucideIcon> = {
   ListPlus: ListPlus,
   image: ImageIcon,
   Image: ImageIcon,
+  chart: BarChart3,
+  Chart: BarChart3,
 };
 
 export interface AdminNavSubItem {

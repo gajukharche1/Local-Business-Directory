@@ -2,6 +2,7 @@
 
 import { Phone, MessageCircle, Zap } from "lucide-react";
 import { EnquiryModal } from "@/components/forms/enquiry-modal";
+import { trackListingEvent } from "@/components/analytics/track-event";
 
 interface ListingMobileActionBarProps {
   listingId: string;
@@ -29,6 +30,7 @@ export function ListingMobileActionBar({
       {callAllowed && cleanPhone ? (
         <a
           href={`tel:${cleanPhone}`}
+          onClick={() => trackListingEvent(listingId, "click_call")}
           className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition active:scale-98"
         >
           <Phone className="h-4 w-4" />
@@ -52,6 +54,7 @@ export function ListingMobileActionBar({
           )}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackListingEvent(listingId, "click_whatsapp")}
           className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white font-bold text-xs shadow-xs transition active:scale-98"
         >
           <MessageCircle className="h-4 w-4" />
@@ -68,7 +71,7 @@ export function ListingMobileActionBar({
       )}
 
       {/* Enquiry Modal Button */}
-      <div className="shrink-0">
+      <div className="shrink-0" onClick={() => trackListingEvent(listingId, "click_enquire")}>
         <EnquiryModal listingId={listingId} listingTitle={title} />
       </div>
     </div>

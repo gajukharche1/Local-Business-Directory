@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
 import { ListingService } from "@/lib/services/listing.service";
-import { Store, ExternalLink, Calendar, Plus } from "lucide-react";
+import { Store, ExternalLink, Calendar, Plus, BarChart3 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -91,14 +91,23 @@ export default async function DashboardListingsPage() {
                     </td>
                     <td className="p-4 font-medium text-foreground">{Number(l.viewCount)}</td>
                     <td className="p-4 text-right">
-                      <Link
-                        href={`/listing/${l.slug}`}
-                        target="_blank"
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                      >
-                        <span>View Live</span>
-                        <ExternalLink className="h-3 w-3" />
-                      </Link>
+                      <div className="flex items-center justify-end gap-3">
+                        <Link
+                          href={`/dashboard/listings/${l.id}/analytics`}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-foreground hover:text-primary transition"
+                        >
+                          <BarChart3 className="h-3.5 w-3.5 text-primary" />
+                          <span>Analytics</span>
+                        </Link>
+                        <Link
+                          href={`/listing/${l.slug}`}
+                          target="_blank"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                        >
+                          <span>View Live</span>
+                          <ExternalLink className="h-3 w-3" />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

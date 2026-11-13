@@ -298,6 +298,8 @@ model Listing {
   claims         ClaimRequest[]
   favourites     Favourite[]
   media          Media[]
+  analyticsEvents         AnalyticsEvent[]
+  analyticsDailySummaries AnalyticsDailySummary[]
 
   @@index([slug])
   @@index([status])
@@ -501,4 +503,41 @@ model SiteSetting {
 
   @@index([group])
   @@map("site_settings")
+}
+
+model AnalyticsEvent {
+  id          String   @id @default(cuid())
+  listingId   String
+  eventType   String   // page_view, click_call, click_whatsapp, click_directions, click_website, click_enquire
+  metadata    Json?    // { referrer?: string, device?: "mobile"|"desktop" }
+  visitorHash String?  // Salted daily SHA-256 hash for DPDP-compliant unique counting
+  createdAt   DateTime @default(now())
+
+  listing     Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId, eventType, createdAt])
+  @@index([listingId, createdAt])
+  @@index([createdAt])
+  @@map("analytics_events")
+}
+
+model AnalyticsDailySummary {
+  id               String   @id @default(cuid())
+  listingId        String
+  date             DateTime @db.Date
+  pageViews        Int      @default(0)
+  uniqueVisitors   Int      @default(0)
+  callClicks       Int      @default(0)
+  whatsappClicks   Int      @default(0)
+  directionsClicks Int      @default(0)
+  websiteClicks    Int      @default(0)
+  enquiries        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  listing          Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, date])
+  @@index([listingId, date])
+  @@map("analytics_daily_summaries")
 }

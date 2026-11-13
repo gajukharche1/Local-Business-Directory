@@ -613,3 +613,97 @@ export async function resetUserPasswordAdminAction(targetUserId: string, newPass
     };
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* BULK ACTIONS FOR LISTINGS                                                  */
+/* -------------------------------------------------------------------------- */
+
+export async function bulkUpdateListingStatusAction(
+  listingIds: string[],
+  status: ListingStatus
+): Promise<{ success: boolean; count?: number; error?: string }> {
+  const user = await getCurrentUser();
+  assertAuthorized(user, UserRole.moderator);
+
+  if (!listingIds || listingIds.length === 0) {
+    return { success: false, error: "No listings selected." };
+  }
+
+  try {
+    const result = await db.listing.updateMany({
+      where: { id: { in: listingIds } },
+      data: {
+        status,
+        ...(status === ListingStatus.published && { publishedAt: new Date() }),
+      },
+    });
+
+    revalidatePath("/admin/listings");
+    revalidatePath("/admin");
+    revalidatePath("/search");
+    revalidatePath("/");
+
+    return { success: true, count: result.count };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update listings status.",
+    };
+  }
+}
+
+export async function bulkDeleteListingsAction(
+  listingIds: string[]
+): Promise<{ success: boolean; count?: number; error?: string }> {
+  const user = await getCurrentUser();
+  assertAuthorized(user, UserRole.admin);
+
+  if (!listingIds || listingIds.length === 0) {
+    return { success: false, error: "No listings selected." };
+  }
+
+  try {
+    const result = await db.listing.deleteMany({
+      where: { id: { in: listingIds } },
+    });
+
+    revalidatePath("/admin/listings");
+    revalidatePath("/admin");
+    revalidatePath("/search");
+    revalidatePath("/");
+
+    return { success: true, count: result.count };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete listings.",
+    };
+  }
+}
+
+export async function deleteListingAdminAction(
+  listingId: string
+): Promise<{ success: boolean; error?: string }> {
+  const user = await getCurrentUser();
+  assertAuthorized(user, UserRole.admin);
+
+  try {
+    await db.listing.delete({
+      where: { id: listingId },
+    });
+
+    revalidatePath("/admin/listings");
+    revalidatePath("/admin");
+    revalidatePath("/search");
+    revalidatePath("/");
+
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete listing.",
+    };
+  }
+}
+
+

@@ -17,12 +17,22 @@ import {
   Layers,
   Sparkles,
   Share2,
+  Loader2,
 } from "lucide-react";
 import {
   createCategoryAdminAction,
   updateCategoryAdminAction,
   deleteCategoryAdminAction,
+  bulkUpdateCategoriesAction,
+  bulkDeleteCategoriesAction,
 } from "@/actions/taxonomy";
+import { useBulkSelect } from "@/lib/hooks/use-bulk-select";
+import {
+  BulkSelectCheckbox,
+  BulkSelectToolbar,
+  BulkConfirmModal,
+  TablePagination,
+} from "@/components/ui/bulk-select";
 
 export interface CategoryItem {
   id: string;
@@ -264,14 +274,127 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
     });
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
   const filteredCategories = categories.filter(
     (c) =>
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.slug.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const totalFilteredCount = filteredCategories.length;
+  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedCategories = filteredCategories.slice(
+    (safePage - 1) * pageSize,
+    safePage * pageSize
+  );
+
+  const {
+    selectedIds,
+    selectedCount,
+    selectedItems,
+    isSelected,
+    isAllSelected,
+    isPartiallySelected,
+    toggle,
+    toggleAll,
+    clearSelection,
+  } = useBulkSelect({
+    items: paginatedCategories,
+    getItemId: (c) => c.id,
+  });
+
+  const handleBulkFeature = (featuredOnHome: boolean) => {
+    if (selectedCount === 0) return;
+    setFeedback(null);
+    const ids = Array.from(selectedIds);
+    startTransition(async () => {
+      const res = await bulkUpdateCategoriesAction(ids, { featuredOnHome });
+      if (res.success) {
+        setCategories((prev) =>
+          prev.map((c) => (selectedIds.has(c.id) ? { ...c, featuredOnHome } : c))
+        );
+        setFeedback({
+          type: "success",
+          message: `Successfully updated ${res.count ?? ids.length} categor${ids.length === 1 ? "y" : "ies"}.`,
+        });
+        clearSelection();
+        router.refresh();
+      } else {
+        setFeedback({
+          type: "error",
+          message: res.error || "Failed to update categories.",
+        });
+      }
+    });
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedCount === 0) return;
+    setFeedback(null);
+    const ids = Array.from(selectedIds);
+    startTransition(async () => {
+      const res = await bulkDeleteCategoriesAction(ids);
+      if (res.success) {
+        setCategories((prev) => prev.filter((c) => !selectedIds.has(c.id)));
+        setFeedback({
+          type: "success",
+          message: `Successfully deleted ${res.count ?? ids.length} categor${ids.length === 1 ? "y" : "ies"}.`,
+        });
+        clearSelection();
+        setBulkConfirmOpen(false);
+        router.refresh();
+      } else {
+        setFeedback({
+          type: "error",
+          message: res.error || "Failed to delete categories.",
+        });
+        setBulkConfirmOpen(false);
+      }
+    });
+  };
+
+  const selectedWithListingsCount = selectedItems.filter(
+    (c) => c._count.listings > 0 || c._count.children > 0
+  ).length;
+
+  const warningNote =
+    selectedWithListingsCount > 0
+      ? `Warning: ${selectedWithListingsCount} of the selected categories contain active listings or subcategories. Deleting them will unassign those listings and promote subcategories to root.`
+      : undefined;
+
   return (
     <div className="space-y-6">
+      {/* Feedback Banner */}
+      {feedback && (
+        <div
+          className={`p-3.5 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all ${
+            feedback.type === "success"
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+              : "bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-400"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {feedback.type === "success" ? (
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+            ) : (
+              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+            )}
+            <span>{feedback.message}</span>
+          </div>
+          <button
+            onClick={() => setFeedback(null)}
+            className="text-muted-foreground hover:text-foreground p-1"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Top action bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-4 rounded-xl border shadow-sm">
         <div className="relative flex-1 max-w-md">
@@ -280,7 +403,10 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
             type="text"
             placeholder="Search categories by name or URL slug..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-9 pr-4 py-2 text-sm bg-muted/30 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
           />
         </div>
@@ -301,6 +427,14 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/40 border-b text-xs uppercase font-semibold text-muted-foreground">
               <tr>
+                <th className="w-10 py-3 px-4">
+                  <BulkSelectCheckbox
+                    checked={isAllSelected}
+                    indeterminate={isPartiallySelected}
+                    onChange={toggleAll}
+                    aria-label="Select all categories on this page"
+                  />
+                </th>
                 <th className="py-3 px-4">Category & URL</th>
                 <th className="py-3 px-4">Parent</th>
                 <th className="py-3 px-4 text-center">Listings</th>
@@ -310,19 +444,34 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
               </tr>
             </thead>
             <tbody className="divide-y text-xs">
-              {filteredCategories.length === 0 ? (
+              {paginatedCategories.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="py-8 text-center text-muted-foreground">
                     No categories found matching &quot;{searchQuery}&quot;
                   </td>
                 </tr>
               ) : (
-                filteredCategories.map((cat) => {
+                paginatedCategories.map((cat, index) => {
                   const hasSeo = Boolean(cat.seoTitle && cat.seoDescription && cat.seoKeywords);
                   const partialSeo = Boolean(cat.seoTitle || cat.seoDescription || cat.seoKeywords);
+                  const selected = isSelected(cat.id);
 
                   return (
-                    <tr key={cat.id} className="hover:bg-muted/30 transition">
+                    <tr
+                      key={cat.id}
+                      className={`transition ${
+                        selected
+                          ? "bg-red-500/5 dark:bg-red-500/10 hover:bg-red-500/10"
+                          : "hover:bg-muted/30"
+                      }`}
+                    >
+                      <td className="w-10 py-3 px-4">
+                        <BulkSelectCheckbox
+                          checked={selected}
+                          onChange={(e) => toggle(cat.id, index, e)}
+                          aria-label={`Select ${cat.name}`}
+                        />
+                      </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2.5">
                           <div className="h-8 w-8 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center font-bold text-xs shrink-0">
@@ -418,7 +567,79 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
             </tbody>
           </table>
         </div>
+
+        {/* Table Pagination */}
+        <TablePagination
+          currentPage={safePage}
+          pageSize={pageSize}
+          totalCount={totalFilteredCount}
+          onPageChange={(p) => setCurrentPage(p)}
+          onPageSizeChange={(s) => {
+            setPageSize(s);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[50, 100, 500]}
+          entityName="categories"
+        />
       </div>
+
+      {/* Floating Bulk Action Bar */}
+      <BulkSelectToolbar
+        selectedCount={selectedCount}
+        totalCount={paginatedCategories.length}
+        onClear={clearSelection}
+        entityName="categories"
+      >
+        <button
+          type="button"
+          onClick={() => handleBulkFeature(true)}
+          disabled={isPending}
+          className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-semibold shadow-xs transition-all active:scale-95 disabled:opacity-50"
+          title="Feature on Home tab"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          <span>Feature on Home</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleBulkFeature(false)}
+          disabled={isPending}
+          className="inline-flex items-center gap-1 rounded-xl border border-border/80 bg-card hover:bg-muted px-2.5 py-1.5 text-xs font-semibold text-foreground shadow-xs transition-all active:scale-95 disabled:opacity-50"
+          title="Remove from Home tab"
+        >
+          <span>Remove Feature</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setBulkConfirmOpen(true)}
+          disabled={isPending}
+          className="inline-flex items-center gap-1 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 px-3 py-1.5 text-xs font-semibold shadow-xs transition-all active:scale-95 disabled:opacity-50 ml-1"
+          title="Delete selected categories"
+        >
+          {isPending ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Trash2 className="h-3.5 w-3.5" />
+          )}
+          <span>Delete</span>
+        </button>
+      </BulkSelectToolbar>
+
+      {/* Bulk Delete Confirm Modal */}
+      <BulkConfirmModal
+        isOpen={bulkConfirmOpen}
+        onClose={() => setBulkConfirmOpen(false)}
+        onConfirm={handleBulkDelete}
+        title={`Delete ${selectedCount} Categor${selectedCount === 1 ? "y" : "ies"}?`}
+        description="This will permanently delete the selected categories. Subcategories will become root categories."
+        warningNote={warningNote}
+        itemCount={selectedCount}
+        confirmLabel="Delete Categories"
+        isDestructive={true}
+        isPending={isPending}
+      />
 
       {/* Create / Edit Modal */}
       {modalOpen && (

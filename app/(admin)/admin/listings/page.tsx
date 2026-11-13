@@ -2,31 +2,26 @@ import { Metadata } from "next";
 import Link from "next/link";
 import db from "@/lib/db/client";
 import { ListingStatus } from "@prisma/client";
-import { ListingStatusSelect } from "./listing-status-select";
+import { AdminListingsTable } from "./admin-listings-table";
 import {
   PlusCircle,
   Upload,
   Search,
-  Star,
-  MapPin,
-  ExternalLink,
-  Edit3,
-  Building2,
-  Phone,
-  SlidersHorizontal,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Listing Management | Admin Back-Office",
-  description: "Browse, filter, and moderate local business listings.",
+  description: "Browse, filter, and moderate local business listings with bulk selection and pagination.",
 };
 
 interface SearchParamsProps {
   searchParams: Promise<{
     status?: string;
     q?: string;
+    page?: string;
+    limit?: string;
   }>;
 }
 
@@ -35,20 +30,13 @@ export default async function AdminListingsPage({ searchParams }: SearchParamsPr
   const statusFilter = resolvedParams.status as ListingStatus | undefined;
   const query = resolvedParams.q || "";
 
-  let listings: Array<{
-    id: string;
-    slug: string;
-    title: string;
-    status: ListingStatus;
-    locality: string;
-    address: string;
-    phone: string | null;
-    averageRating: any;
-    reviewCount: number;
-    createdAt: Date;
-    categories: Array<{ category: { name: string } }>;
-  }> = [];
+  // Pagination parameters
+  const page = Math.max(1, parseInt(resolvedParams.page || "1", 10));
+  const parsedLimit = parseInt(resolvedParams.limit || "50", 10);
+  const limit = [50, 100, 500].includes(parsedLimit) ? parsedLimit : 50;
+  const skip = (page - 1) * limit;
 
+  let listings: any[] = [];
   let totalCount = 0;
 
   try {
@@ -64,7 +52,9 @@ export default async function AdminListingsPage({ searchParams }: SearchParamsPr
       ];
     }
 
-    listings = await db.listing.findMany({
+    totalCount = await db.listing.count({ where: whereClause });
+
+    const rawListings = await db.listing.findMany({
       where: whereClause,
       select: {
         id: true,
@@ -84,12 +74,21 @@ export default async function AdminListingsPage({ searchParams }: SearchParamsPr
             },
           },
         },
+        seoTitle: true,
+        seoDescription: true,
+        seoKeywords: true,
+        ogImage: true,
       },
       orderBy: { createdAt: "desc" },
-      take: 50,
+      skip,
+      take: limit,
     });
 
-    totalCount = await db.listing.count({ where: whereClause });
+    listings = rawListings.map((l) => ({
+      ...l,
+      averageRating: l.averageRating !== null && l.averageRating !== undefined ? Number(l.averageRating) : 0,
+      createdAt: l.createdAt.toISOString(),
+    }));
   } catch (error) {
     console.warn("Database offline or unavailable during admin listings query:", error);
   }
@@ -121,7 +120,7 @@ export default async function AdminListingsPage({ searchParams }: SearchParamsPr
             <span className="font-mono font-semibold text-foreground">
               {listings.length}
             </span>{" "}
-            records matching current query and status filters.
+            records on page {page} matching current filters.
           </p>
         </div>
 
@@ -149,7 +148,12 @@ export default async function AdminListingsPage({ searchParams }: SearchParamsPr
         <div className="flex flex-wrap items-center gap-1.5">
           {statusTabs.map((tab) => {
             const isActive = (statusFilter || "") === tab.value;
-            const href = tab.value ? `/admin/listings?status=${tab.value}` : "/admin/listings";
+            const params = new URLSearchParams();
+            if (tab.value) params.set("status", tab.value);
+            if (query) params.set("q", query);
+            if (limit !== 50) params.set("limit", String(limit));
+            const href = params.toString() ? `/admin/listings?${params.toString()}` : "/admin/listings";
+
             return (
               <Link
                 key={tab.label}
@@ -169,6 +173,7 @@ export default async function AdminListingsPage({ searchParams }: SearchParamsPr
         {/* Search Input */}
         <form method="GET" action="/admin/listings" className="flex items-center gap-2">
           {statusFilter && <input type="hidden" name="status" value={statusFilter} />}
+          {limit !== 50 && <input type="hidden" name="limit" value={limit} />}
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <input
@@ -188,125 +193,13 @@ export default async function AdminListingsPage({ searchParams }: SearchParamsPr
         </form>
       </div>
 
-      {/* Listings Table Card */}
-      <div className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-border/70 bg-muted/30 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th scope="col" className="px-5 py-3.5">
-                  Business &amp; Category
-                </th>
-                <th scope="col" className="px-5 py-3.5">
-                  Locality
-                </th>
-                <th scope="col" className="px-5 py-3.5">
-                  Rating
-                </th>
-                <th scope="col" className="px-5 py-3.5">
-                  Status
-                </th>
-                <th scope="col" className="px-5 py-3.5 text-right">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50 font-medium">
-              {listings.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-5 py-16 text-center text-muted-foreground">
-                    <div className="flex flex-col items-center justify-center space-y-2">
-                      <div className="h-12 w-12 rounded-2xl bg-muted/40 border border-border/60 flex items-center justify-center text-muted-foreground">
-                        <Building2 className="h-6 w-6 opacity-70" />
-                      </div>
-                      <p className="font-semibold text-sm text-foreground">No listings found</p>
-                      <p className="text-xs text-muted-foreground max-w-sm">
-                        {query || statusFilter
-                          ? "Try clearing filters or search keywords to view other listings."
-                          : "No business listings currently in the directory database."}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                listings.map((item) => (
-                  <tr key={item.id} className="hover:bg-muted/20 transition-colors">
-                    <td className="px-5 py-4">
-                      <div className="flex flex-col gap-1">
-                        <Link
-                          href={`/listing/${item.slug}`}
-                          target="_blank"
-                          className="font-bold text-foreground hover:text-primary transition-colors flex items-center gap-1.5 group"
-                        >
-                          <span className="truncate max-w-[260px]">{item.title}</span>
-                          <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-primary shrink-0" />
-                        </Link>
-                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/50 border border-border/50 text-[10px] font-semibold text-foreground/80">
-                            {item.categories.map((c) => c.category.name).join(", ") || "General"}
-                          </span>
-                          {item.phone && (
-                            <span className="flex items-center gap-1 font-mono text-[10px]">
-                              <Phone className="h-2.5 w-2.5 text-muted-foreground/70" />
-                              <span>{item.phone}</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-5 py-4 text-foreground">
-                      <div className="flex items-center gap-1.5 font-semibold text-xs">
-                        <MapPin className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                        <span>{item.locality || "Pimple Saudagar"}</span>
-                      </div>
-                      <div className="text-[11px] text-muted-foreground truncate max-w-[220px] mt-0.5">
-                        {item.address}
-                      </div>
-                    </td>
-
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-1.5">
-                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500 shrink-0" />
-                        <span className="font-bold text-foreground font-mono tabular-nums text-xs">
-                          {Number(item.averageRating || 0).toFixed(1)}
-                        </span>
-                        <span className="text-muted-foreground text-[11px] font-mono tabular-nums">
-                          ({item.reviewCount})
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="px-5 py-4">
-                      <ListingStatusSelect listingId={item.id} initialStatus={item.status} />
-                    </td>
-
-                    <td className="px-5 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Link
-                          href={`/admin/listings/${item.id}/edit`}
-                          className="inline-flex items-center gap-1 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary px-2.5 py-1 text-xs font-semibold transition-colors active:scale-95"
-                        >
-                          <Edit3 className="h-3 w-3" />
-                          <span>Edit</span>
-                        </Link>
-                        <Link
-                          href={`/listing/${item.slug}`}
-                          target="_blank"
-                          className="inline-flex items-center gap-1 rounded-lg border border-border/70 hover:bg-muted text-muted-foreground hover:text-foreground px-2.5 py-1 text-xs font-semibold transition-colors"
-                        >
-                          <span>View</span>
-                          <ExternalLink className="h-3 w-3" />
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* Interactive Listings Table with Bulk Selection & Pagination */}
+      <AdminListingsTable
+        listings={listings}
+        totalCount={totalCount}
+        currentPage={page}
+        pageSize={limit}
+      />
     </div>
   );
 }

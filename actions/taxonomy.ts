@@ -415,3 +415,124 @@ export async function deleteLocationAdminAction(locationId: string): Promise<{ s
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* BULK ACTIONS FOR CATEGORIES & LOCATIONS                                    */
+/* -------------------------------------------------------------------------- */
+
+export async function bulkUpdateCategoriesAction(
+  categoryIds: string[],
+  data: { featuredOnHome?: boolean }
+): Promise<{ success: boolean; count?: number; error?: string }> {
+  const user = await getCurrentUser();
+  try {
+    assertAuthorized(user, UserRole.moderator);
+  } catch {
+    return { success: false, error: "Unauthorized: Administrator privileges required." };
+  }
+
+  if (!categoryIds || categoryIds.length === 0) {
+    return { success: false, error: "No categories selected." };
+  }
+
+  try {
+    const result = await db.category.updateMany({
+      where: { id: { in: categoryIds } },
+      data: {
+        ...(data.featuredOnHome !== undefined && { featuredOnHome: data.featuredOnHome }),
+      },
+    });
+
+    revalidatePath("/admin/categories");
+    revalidatePath("/");
+    return { success: true, count: result.count };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to update categories." };
+  }
+}
+
+export async function bulkDeleteCategoriesAction(
+  categoryIds: string[]
+): Promise<{ success: boolean; count?: number; error?: string }> {
+  const user = await getCurrentUser();
+  try {
+    assertAuthorized(user, UserRole.admin);
+  } catch {
+    return { success: false, error: "Unauthorized: Super-Admin privileges required." };
+  }
+
+  if (!categoryIds || categoryIds.length === 0) {
+    return { success: false, error: "No categories selected." };
+  }
+
+  try {
+    const result = await db.category.deleteMany({
+      where: { id: { in: categoryIds } },
+    });
+
+    revalidatePath("/admin/categories");
+    revalidatePath("/");
+    return { success: true, count: result.count };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to delete categories." };
+  }
+}
+
+export async function bulkUpdateLocationsAction(
+  locationIds: string[],
+  data: { featured?: boolean }
+): Promise<{ success: boolean; count?: number; error?: string }> {
+  const user = await getCurrentUser();
+  try {
+    assertAuthorized(user, UserRole.moderator);
+  } catch {
+    return { success: false, error: "Unauthorized: Administrator privileges required." };
+  }
+
+  if (!locationIds || locationIds.length === 0) {
+    return { success: false, error: "No locations selected." };
+  }
+
+  try {
+    const result = await db.location.updateMany({
+      where: { id: { in: locationIds } },
+      data: {
+        ...(data.featured !== undefined && { featured: data.featured }),
+      },
+    });
+
+    revalidatePath("/admin/locations");
+    revalidatePath("/");
+    return { success: true, count: result.count };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to update locations." };
+  }
+}
+
+export async function bulkDeleteLocationsAction(
+  locationIds: string[]
+): Promise<{ success: boolean; count?: number; error?: string }> {
+  const user = await getCurrentUser();
+  try {
+    assertAuthorized(user, UserRole.admin);
+  } catch {
+    return { success: false, error: "Unauthorized: Super-Admin privileges required." };
+  }
+
+  if (!locationIds || locationIds.length === 0) {
+    return { success: false, error: "No locations selected." };
+  }
+
+  try {
+    const result = await db.location.deleteMany({
+      where: { id: { in: locationIds } },
+    });
+
+    revalidatePath("/admin/locations");
+    revalidatePath("/");
+    return { success: true, count: result.count };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to delete locations." };
+  }
+}
+
+

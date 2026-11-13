@@ -865,7 +865,7 @@ export function AdminListingForm({
                 <p className="font-bold text-xs truncate text-foreground">{previewTitle}</p>
                 <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{previewDesc}</p>
                 <span className="text-[9px] font-mono text-slate-400 uppercase mt-1 block">
-                  pimplesaudagar.org
+                  {typeof window !== "undefined" ? window.location.host : "directory"}
                 </span>
               </div>
             </div>
@@ -879,7 +879,7 @@ export function AdminListingForm({
             </span>
             <div className="bg-background rounded-lg border p-3.5 space-y-1 font-sans">
               <div className="text-[11px] text-slate-500 truncate flex items-center gap-1">
-                <span>https://pimplesaudagar.org</span>
+                <span>{typeof window !== "undefined" ? window.location.origin : "https://directory"}</span>
                 <span>›</span>
                 <span>listing</span>
                 <span>›</span>

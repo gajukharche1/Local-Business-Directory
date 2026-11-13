@@ -349,8 +349,8 @@ export function AdminEditListingForm({
                 <Link2 className="h-3.5 w-3.5 text-primary" />
                 <span>Permanent URL Slug</span>
               </span>
-              <span className="text-[11px] text-muted-foreground font-normal">
-                https://pimplesaudagar.org/listing/{slug}
+              <span className="text-[11px] text-muted-foreground font-mono">
+                /listing/{slug}
               </span>
             </label>
             <div className={`flex items-center rounded-lg border bg-background overflow-hidden ${state?.fieldErrors?.slug ? "border-destructive ring-1 ring-destructive" : "focus-within:border-primary"}`}>
@@ -955,7 +955,9 @@ export function AdminEditListingForm({
             </div>
             <div className="rounded-lg bg-card border p-3.5 shadow-sm space-y-1">
               <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
-                <span className="font-semibold text-foreground">pimplesaudagar.org</span>
+                <span className="font-semibold text-foreground">
+                  {typeof window !== "undefined" ? window.location.host : "directory"}
+                </span>
                 <span>›</span>
                 <span>listing</span>
                 <span>›</span>

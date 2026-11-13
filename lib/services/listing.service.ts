@@ -29,6 +29,28 @@ export interface CreateListingInput {
 
 export class ListingService {
   /**
+   * Retrieves a single listing by its ID.
+   */
+  static async getById(id: string) {
+    return db.listing.findUnique({
+      where: { id },
+      include: {
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+        locations: {
+          include: {
+            location: true,
+          },
+        },
+        plan: true,
+      },
+    });
+  }
+
+  /**
    * Retrieves a single published listing by its slug for public presentation.
    * Includes categories, locations, pricing plan privileges, and media.
    */

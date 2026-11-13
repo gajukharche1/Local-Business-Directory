@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { TaxonomyService } from "@/lib/services/taxonomy.service";
 import { ListingCard } from "@/components/listing/listing-card";
-import { env } from "@/lib/config/env";
+import { getAppBaseUrl } from "@/lib/config/env";
 import { ChevronRight, Folder } from "lucide-react";
 
 interface CategoryPageProps {
@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const { slug } = await params;
   const slugList = Array.isArray(slug) ? slug : typeof slug === "string" ? [slug] : [];
   const category = await TaxonomyService.getCategoryBySlugPath(slugList);
-  const baseUrl = env.NEXT_PUBLIC_APP_URL || "https://pimplesaudagar.org";
+  const baseUrl = getAppBaseUrl();
 
   if (!category) {
     return { title: "Category Not Found | Local Business Directory" };

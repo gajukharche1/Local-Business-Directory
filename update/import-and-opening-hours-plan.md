@@ -20,20 +20,20 @@ This enhancement addresses two core user requests:
 ## 3. Implementation Checklist
 
 ### Phase 1: Opening Hours Parser & Scheduler Component
-- [ ] Create `lib/utils/opening-hours-parser.ts` to parse shorthand formats ("09:00-21:00", "Mon-Sat: 09:00-20:00", "24/7") and JSON.
-- [ ] Create `components/forms/opening-hours-scheduler.tsx` for visual 7-day schedule configuration.
-- [ ] Wire opening hours scheduler into `app/(admin)/admin/listings/new/admin-listing-form.tsx`.
-- [ ] Wire opening hours scheduler into `app/(admin)/admin/listings/[id]/edit/admin-edit-listing-form.tsx`.
-- [ ] Update `actions/listing.ts` (`createListingAdminAction` & `updateListingAdminAction`) to parse and persist `openingHours`.
+- [x] Create `lib/utils/opening-hours-parser.ts` to parse shorthand formats ("09:00-21:00", "Mon-Sat: 09:00-20:00", "24/7") and JSON.
+- [x] Create `components/forms/opening-hours-scheduler.tsx` for visual 7-day schedule configuration.
+- [x] Wire opening hours scheduler into `app/(admin)/admin/listings/new/admin-listing-form.tsx`.
+- [x] Wire opening hours scheduler into `app/(admin)/admin/listings/[id]/edit/admin-edit-listing-form.tsx`.
+- [x] Update `actions/listing.ts` (`createListingAdminAction` & `updateListingAdminAction`) to parse and persist `openingHours`.
 
 ### Phase 2: Multi-Entity Backend Actions (`actions/admin.ts`)
-- [ ] Update `importListingsAction` to accept `openingHours` and map it to `WeekSchedule`.
-- [ ] Add `importCategoriesAction` with parent-hierarchy resolution, unique slug generation, and taxonomy counter updates.
-- [ ] Add `importLocationsAction` with GPS coordinate parsing, parent locality resolution, and uniqueness checks.
+- [x] Update `importListingsAction` to accept `openingHours` and map it to `WeekSchedule`.
+- [x] Add `importCategoriesAction` with parent-hierarchy resolution, unique slug generation, and taxonomy counter updates.
+- [x] Add `importLocationsAction` with GPS coordinate parsing, parent locality resolution, and uniqueness checks.
 
 ### Phase 3: Redesigned Import Center (`app/(admin)/admin/imports`)
-- [ ] Restructure `app/(admin)/admin/imports/page.tsx` with live database metric counters (Total Listings, Total Categories, Total Locations).
-- [ ] Rewrite `app/(admin)/admin/imports/csv-importer.tsx`:
+- [x] Restructure `app/(admin)/admin/imports/page.tsx` with live database metric counters (Total Listings, Total Categories, Total Locations).
+- [x] Rewrite `app/(admin)/admin/imports/csv-importer.tsx`:
   - Entity tabs: Listings, Categories, Locations.
   - Drag-and-drop file upload zone + CSV paste mode.
   - 1-Click sample data loader & CSV template download for each entity.
@@ -41,7 +41,7 @@ This enhancement addresses two core user requests:
   - Execution status with plain-language success/failure details and direct links to view the created items.
 
 ### Phase 4: Verification & Deployment
-- [ ] Run `npm run build` to verify 0 TypeScript and bundling errors.
-- [ ] Commit and sync across `main` and `Admin-Dashboard-UI`.
-- [ ] Deploy to Vercel production and verify live health.
+- [x] Run `npm run build` to verify 0 TypeScript and bundling errors.
+- [x] Commit and sync across `main` and `Admin-Dashboard-UI`.
+- [x] Deploy to Vercel production and verify live health.
 

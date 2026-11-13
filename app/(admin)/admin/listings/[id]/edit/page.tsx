@@ -63,6 +63,20 @@ export default async function AdminEditListingPage({ params }: EditPageProps) {
     notFound();
   }
 
+  // Convert Decimal, BigInt, and dates into plain serializable values for Client Components
+  const serializedListing = {
+    ...listing,
+    viewCount: Number(listing.viewCount ?? 0),
+    averageRating: listing.averageRating !== null && listing.averageRating !== undefined ? Number(listing.averageRating) : 0,
+    latitude: listing.latitude !== null && listing.latitude !== undefined ? Number(listing.latitude) : null,
+    longitude: listing.longitude !== null && listing.longitude !== undefined ? Number(listing.longitude) : null,
+    createdAt: listing.createdAt.toISOString(),
+    updatedAt: listing.updatedAt.toISOString(),
+    publishedAt: listing.publishedAt?.toISOString() ?? null,
+    planStartedAt: listing.planStartedAt?.toISOString() ?? null,
+    planExpiresAt: listing.planExpiresAt?.toISOString() ?? null,
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -100,7 +114,7 @@ export default async function AdminEditListingPage({ params }: EditPageProps) {
 
       {/* Edit Form */}
       <AdminEditListingForm
-        listing={listing}
+        listing={serializedListing}
         categories={categories}
         locations={locations}
         plans={plans}

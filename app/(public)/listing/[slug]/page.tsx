@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ListingService } from "@/lib/services/listing.service";
 import { SeoService } from "@/lib/services/seo.service";
-import { env } from "@/lib/config/env";
+import { env, getAppBaseUrl } from "@/lib/config/env";
 import { ListingHeroBento } from "@/components/listing/listing-hero-bento";
 import { ListingHeaderCard } from "@/components/listing/listing-header-card";
 import { ListingStickyNav } from "@/components/listing/listing-sticky-nav";
@@ -14,6 +14,7 @@ import { ListingReviewsSection } from "@/components/listing/listing-reviews-sect
 import { ListingLeadSidebar } from "@/components/listing/listing-lead-sidebar";
 import { ListingMobileActionBar } from "@/components/listing/listing-mobile-action-bar";
 import { ListingCustomSections, ListingSectionToggles } from "@/components/listing/types";
+import { ListingAnalyticsTracker } from "@/components/analytics/listing-analytics-tracker";
 import { Check, ChevronRight, Info } from "lucide-react";
 
 interface ListingPageProps {
@@ -23,7 +24,7 @@ interface ListingPageProps {
 export async function generateMetadata({ params }: ListingPageProps): Promise<Metadata> {
   const { slug } = await params;
   const listing = await ListingService.getBySlug(slug);
-  const baseUrl = env.NEXT_PUBLIC_APP_URL || "https://pimplesaudagar.org";
+  const baseUrl = getAppBaseUrl();
 
   if (!listing) {
     return {
@@ -79,7 +80,7 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
 export default async function ListingDetailPage({ params }: ListingPageProps) {
   const { slug } = await params;
   const listing = await ListingService.getBySlug(slug);
-  const baseUrl = env.NEXT_PUBLIC_APP_URL || "https://pimplesaudagar.org";
+  const baseUrl = getAppBaseUrl();
 
   if (!listing) {
     notFound();
@@ -123,6 +124,9 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background pb-20 md:pb-12">
+      {/* Real-Time Privacy-Compliant Visitor Telemetry Tracker */}
+      <ListingAnalyticsTracker listingId={listing.id} />
+
       {/* Schema.org Structured Data */}
       <script
         type="application/ld+json"

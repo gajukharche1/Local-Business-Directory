@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import db from "@/lib/db/client";
+import { getAppBaseUrl } from "@/lib/config/env";
 
 export const size = {
   width: 1200,
@@ -146,7 +147,13 @@ export default async function OpengraphImage({ params }: Props) {
           </div>
 
           <div style={{ color: "#94a3b8", fontSize: "16px", fontWeight: "500" }}>
-            pimplesaudagar.org/listing/{slug}
+            {(() => {
+              try {
+                return new URL(getAppBaseUrl()).host;
+              } catch {
+                return "directory";
+              }
+            })()}/listing/{slug}
           </div>
         </div>
       </div>

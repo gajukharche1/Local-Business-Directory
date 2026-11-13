@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { submitEnquiryAction, EnquiryActionState } from "@/actions/enquiry";
 import { ClaimStatus } from "@prisma/client";
+import { trackListingEvent } from "@/components/analytics/track-event";
 
 interface ListingLeadSidebarProps {
   listingId: string;
@@ -93,7 +94,7 @@ export function ListingLeadSidebar({
             </p>
           </div>
         ) : (
-          <form action={formAction} className="space-y-3.5">
+          <form action={formAction} onSubmit={() => trackListingEvent(listingId, "click_enquire")} className="space-y-3.5">
             <input type="hidden" name="listingId" value={listingId} />
             <input type="hidden" name="form_loaded_at" value={formLoadedAt} />
 
@@ -218,6 +219,7 @@ export function ListingLeadSidebar({
           {callAllowed && cleanPhone && (
             <a
               href={`tel:${cleanPhone}`}
+              onClick={() => trackListingEvent(listingId, "click_call")}
               className="flex items-center gap-3 p-3 rounded-2xl bg-muted/50 hover:bg-muted text-foreground transition"
             >
               <div className="h-8 w-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
@@ -235,6 +237,7 @@ export function ListingLeadSidebar({
               href={`https://wa.me/${cleanWhatsapp}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackListingEvent(listingId, "click_whatsapp")}
               className="flex items-center gap-3 p-3 rounded-2xl bg-muted/50 hover:bg-muted text-foreground transition"
             >
               <div className="h-8 w-8 rounded-xl bg-[#25D366] text-white flex items-center justify-center shrink-0">
@@ -252,6 +255,7 @@ export function ListingLeadSidebar({
               href={website.startsWith("http") ? website : `https://${website}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackListingEvent(listingId, "click_website")}
               className="flex items-center gap-3 p-3 rounded-2xl bg-muted/50 hover:bg-muted text-foreground transition group"
             >
               <div className="h-8 w-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
