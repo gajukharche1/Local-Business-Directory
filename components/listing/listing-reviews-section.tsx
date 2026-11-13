@@ -89,14 +89,14 @@ export function ListingReviewsSection({
               <Star className="h-4 w-4 fill-emerald-600" />
             </span>
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-              Customer Ratings & Feedback
+              Customer Feedback &amp; Comments
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
-            Ratings & Verified Reviews
+            Ratings, Reviews &amp; Comments
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Based on {count} verified customer ratings and real feedback.
+            Based on {count} verified customer ratings, reviews, and community comments.
           </p>
         </div>
 
@@ -105,7 +105,7 @@ export function ListingReviewsSection({
           className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-600 text-primary-foreground font-bold text-xs shadow-xs transition hover:scale-101 active:scale-99 cursor-pointer"
         >
           <PenLine className="h-4 w-4" />
-          <span>Write a Review</span>
+          <span>Write a Review / Comment</span>
         </Link>
       </div>
 

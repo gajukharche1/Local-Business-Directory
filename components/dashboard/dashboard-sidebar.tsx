@@ -81,8 +81,8 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
           {!isCollapsed ? (
             <div className="flex items-center justify-between gap-2">
               <Link href="/" className="flex items-center gap-2.5 group">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground font-extrabold text-sm shadow-sm ring-2 ring-primary/20 shrink-0">
-                  PS
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground font-black text-xs tracking-tight shadow-sm ring-2 ring-primary/20 shrink-0">
+                  LBD
                 </div>
                 <div className="min-w-0">
                   <span className="font-bold tracking-tight text-sm text-foreground block leading-tight truncate group-hover:text-primary transition-colors">
@@ -107,9 +107,9 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
               <Link
                 href="/"
                 title="Pimple Saudagar - Owner Dashboard"
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground font-extrabold text-sm shadow-sm ring-2 ring-primary/20 hover:scale-105 transition-transform"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground font-black text-xs tracking-tight shadow-sm ring-2 ring-primary/20 hover:scale-105 transition-transform"
               >
-                PS
+                LBD
               </Link>
               <button
                 type="button"

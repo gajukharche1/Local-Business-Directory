@@ -41,6 +41,7 @@ interface ListingHeaderCardProps {
   primaryCategory?: { name: string; slug: string } | null;
   callAllowed?: boolean;
   whatsappAllowed?: boolean;
+  showReviews?: boolean;
 }
 
 export function ListingHeaderCard({
@@ -63,6 +64,7 @@ export function ListingHeaderCard({
   primaryCategory,
   callAllowed = true,
   whatsappAllowed = true,
+  showReviews = true,
 }: ListingHeaderCardProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
@@ -195,16 +197,28 @@ export function ListingHeaderCard({
 
         <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-xs sm:text-sm">
           {/* Emerald Rating Capsule (Justdial style) */}
-          <a
-            href="#reviews"
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold shadow-xs transition group cursor-pointer"
-          >
-            <span>{averageRating > 0 ? averageRating.toFixed(1) : "4.5"}</span>
-            <Star className="h-3.5 w-3.5 fill-white text-white" />
-            <span className="text-[11px] font-medium text-emerald-100 pl-1 border-l border-emerald-400/40">
-              {reviewCount > 0 ? `${reviewCount} Ratings` : "142 Ratings"}
-            </span>
-          </a>
+          {showReviews ? (
+            <a
+              href="#reviews"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold shadow-xs transition group cursor-pointer"
+            >
+              <span>{averageRating > 0 ? averageRating.toFixed(1) : "4.5"}</span>
+              <Star className="h-3.5 w-3.5 fill-white text-white" />
+              <span className="text-[11px] font-medium text-emerald-100 pl-1 border-l border-emerald-400/40">
+                {reviewCount > 0 ? `${reviewCount} Ratings` : "142 Ratings"}
+              </span>
+            </a>
+          ) : (
+            <div
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-600/90 text-white font-extrabold shadow-xs select-none"
+            >
+              <span>{averageRating > 0 ? averageRating.toFixed(1) : "4.5"}</span>
+              <Star className="h-3.5 w-3.5 fill-white text-white" />
+              <span className="text-[11px] font-medium text-emerald-100 pl-1 border-l border-emerald-400/40">
+                {reviewCount > 0 ? `${reviewCount} Ratings` : "Rating"}
+              </span>
+            </div>
+          )}
 
           {/* Location Line */}
           <div className="flex items-center gap-1.5 text-muted-foreground">

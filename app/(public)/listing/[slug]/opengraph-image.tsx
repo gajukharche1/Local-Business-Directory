@@ -80,10 +80,11 @@ export default async function OpengraphImage({ params }: Props) {
                 justifyContent: "center",
                 color: "white",
                 fontWeight: "bold",
-                fontSize: "22px",
+                fontSize: "18px",
+                letterSpacing: "-0.5px",
               }}
             >
-              PS
+              LBD
             </div>
             <span style={{ color: "#94a3b8", fontSize: "20px", fontWeight: "600", letterSpacing: "-0.5px" }}>
               Local Business Directory

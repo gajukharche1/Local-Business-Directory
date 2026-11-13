@@ -34,6 +34,7 @@ const DEFAULT_TOGGLES: ListingSectionToggles = {
   hours: true,
   amenities: true,
   reviews: true,
+  comments: true,
   leadSidebar: true,
 };
 
@@ -95,9 +96,16 @@ const STANDARD_PAYMENT_MODES = [
 ];
 
 export function ModularSectionsManager({ initialData }: ModularSectionsManagerProps) {
-  const [toggles, setToggles] = useState<ListingSectionToggles>({
-    ...DEFAULT_TOGGLES,
-    ...(initialData?.toggles || {}),
+  const [toggles, setToggles] = useState<ListingSectionToggles>(() => {
+    const rawToggles = initialData?.toggles || {};
+    const resolvedReviews = rawToggles.reviews ?? true;
+    const resolvedComments = rawToggles.comments ?? resolvedReviews;
+    return {
+      ...DEFAULT_TOGGLES,
+      ...rawToggles,
+      reviews: resolvedReviews,
+      comments: resolvedComments,
+    };
   });
 
   const [services, setServices] = useState<ListingServiceItem[]>(
@@ -132,10 +140,19 @@ export function ModularSectionsManager({ initialData }: ModularSectionsManagerPr
   const [customPaymentInput, setCustomPaymentInput] = useState("");
 
   const handleToggle = (key: keyof ListingSectionToggles) => {
-    setToggles((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+    setToggles((prev) => {
+      const nextVal = !prev[key];
+      if (key === "comments") {
+        return { ...prev, comments: nextVal, reviews: nextVal };
+      }
+      if (key === "reviews") {
+        return { ...prev, reviews: nextVal, comments: nextVal };
+      }
+      return {
+        ...prev,
+        [key]: nextVal,
+      };
+    });
   };
 
   const handleAddService = (e: React.FormEvent) => {
@@ -328,11 +345,11 @@ export function ModularSectionsManager({ initialData }: ModularSectionsManagerPr
             </span>
           </div>
 
-          {/* Reviews Hub Toggle */}
+          {/* Comments & Customer Reviews Toggle */}
           <div
-            onClick={() => handleToggle("reviews")}
+            onClick={() => handleToggle("comments")}
             className={`flex items-center justify-between p-3 rounded-xl border transition cursor-pointer ${
-              toggles.reviews
+              toggles.comments && toggles.reviews
                 ? "bg-primary/5 border-primary/40 text-foreground"
                 : "bg-muted/40 border-border/60 text-muted-foreground opacity-75"
             }`}
@@ -340,16 +357,16 @@ export function ModularSectionsManager({ initialData }: ModularSectionsManagerPr
             <div className="flex items-center gap-2.5">
               <MessageSquare className="h-4 w-4 text-emerald-500" />
               <div>
-                <p className="font-bold">Customer Reviews Hub</p>
-                <p className="text-[10px] text-muted-foreground">Ratings histogram & replies</p>
+                <p className="font-bold">Comment &amp; Reviews Section</p>
+                <p className="text-[10px] text-muted-foreground">User comments, ratings &amp; discussion</p>
               </div>
             </div>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                toggles.reviews ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
+                toggles.comments && toggles.reviews ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
               }`}
             >
-              {toggles.reviews ? "Active" : "Hidden"}
+              {toggles.comments && toggles.reviews ? "Active" : "Hidden"}
             </span>
           </div>
 

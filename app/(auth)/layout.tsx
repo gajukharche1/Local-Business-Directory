@@ -21,8 +21,8 @@ export default async function AuthLayout({
         </Link>
 
         <div className="flex items-center gap-2 mb-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-base shadow-sm uppercase shrink-0">
-            {settings.siteBadge || "PS"}
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-black text-sm shadow-sm uppercase shrink-0">
+            {settings.siteBadge || "LBD"}
           </div>
           <div>
             <span className="font-bold tracking-tight text-lg text-foreground block leading-none">

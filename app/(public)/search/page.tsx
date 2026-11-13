@@ -71,8 +71,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur">
         <div className="container flex h-14 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm shadow-sm">
-              PS
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-black text-xs tracking-tight shadow-sm">
+              LBD
             </div>
             <span className="font-bold tracking-tight text-sm text-foreground">
               Local Business Directory

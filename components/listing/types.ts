@@ -50,6 +50,7 @@ export interface ListingSectionToggles {
   hours: boolean;
   amenities: boolean;
   reviews: boolean;
+  comments: boolean;
   leadSidebar: boolean;
 }
 

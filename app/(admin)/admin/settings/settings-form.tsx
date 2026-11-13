@@ -236,7 +236,7 @@ export function SettingsForm({
                 onChange={handleTextChange}
                 required
                 maxLength={6}
-                placeholder="e.g. PS"
+                placeholder="e.g. LBD"
                 className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-xs font-bold text-foreground uppercase placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
               />
               <span className="text-[11px] text-muted-foreground mt-1.5 block">

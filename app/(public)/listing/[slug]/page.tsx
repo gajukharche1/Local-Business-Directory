@@ -94,16 +94,27 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
 
   // Unpack modular component configurations & toggles
   const customConfig = (listing.customSections as unknown as ListingCustomSections | null) ?? null;
+  const rawToggles = customConfig?.toggles || {};
+  const isCommentsActive =
+    rawToggles.comments !== undefined
+      ? Boolean(rawToggles.comments)
+      : rawToggles.reviews !== undefined
+      ? Boolean(rawToggles.reviews)
+      : true;
+
   const toggles: ListingSectionToggles = {
     services: true,
     insights: true,
     paymentModes: true,
     hours: true,
     amenities: true,
-    reviews: true,
+    reviews: isCommentsActive,
+    comments: isCommentsActive,
     leadSidebar: true,
-    ...(customConfig?.toggles || {}),
+    ...rawToggles,
   };
+
+  const showCommentsSection = toggles.comments && toggles.reviews;
 
   const startingPrice = toggles.services
     ? customConfig?.services && customConfig.services.length > 0
@@ -141,8 +152,8 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
       <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/95 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 flex h-14 items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground font-black text-sm shadow-xs">
-              PS
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground font-black text-xs tracking-tight shadow-xs">
+              LBD
             </div>
             <span className="font-extrabold tracking-tight text-sm text-foreground">
               Local Business Directory
@@ -201,7 +212,7 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
           hasServices={toggles.services}
           hasInsights={toggles.insights || toggles.paymentModes}
           hasTimings={toggles.hours}
-          hasReviews={toggles.reviews}
+          hasReviews={showCommentsSection}
           hasAmenities={toggles.amenities && Boolean(listing.amenities && listing.amenities.length > 0)}
         />
 
@@ -231,6 +242,7 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
                 primaryCategory={primaryCategory ? { name: primaryCategory.name, slug: primaryCategory.slug } : null}
                 callAllowed={listing.plan?.callButtonAllowed ?? true}
                 whatsappAllowed={listing.plan?.whatsappAllowed ?? true}
+                showReviews={showCommentsSection}
               />
             </div>
 
@@ -306,7 +318,7 @@ export default async function ListingDetailPage({ params }: ListingPageProps) {
             {toggles.hours && <OpeningHoursCard openingHours={listing.openingHours} />}
 
             {/* Customer Reviews & Feedback */}
-            {toggles.reviews && (
+            {showCommentsSection && (
               <ListingReviewsSection
                 listingId={listing.id}
                 slug={listing.slug}
